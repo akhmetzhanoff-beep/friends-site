@@ -3150,7 +3150,7 @@ var qrcode = function() {
     try { Object.defineProperty(window, "sessionStorage", { configurable: true, value: { getItem: function (k) { return k in mem ? mem[k] : null; }, setItem: function (k, v) { mem[k] = String(v); }, removeItem: function (k) { delete mem[k]; }, clear: function () { mem = {}; } } }); } catch (e2) {}
   }
   try { sessionStorage.setItem("friends.access_token", TOKEN); } catch (e) {}
-  window.FRIENDS_CONFIG = Object.freeze({ apiBaseUrl: "", supabaseUrl: "", supabasePublishableKey: "", privacyPolicyUrl: "https://businessfriends.kz/privacy", offerUrl: "https://businessfriends.kz/offer", crmUrl: DEMO ? "" : "https://claude.ai/artifact/UQGM8iP5bSgVESAw1NgpRR" });
+  window.FRIENDS_CONFIG = Object.freeze({ apiBaseUrl: "", supabaseUrl: "", supabasePublishableKey: "", privacyPolicyUrl: "https://friendscommunity.kz/privacy", offerUrl: "https://friendscommunity.kz/offer", crmUrl: DEMO ? "" : "https://claude.ai/artifact/UQGM8iP5bSgVESAw1NgpRR" });
   // Demo: "Войти в демо" after signing out, without reloading the page.
   window.friendsDemoSignIn = function () {
     try { sessionStorage.setItem("friends.access_token", TOKEN); } catch (e) {}
@@ -3242,7 +3242,7 @@ var qrcode = function() {
   async function handle(url, init) {
     await ready;
     var p = url.pathname, m = ((init && init.method) || "GET").toUpperCase(), mm, b = body(init);
-    if (p === "/v1/auth/me") return res(200, DEMO ? { subject: "demo", email: "demo@businessfriends.kz" } : { subject: "owner" });
+    if (p === "/v1/auth/me") return res(200, DEMO ? { subject: "demo", email: "demo@friendscommunity.kz" } : { subject: "owner" });
     if (p === "/v1/me/preferences") { if (m === "PUT") { S.prefs = { locale: b.locale }; await save("prefs"); } return res(200, S.prefs); }
     if (p === "/v1/me/profile") {
       if (m === "PUT") {

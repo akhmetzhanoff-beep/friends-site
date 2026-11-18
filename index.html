@@ -586,6 +586,11 @@ html[data-theme="dark"] .ref-dot.done{background:var(--btn-bg)}
 .pnl-table th{text-align:left;font-weight:500}
 .biz-month{max-width:240px;margin-bottom:8px}
 .pay-setup{margin-top:8px}
+.mini-select{font:inherit;font-size:.85rem;padding:4px 6px;border:1px solid var(--fb-divider);border-radius:8px;background:var(--fb-card,#fff);color:inherit;max-width:190px}
+.ops-table td{vertical-align:middle}.ops-table tr.muted td{opacity:.55}
+.ts-table th,.ts-table td{padding:4px 3px;font-size:.8rem}.ts-table th.ts-day{text-align:center;min-width:22px;font-weight:500}
+.ts-table tbody th{white-space:nowrap;text-align:left;position:sticky;left:0;background:var(--fb-card,#fff)}
+.ts-cell{text-align:center}.ts-ok{background:color-mix(in srgb,#2e9d57 18%,transparent)}.ts-late{background:color-mix(in srgb,#d4472f 22%,transparent);font-weight:700}
 
 .pilot-banner{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
@@ -3544,6 +3549,33 @@ var qrcode = function() {
       await save("loanApps"); return res(200, {});
     }
     // ---------- My business (pilot: one workspace; employees are added as active so revenue can be attributed) ----------
+    // Statement parsing for the demo (simplified port of apps/api/src/money.ts).
+    function demoAmount(s) { s = String(s || "").replace(/[\s  ]|₸|KZT/g, ""); if (!s) return null; var neg = /^[-−]/.test(s); s = s.replace(/^[-+−]/, ""); if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, ""); else s = s.replace(",", "."); if (!/^\d+(\.\d+)?$/.test(s)) return null; var v = Math.round(Number(s)); return neg ? -v : v; }
+    function demoDay(s) { s = String(s || "").trim(); var x = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (x) return x[1] + "-" + x[2] + "-" + x[3]; x = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2,4})/); if (!x) return null; return (x[3].length === 2 ? "20" + x[3] : x[3]) + "-" + ("0" + x[2]).slice(-2) + "-" + ("0" + x[1]).slice(-2); }
+    function demoCells(l, sep) { var out = [], cur = "", q = false; for (var i = 0; i < l.length; i++) { var c = l[i]; if (q) { if (c === '"' && l[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; } else if (c === '"') q = true; else if (c === sep) { out.push(cur.trim()); cur = ""; } else cur += c; } out.push(cur.trim()); return out; }
+    function demoParseStatement(text, iban) {
+      var rows = [], skipped = 0;
+      if (text.indexOf("СекцияДокумент") >= 0) {
+        var own = (iban || (text.match(/РасчСчет=(\S+)/) || [])[1] || "").toUpperCase(), cur = null;
+        text.split(/\r?\n/).forEach(function (l) { l = l.trim(); if (l.indexOf("СекцияДокумент") === 0) { cur = {}; return; } if (l === "КонецДокумента") { if (cur) { var d = demoDay(cur["Дата"]), a = demoAmount(cur["Сумма"]), payer = (cur["ПлательщикИИК"] || cur["ПлательщикСчет"] || "").toUpperCase(), out = cur["ДатаСписано"] ? true : cur["ДатаПоступило"] ? false : payer === own; if (d && a) rows.push({ day: d, direction: out ? "out" : "in", amount_kzt: Math.abs(a), counterparty: (out ? cur["Получатель"] : cur["Плательщик"]) || null, description: cur["НазначениеПлатежа"] || null }); else skipped++; } cur = null; return; } var e = l.indexOf("="); if (cur && e > 0) cur[l.slice(0, e)] = l.slice(e + 1).trim(); });
+        return { format: "1c", rows: rows, skipped: skipped };
+      }
+      var lines = text.replace(/^﻿/, "").split(/\r?\n/).filter(function (l) { return l.trim(); }), hi = -1, sep = ";";
+      for (var i = 0; i < Math.min(lines.length, 40) && hi < 0; i++) { var s0 = [";", "\t", ","].sort(function (a, z) { return lines[i].split(z).length - lines[i].split(a).length; })[0], c0 = demoCells(lines[i], s0); if (c0.some(function (c) { return /^(дата|date|күні)/i.test(c); }) && c0.some(function (c) { return /(сумма|amount|приход|расход|дебет|кредит)/i.test(c); })) { hi = i; sep = s0; } }
+      if (hi < 0) return { format: "csv", rows: [], skipped: lines.length };
+      var h = demoCells(lines[hi], sep), f = function (re, not) { for (var k = 0; k < h.length; k++) if (re.test(h[k]) && (not || []).indexOf(k) < 0) return k; return -1; };
+      var iD = f(/^(дата|date|күні)/i), iA = f(/^(сумма|amount)/i), iIn = f(/(приход|поступ|кредит|credit)/i, [iD, iA]), iOut = f(/(расход|списан|дебет|debit)/i, [iD, iA, iIn]), iC = f(/(контрагент|получатель|отправитель|плательщик)/i, [iD, iA, iIn, iOut]);
+      var iP = h.map(function (_, k) { return k; }).filter(function (k) { return /(назначение|описание|детали|комментарий|операция)/i.test(h[k]) && [iD, iA, iIn, iOut, iC].indexOf(k) < 0; });
+      lines.slice(hi + 1).forEach(function (l) { var c = demoCells(l, sep), d = demoDay(c[iD]); if (!d) { skipped++; return; } var vi = iIn >= 0 ? demoAmount(c[iIn]) : null, vo = iOut >= 0 ? demoAmount(c[iOut]) : null, v = vi ? Math.abs(vi) : vo ? -Math.abs(vo) : iA >= 0 ? demoAmount(c[iA]) : null; if (!v) { skipped++; return; } rows.push({ day: d, direction: v < 0 ? "out" : "in", amount_kzt: Math.abs(v), counterparty: (iC >= 0 && c[iC]) || null, description: iP.map(function (k) { return c[k]; }).filter(Boolean).join(" · ") || null }); });
+      return { format: "csv", rows: rows, skipped: skipped };
+    }
+    function demoGuessCategory(r) {
+      var t = (r.description || "") + " " + (r.counterparty || "");
+      var rules = r.direction === "in" ? [[/займ|кредит/i, "loan_in"], [/учредител|собственн/i, "owner_in"], [/возврат|кэшбэк/i, "other_income"]]
+        : [[/аренд/i, "rent"], [/зарплат|жалақы/i, "payroll"], [/налог|угд|кгд|ипн|опв|осмс/i, "taxes"], [/реклам|таргет|instagram|2гис|2gis/i, "marketing"], [/коммунал|электр|интернет|связь|алсеко|beeline|kcell/i, "utilities"], [/погашен/i, "loan_out"], [/оборудован|мебел|техник/i, "capex"], [/товар|поставк|закуп|материал/i, "goods"]];
+      for (var i = 0; i < rules.length; i++) if (rules[i][0].test(t)) return rules[i][1];
+      return r.direction === "in" ? "sales" : "other";
+    }
     var BIZ = S.biz[0] || null;
     function bizSave() { S.biz = BIZ ? [BIZ] : []; return save("biz"); }
     function dshift(d, n) { return new Date(new Date(d + "T00:00:00Z").getTime() + n * 864e5).toISOString().slice(0, 10); }
@@ -3638,6 +3670,78 @@ var qrcode = function() {
       // Time clock, payroll and P&L (mirrors apps/api/src/payroll.ts).
       var monthOf = function (d) { return String(d).slice(0, 7); };
       var curMonth = new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 7);
+      // Accounts, cash flow (ДДС), statement import and balance (mirrors apps/api/src/money.ts).
+      if (sub.indexOf("/money/") === 0) {
+        var mDay = function (o) { return new Date(Date.now() + 5 * 3600000 - o * 864e5).toISOString().slice(0, 10); };
+        if (!BIZ.accounts) {
+          BIZ.accounts = [{ id: "acc-kaspi", name: "Kaspi Business", kind: "kaspi", iban: null, opening_balance_kzt: 1250000, archived: false }, { id: "acc-cash", name: "Касса", kind: "cash", iban: null, opening_balance_kzt: 180000, archived: false }, { id: "acc-halyk", name: "Halyk, расчётный счёт", kind: "bank", iban: "KZ126010131000123456", opening_balance_kzt: 2400000, archived: false }];
+          BIZ.ops = [
+            { id: "op1", account_id: "acc-kaspi", day: mDay(12), direction: "in", amount_kzt: 1850000, category: "sales", counterparty: "Kaspi QR", description: "Выручка за неделю" },
+            { id: "op2", account_id: "acc-halyk", day: mDay(11), direction: "out", amount_kzt: 450000, category: "rent", counterparty: "ИП Арендодатель", description: "Аренда за месяц" },
+            { id: "op3", account_id: "acc-halyk", day: mDay(9), direction: "in", amount_kzt: 3000000, category: "loan_in", counterparty: "Банк", description: "Кредит на развитие" },
+            { id: "op4", account_id: "acc-halyk", day: mDay(8), direction: "out", amount_kzt: 1200000, category: "capex", counterparty: "ТОО Оборудование", description: "Кофемашина" },
+            { id: "op5", account_id: "acc-kaspi", day: mDay(6), direction: "out", amount_kzt: 380000, category: "goods", counterparty: "ТОО Поставщик", description: "Зерно, молоко" },
+            { id: "op6", account_id: "acc-kaspi", to_account_id: "acc-cash", day: mDay(5), direction: "transfer", amount_kzt: 100000, category: "transfer", counterparty: null, description: "Размен в кассу" },
+            { id: "op7", account_id: "acc-halyk", day: mDay(3), direction: "out", amount_kzt: 96000, category: "taxes", counterparty: "УГД", description: "ИПН, ОПВ, СО" },
+            { id: "op8", account_id: "acc-kaspi", day: mDay(2), direction: "out", amount_kzt: 150000, category: "owner_out", counterparty: null, description: "На личные нужды" }];
+          BIZ.balanceItems = [{ id: "bi1", side: "asset", kind: "inventory", name: "Остатки товара на складе", amount_kzt: 640000 }, { id: "bi2", side: "liability", kind: "loan", name: "Кредит Halyk", amount_kzt: 2850000 }];
+        }
+        var accName = function (aid) { return (BIZ.accounts.filter(function (a) { return a.id === aid; })[0] || {}).name || ""; };
+        var balOf = function (a, before) { return a.opening_balance_kzt + BIZ.ops.reduce(function (q, o) { if (before && o.day >= before) return q; return q + (o.account_id === a.id ? (o.direction === "in" ? o.amount_kzt : -o.amount_kzt) : 0) + (o.to_account_id === a.id ? o.amount_kzt : 0); }, 0); };
+        var ACT = { sales: "operating", other_income: "operating", goods: "operating", payroll: "operating", rent: "operating", marketing: "operating", taxes: "operating", utilities: "operating", other: "operating", loan_in: "financing", loan_out: "financing", owner_in: "financing", owner_out: "financing", capex: "investing" };
+        var LINK_EXP = ["goods", "payroll", "rent", "marketing", "taxes", "utilities", "other"];
+        var linkOp = function (o) {
+          BIZ.sales = BIZ.sales.filter(function (x) { return x.id !== "ln-" + o.id; }); BIZ.expenses = BIZ.expenses.filter(function (x) { return x.id !== "ln-" + o.id; });
+          var note = [o.counterparty, o.description].filter(Boolean).join(" — ") || null, kind = (BIZ.accounts.filter(function (a) { return a.id === o.account_id; })[0] || {}).kind;
+          if (o.direction === "in" && o.category === "sales") BIZ.sales.push({ id: "ln-" + o.id, day: o.day, amount_kzt: o.amount_kzt, channel: { cash: "cash", kaspi: "kaspi", card: "card", bank: "transfer" }[kind] || "other", responsible_member_id: null, note: note });
+          if (o.direction === "out" && LINK_EXP.indexOf(o.category) >= 0) BIZ.expenses.push({ id: "ln-" + o.id, day: o.day, category: o.category, amount_kzt: o.amount_kzt, note: note });
+        };
+        if (sub === "/money/accounts" && m === "GET") return res(200, { items: BIZ.accounts.map(function (a) { return Object.assign({ balance_kzt: balOf(a), ops: 0 }, a); }) });
+        if (sub === "/money/accounts" && m === "POST") { BIZ.accounts.push({ id: id("acc"), name: b.name, kind: b.kind, iban: b.iban || null, opening_balance_kzt: b.opening_balance_kzt || 0, archived: false }); await bizSave(); return res(201, {}); }
+        if (sub === "/money/ops" && m === "GET") { var mo3 = url.searchParams.get("month") || curMonth; return res(200, { month: mo3, items: BIZ.ops.filter(function (o) { return monthOf(o.day) === mo3; }).sort(function (a, z) { return z.day.localeCompare(a.day); }).map(function (o) { return Object.assign({ account_name: accName(o.account_id), to_account_name: o.to_account_id ? accName(o.to_account_id) : null, source: "manual" }, o); }) }); }
+        if (sub === "/money/ops" && m === "POST") {
+          var cat0 = b.direction === "transfer" ? "transfer" : (b.category || (b.direction === "in" ? "sales" : "other"));
+          if (b.direction !== "transfer" && (b.direction === "in") !== (["sales", "other_income", "loan_in", "owner_in"].indexOf(cat0) >= 0)) return res(400, { error: "money_category_invalid" });
+          if (b.direction === "transfer" && (!b.to_account_id || b.to_account_id === b.account_id)) return res(400, { error: "money_transfer_account_invalid" });
+          var no = { id: id("op"), account_id: b.account_id, to_account_id: b.direction === "transfer" ? b.to_account_id : null, day: b.day, direction: b.direction, amount_kzt: b.amount_kzt, category: cat0, counterparty: b.counterparty || null, description: b.description || null };
+          BIZ.ops.push(no); linkOp(no); await bizSave(); return res(201, { id: no.id });
+        }
+        if ((mm = sub.match(/^\/money\/ops\/([\w-]+)$/))) {
+          var op0 = BIZ.ops.filter(function (o) { return o.id === mm[1]; })[0];
+          if (!op0) return res(404, { error: "money_op_not_found" });
+          if (m === "DELETE") { BIZ.ops = BIZ.ops.filter(function (o) { return o !== op0; }); BIZ.sales = BIZ.sales.filter(function (x) { return x.id !== "ln-" + op0.id; }); BIZ.expenses = BIZ.expenses.filter(function (x) { return x.id !== "ln-" + op0.id; }); await bizSave(); return new Response(null, { status: 204 }); }
+          if (b.category) op0.category = b.category; linkOp(op0); await bizSave(); return res(200, { ok: true });
+        }
+        if (sub === "/money/import/preview") {
+          var accI = BIZ.accounts.filter(function (a) { return a.id === b.account_id; })[0], rowsI = demoParseStatement(b.text, accI && accI.iban);
+          if (!rowsI.rows.length) return res(422, { error: "money_import_unrecognized" });
+          var seenI = {}, have = {}; BIZ.ops.forEach(function (o) { if (o.external_id) have[o.external_id] = 1; });
+          return res(200, { format: rowsI.format, skipped: rowsI.skipped, rows: rowsI.rows.map(function (r) {
+            var key = [b.account_id, r.day, r.direction, r.amount_kzt, r.counterparty, r.description].join("|"); seenI[key] = (seenI[key] || 0) + 1;
+            var ext = "imp:" + key + "#" + seenI[key];
+            var hist = BIZ.ops.filter(function (o) { return o.direction === r.direction && o.counterparty && r.counterparty && o.counterparty.toLowerCase() === r.counterparty.toLowerCase(); })[0];
+            return Object.assign({ category: hist ? hist.category : demoGuessCategory(r), external_id: ext, duplicate: !!have[ext] }, r); }) });
+        }
+        if (sub === "/money/import/commit") { var nI = 0; b.rows.forEach(function (r) { if (BIZ.ops.some(function (o) { return o.external_id === r.external_id; })) return; var o = Object.assign({ id: id("op"), account_id: b.account_id, to_account_id: null }, r); BIZ.ops.push(o); linkOp(o); nI++; }); await bizSave(); return res(201, { created: nI, skipped: b.rows.length - nI }); }
+        if (sub === "/money/dds") {
+          var mo4 = url.searchParams.get("month") || curMonth, start4 = mo4 + "-01";
+          var accs = BIZ.accounts.map(function (a) { var inM = BIZ.ops.filter(function (o) { return monthOf(o.day) === mo4; }); var inf = inM.reduce(function (q, o) { return q + (o.account_id === a.id && o.direction === "in" ? o.amount_kzt : 0) + (o.to_account_id === a.id ? o.amount_kzt : 0); }, 0); var outf = inM.reduce(function (q, o) { return q + (o.account_id === a.id && o.direction !== "in" ? o.amount_kzt : 0); }, 0); var op = balOf(a, start4); return { id: a.id, name: a.name, kind: a.kind, opening: op, inflow: inf, outflow: outf, closing: op + inf - outf }; });
+          var cats = {}, acts = { operating: 0, investing: 0, financing: 0 };
+          BIZ.ops.filter(function (o) { return monthOf(o.day) === mo4 && o.direction !== "transfer"; }).forEach(function (o) { cats[o.category] = cats[o.category] || { direction: o.direction, amount: 0 }; cats[o.category].amount += o.amount_kzt; acts[ACT[o.category]] += (o.direction === "in" ? 1 : -1) * o.amount_kzt; });
+          var list4 = Object.keys(cats).map(function (k) { return { category: k, direction: cats[k].direction, amount: cats[k].amount, activity: ACT[k] }; }).sort(function (a, z) { return z.amount - a.amount; });
+          var inflow4 = list4.filter(function (c) { return c.direction === "in"; }).reduce(function (q, c) { return q + c.amount; }, 0), outflow4 = list4.filter(function (c) { return c.direction === "out"; }).reduce(function (q, c) { return q + c.amount; }, 0);
+          return res(200, { month: mo4, accounts: accs, opening: accs.reduce(function (q, a) { return q + a.opening; }, 0), closing: accs.reduce(function (q, a) { return q + a.closing; }, 0), inflow: inflow4, outflow: outflow4, net: inflow4 - outflow4, categories: list4, activities: acts, daily: [] });
+        }
+        if (sub === "/money/balance") {
+          var accB = BIZ.accounts.filter(function (a) { return !a.archived; }).map(function (a) { return { id: a.id, name: a.name, kind: a.kind, balance: balOf(a) }; });
+          var cashB = accB.reduce(function (q, a) { return q + a.balance; }, 0), recv = 420000;
+          var assetsB = cashB + recv + BIZ.balanceItems.filter(function (i) { return i.side === "asset"; }).reduce(function (q, i) { return q + i.amount_kzt; }, 0), liabB = BIZ.balanceItems.filter(function (i) { return i.side === "liability"; }).reduce(function (q, i) { return q + i.amount_kzt; }, 0);
+          return res(200, { accounts: accB, cash: cashB, deals_receivable: recv, deals_payable: 0, items: BIZ.balanceItems, assets: assetsB, liabilities: liabB, equity: assetsB - liabB });
+        }
+        if (sub === "/money/balance-items" && m === "POST") { BIZ.balanceItems.push({ id: id("bi"), side: b.side, kind: b.kind, name: b.name, amount_kzt: b.amount_kzt }); await bizSave(); return res(201, {}); }
+        if ((mm = sub.match(/^\/money\/balance-items\/([\w-]+)$/)) && m === "DELETE") { BIZ.balanceItems = BIZ.balanceItems.filter(function (i) { return i.id !== mm[1]; }); await bizSave(); return new Response(null, { status: 204 }); }
+        return res(404, { error: "not_found" });
+      }
       BIZ.attendance = BIZ.attendance || (function () { var out = []; for (var k = 1; k <= 18; k++) { var dd = new Date(Date.now() - k * 864e5); if (dd.getDay() === 0) continue; var ds = new Date(dd.getTime() + 5 * 3600000).toISOString().slice(0, 10); ["bm-1", "bm-2"].forEach(function (mid, j) { var lt = (k % 5 === 0 && j === 1) ? 14 : 0; out.push({ id: "at" + k + j, member_id: mid, day: ds, check_in_at: ds + "T0" + (4 + j) + ":" + (lt ? "14" : "55") + ":00Z", check_out_at: ds + "T1" + (5 + j) + ":05:00Z", late_minutes: lt }); }); } return out; })();
       BIZ.adjustments = BIZ.adjustments || [];
       var bizPay = function (mo) {
@@ -4259,6 +4363,114 @@ var qrcode = function() {
     "install.android": "На Android откройте меню браузера (⋮) и выберите «Установить приложение» или «Добавить на главный экран».",
     "install.button": "Установить",
     "install.dismiss": "Скрыть",
+    "biz.tab.money": "Деньги · ДДС",
+    "biz.tab.balance": "Баланс",
+    "biz.tab.timesheet": "Табель",
+    "money.cat.sales": "Выручка от продаж",
+    "money.cat.other_income": "Прочие поступления",
+    "money.cat.loan_in": "Получен кредит / заём",
+    "money.cat.owner_in": "Взнос собственника",
+    "money.cat.goods": "Товары и материалы",
+    "money.cat.payroll": "Зарплата",
+    "money.cat.rent": "Аренда",
+    "money.cat.marketing": "Реклама и маркетинг",
+    "money.cat.taxes": "Налоги и взносы",
+    "money.cat.utilities": "Коммунальные и связь",
+    "money.cat.other": "Прочие расходы",
+    "money.cat.loan_out": "Погашение кредита",
+    "money.cat.owner_out": "Изъятие собственника",
+    "money.cat.capex": "Покупка оборудования",
+    "money.cat.transfer": "Перевод между счетами",
+    "money.kind.cash": "Касса (наличные)",
+    "money.kind.bank": "Расчётный счёт",
+    "money.kind.kaspi": "Kaspi",
+    "money.kind.card": "Карта",
+    "money.kind.other": "Другое",
+    "money.dir.in": "Поступление",
+    "money.dir.out": "Расход",
+    "money.dir.transfer": "Перевод между счетами",
+    "money.act.operating": "Операционная деятельность",
+    "money.act.investing": "Инвестиционная деятельность",
+    "money.act.financing": "Финансовая деятельность",
+    "money.startTitle": "Начните вести деньги",
+    "money.startText": "Добавьте кассу и счета (Kaspi, банк, карта) с текущими остатками. Потом вносите операции или загружайте выписку — ДДС, ОПИУ и баланс посчитаются сами.",
+    "money.addAccount": "Добавить счёт или кассу",
+    "money.accName": "Название",
+    "money.accKind": "Тип",
+    "money.iban": "IBAN (для импорта 1С)",
+    "money.opening": "Остаток на сегодня, ₸",
+    "money.accounts": "Счета и касса",
+    "money.accountsText": "Текущие остатки с учётом всех операций.",
+    "money.opTitle": "Новая операция",
+    "money.opText": "Выручка автоматически попадёт в продажи, расходы — в ОПИУ. Кредиты, взносы собственника и покупка оборудования видны только в ДДС и не искажают прибыль.",
+    "money.direction": "Что это",
+    "money.account": "Счёт",
+    "money.toAccount": "На счёт",
+    "money.category": "Статья",
+    "money.day": "Дата",
+    "money.amount": "Сумма, ₸",
+    "money.counterparty": "Контрагент",
+    "money.description": "Назначение",
+    "money.addOp": "Добавить операцию",
+    "money.importTitle": "Импорт банковской выписки",
+    "money.importText": "Выгрузите выписку из интернет-банка в формате для 1С (txt) или CSV. Excel-файл сохраните как «CSV (разделители — точка с запятой)». Статьи подберутся сами — проверьте и сохраните. Повторно загруженные операции пропускаются.",
+    "money.file": "Файл выписки",
+    "money.parse": "Разобрать выписку",
+    "money.previewInfo": "Найдено операций: {n}. Новых: {fresh}, уже загружено: {dup}, пропущено строк: {skipped}.",
+    "money.include": "Загрузить",
+    "money.duplicate": "уже есть",
+    "money.commit": "Сохранить операций: {n}",
+    "money.imported": "Загружено операций: {n}",
+    "money.xlsxHint": "Сохраните Excel-файл как CSV (Файл → Сохранить как → CSV) и загрузите его.",
+    "money.ddsTitle": "Отчёт о движении денег (ДДС)",
+    "money.ddsText": "Откуда пришли и куда ушли деньги за месяц — по видам деятельности и статьям.",
+    "money.netFlow": "Чистый денежный поток",
+    "money.openingK": "На начало",
+    "money.inflow": "Поступило",
+    "money.outflow": "Ушло",
+    "money.closing": "На конец",
+    "money.net": "поток {sum}",
+    "money.opsTitle": "Операции за месяц",
+    "money.opsText": "Статью можно поменять прямо в таблице — ОПИУ пересчитается.",
+    "money.noOps": "Операций пока нет.",
+    "money.delete": "Удалить",
+    "money.confirmDelete": "Удалить операцию? Связанная продажа или расход тоже удалятся.",
+    "money.deleted": "Удалено",
+    "money.saved": "Сохранено",
+    "bal.assets": "Активы",
+    "bal.liabilities": "Обязательства",
+    "bal.equity": "Собственный капитал",
+    "bal.assetsText": "Деньги на счетах считаются автоматически, долги резидентов по сделкам Friends — тоже. Товары, оборудование и прочее добавьте вручную.",
+    "bal.liabText": "Кредиты, долги поставщикам, налоги к уплате.",
+    "bal.assetsTotal": "Итого активы",
+    "bal.liabTotal": "Итого обязательства",
+    "bal.dealsReceivable": "Нам должны по сделкам Friends",
+    "bal.dealsPayable": "Мы должны по сделкам Friends",
+    "bal.kind": "Вид",
+    "bal.name": "Название",
+    "bal.add": "Добавить",
+    "bal.kind.inventory": "Товарные остатки",
+    "bal.kind.receivable": "Дебиторка (нам должны)",
+    "bal.kind.fixed_asset": "Оборудование, мебель, авто",
+    "bal.kind.prepaid": "Авансы выданные",
+    "bal.kind.loan": "Кредит / заём",
+    "bal.kind.payable": "Долг поставщикам",
+    "bal.kind.tax_payable": "Налоги к уплате",
+    "bal.kind.other": "Прочее",
+    "bal.note": "Управленческий баланс для собственника — не заменяет бухгалтерскую отчётность.",
+    "ts.title": "Табель учёта рабочего времени",
+    "ts.text": "Строится из отметок прихода и ухода сотрудников.",
+    "ts.shifts": "Смен",
+    "ts.late": "Опозд.",
+    "ts.legend": "✓ — вышел вовремя, ! — опоздал. Наведите на ячейку, чтобы увидеть время.",
+    "error.money_accounts_limit": "Не больше 30 счетов.",
+    "error.money_account_not_found": "Счёт не найден.",
+    "error.money_account_has_operations": "По счёту есть операции — его можно только скрыть.",
+    "error.money_category_invalid": "Эта статья не подходит для такой операции.",
+    "error.money_transfer_account_invalid": "Выберите другой счёт для перевода.",
+    "error.money_op_not_found": "Операция не найдена.",
+    "error.money_import_unrecognized": "Не удалось распознать выписку. Нужен CSV со столбцами «Дата» и «Сумма» (или «Приход/Расход») либо файл выгрузки для 1С.",
+    "error.balance_item_not_found": "Строка баланса не найдена.",
     "biz.tab.clock": "Приход",
     "biz.tab.payroll": "Зарплата",
     "biz.tab.pnl": "ОПИУ",
@@ -6023,6 +6235,114 @@ var qrcode = function() {
     "install.android": "Android-та браузер мәзірін (⋮) ашып, «Қосымшаны орнату» немесе «Басты экранға қосу» тармағын таңдаңыз.",
     "install.button": "Орнату",
     "install.dismiss": "Жасыру",
+    "biz.tab.money": "Ақша · АҚҚ",
+    "biz.tab.balance": "Баланс",
+    "biz.tab.timesheet": "Табель",
+    "money.cat.sales": "Сатудан түсім",
+    "money.cat.other_income": "Басқа түсімдер",
+    "money.cat.loan_in": "Несие / қарыз алынды",
+    "money.cat.owner_in": "Иесінің салымы",
+    "money.cat.goods": "Тауарлар мен материалдар",
+    "money.cat.payroll": "Жалақы",
+    "money.cat.rent": "Жалға алу",
+    "money.cat.marketing": "Жарнама және маркетинг",
+    "money.cat.taxes": "Салықтар мен жарналар",
+    "money.cat.utilities": "Коммуналдық және байланыс",
+    "money.cat.other": "Басқа шығыстар",
+    "money.cat.loan_out": "Несиені өтеу",
+    "money.cat.owner_out": "Иесінің алуы",
+    "money.cat.capex": "Жабдық сатып алу",
+    "money.cat.transfer": "Шоттар арасындағы аударым",
+    "money.kind.cash": "Касса (қолма-қол)",
+    "money.kind.bank": "Есеп айырысу шоты",
+    "money.kind.kaspi": "Kaspi",
+    "money.kind.card": "Карта",
+    "money.kind.other": "Басқа",
+    "money.dir.in": "Түсім",
+    "money.dir.out": "Шығыс",
+    "money.dir.transfer": "Шоттар арасындағы аударым",
+    "money.act.operating": "Операциялық қызмет",
+    "money.act.investing": "Инвестициялық қызмет",
+    "money.act.financing": "Қаржылық қызмет",
+    "money.startTitle": "Ақшаны есепке алуды бастаңыз",
+    "money.startText": "Кассаны және шоттарды (Kaspi, банк, карта) қазіргі қалдықтарымен қосыңыз. Содан кейін операцияларды енгізіңіз немесе үзінді көшірмені жүктеңіз — АҚҚ, ПШЕ және баланс өзі есептеледі.",
+    "money.addAccount": "Шот немесе касса қосу",
+    "money.accName": "Атауы",
+    "money.accKind": "Түрі",
+    "money.iban": "IBAN (1С импорты үшін)",
+    "money.opening": "Бүгінгі қалдық, ₸",
+    "money.accounts": "Шоттар мен касса",
+    "money.accountsText": "Барлық операцияларды ескергендегі қазіргі қалдықтар.",
+    "money.opTitle": "Жаңа операция",
+    "money.opText": "Түсім автоматты түрде сатылымдарға, шығыстар ПШЕ-ге түседі. Несиелер, иесінің салымдары және жабдық сатып алу тек АҚҚ-да көрінеді және пайданы бұрмаламайды.",
+    "money.direction": "Бұл не",
+    "money.account": "Шот",
+    "money.toAccount": "Шотқа",
+    "money.category": "Бап",
+    "money.day": "Күні",
+    "money.amount": "Сомасы, ₸",
+    "money.counterparty": "Контрагент",
+    "money.description": "Мақсаты",
+    "money.addOp": "Операция қосу",
+    "money.importTitle": "Банк үзінді көшірмесін импорттау",
+    "money.importText": "Интернет-банктен үзінді көшірмені 1С форматында (txt) немесе CSV түрінде жүктеңіз. Excel файлын «CSV (нүктелі үтір)» ретінде сақтаңыз. Баптар өзі таңдалады — тексеріп, сақтаңыз. Қайта жүктелген операциялар өткізіліп жіберіледі.",
+    "money.file": "Үзінді көшірме файлы",
+    "money.parse": "Үзінді көшірмені талдау",
+    "money.previewInfo": "Табылған операциялар: {n}. Жаңалары: {fresh}, бұрын жүктелген: {dup}, өткізілген жолдар: {skipped}.",
+    "money.include": "Жүктеу",
+    "money.duplicate": "бар",
+    "money.commit": "Операцияларды сақтау: {n}",
+    "money.imported": "Жүктелген операциялар: {n}",
+    "money.xlsxHint": "Excel файлын CSV ретінде сақтап (Файл → Басқаша сақтау → CSV), жүктеңіз.",
+    "money.ddsTitle": "Ақша қозғалысы туралы есеп (АҚҚ)",
+    "money.ddsText": "Ай ішінде ақша қайдан келіп, қайда кетті — қызмет түрлері мен баптар бойынша.",
+    "money.netFlow": "Таза ақша ағыны",
+    "money.openingK": "Басында",
+    "money.inflow": "Түсті",
+    "money.outflow": "Кетті",
+    "money.closing": "Соңында",
+    "money.net": "ағын {sum}",
+    "money.opsTitle": "Айдағы операциялар",
+    "money.opsText": "Бапты кестеде тікелей өзгертуге болады — ПШЕ қайта есептеледі.",
+    "money.noOps": "Әзірге операциялар жоқ.",
+    "money.delete": "Жою",
+    "money.confirmDelete": "Операцияны жою керек пе? Байланысты сатылым немесе шығыс та жойылады.",
+    "money.deleted": "Жойылды",
+    "money.saved": "Сақталды",
+    "bal.assets": "Активтер",
+    "bal.liabilities": "Міндеттемелер",
+    "bal.equity": "Меншікті капитал",
+    "bal.assetsText": "Шоттардағы ақша автоматты есептеледі, Friends мәмілелері бойынша резиденттердің қарыздары да. Тауарларды, жабдықты және басқаларын қолмен қосыңыз.",
+    "bal.liabText": "Несиелер, жеткізушілерге қарыздар, төленетін салықтар.",
+    "bal.assetsTotal": "Активтер жиыны",
+    "bal.liabTotal": "Міндеттемелер жиыны",
+    "bal.dealsReceivable": "Friends мәмілелері бойынша бізге қарыз",
+    "bal.dealsPayable": "Friends мәмілелері бойынша біздің қарыз",
+    "bal.kind": "Түрі",
+    "bal.name": "Атауы",
+    "bal.add": "Қосу",
+    "bal.kind.inventory": "Тауар қалдықтары",
+    "bal.kind.receivable": "Дебиторлық (бізге қарыз)",
+    "bal.kind.fixed_asset": "Жабдық, жиһаз, көлік",
+    "bal.kind.prepaid": "Берілген аванстар",
+    "bal.kind.loan": "Несие / қарыз",
+    "bal.kind.payable": "Жеткізушілерге қарыз",
+    "bal.kind.tax_payable": "Төленетін салықтар",
+    "bal.kind.other": "Басқа",
+    "bal.note": "Иесіне арналған басқарушылық баланс — бухгалтерлік есептілікті алмастырмайды.",
+    "ts.title": "Жұмыс уақытын есепке алу табелі",
+    "ts.text": "Қызметкерлердің келу-кету белгілерінен құрылады.",
+    "ts.shifts": "Ауысым",
+    "ts.late": "Кешігу",
+    "ts.legend": "✓ — уақытында келді, ! — кешікті. Уақытты көру үшін ұяшыққа апарыңыз.",
+    "error.money_accounts_limit": "30 шоттан аспайды.",
+    "error.money_account_not_found": "Шот табылмады.",
+    "error.money_account_has_operations": "Шот бойынша операциялар бар — оны тек жасыруға болады.",
+    "error.money_category_invalid": "Бұл бап мұндай операцияға сәйкес келмейді.",
+    "error.money_transfer_account_invalid": "Аударым үшін басқа шотты таңдаңыз.",
+    "error.money_op_not_found": "Операция табылмады.",
+    "error.money_import_unrecognized": "Үзінді көшірме танылмады. «Күні» және «Сомасы» (немесе «Кіріс/Шығыс») бағандары бар CSV немесе 1С-ге арналған файл қажет.",
+    "error.balance_item_not_found": "Баланс жолы табылмады.",
     "biz.tab.clock": "Келу",
     "biz.tab.payroll": "Жалақы",
     "biz.tab.pnl": "ПШЕ",
@@ -7787,6 +8107,114 @@ var qrcode = function() {
     "install.android": "On Android, open the browser menu (⋮) and choose “Install app” or “Add to Home screen”.",
     "install.button": "Install",
     "install.dismiss": "Hide",
+    "biz.tab.money": "Cash flow",
+    "biz.tab.balance": "Balance",
+    "biz.tab.timesheet": "Timesheet",
+    "money.cat.sales": "Sales revenue",
+    "money.cat.other_income": "Other income",
+    "money.cat.loan_in": "Loan received",
+    "money.cat.owner_in": "Owner contribution",
+    "money.cat.goods": "Goods and materials",
+    "money.cat.payroll": "Payroll",
+    "money.cat.rent": "Rent",
+    "money.cat.marketing": "Marketing",
+    "money.cat.taxes": "Taxes and contributions",
+    "money.cat.utilities": "Utilities and telecom",
+    "money.cat.other": "Other expenses",
+    "money.cat.loan_out": "Loan repayment",
+    "money.cat.owner_out": "Owner withdrawal",
+    "money.cat.capex": "Equipment purchase",
+    "money.cat.transfer": "Transfer between accounts",
+    "money.kind.cash": "Cash desk",
+    "money.kind.bank": "Bank account",
+    "money.kind.kaspi": "Kaspi",
+    "money.kind.card": "Card",
+    "money.kind.other": "Other",
+    "money.dir.in": "Inflow",
+    "money.dir.out": "Outflow",
+    "money.dir.transfer": "Transfer",
+    "money.act.operating": "Operating activities",
+    "money.act.investing": "Investing activities",
+    "money.act.financing": "Financing activities",
+    "money.startTitle": "Start tracking money",
+    "money.startText": "Add your cash desk and accounts (Kaspi, bank, card) with current balances. Then enter operations or upload a statement — cash flow, P&L and balance are calculated automatically.",
+    "money.addAccount": "Add an account or cash desk",
+    "money.accName": "Name",
+    "money.accKind": "Type",
+    "money.iban": "IBAN (for 1C import)",
+    "money.opening": "Balance today, ₸",
+    "money.accounts": "Accounts and cash",
+    "money.accountsText": "Current balances including all operations.",
+    "money.opTitle": "New operation",
+    "money.opText": "Revenue goes to sales and expenses to the P&L automatically. Loans, owner money and equipment purchases appear only in cash flow and don't distort profit.",
+    "money.direction": "Type",
+    "money.account": "Account",
+    "money.toAccount": "To account",
+    "money.category": "Category",
+    "money.day": "Date",
+    "money.amount": "Amount, ₸",
+    "money.counterparty": "Counterparty",
+    "money.description": "Description",
+    "money.addOp": "Add operation",
+    "money.importTitle": "Bank statement import",
+    "money.importText": "Export the statement from your online bank in 1C (txt) or CSV format. Save an Excel file as «CSV (semicolon delimited)». Categories are suggested automatically — review and save. Re-imported operations are skipped.",
+    "money.file": "Statement file",
+    "money.parse": "Read statement",
+    "money.previewInfo": "Operations found: {n}. New: {fresh}, already imported: {dup}, skipped lines: {skipped}.",
+    "money.include": "Import",
+    "money.duplicate": "exists",
+    "money.commit": "Save {n} operations",
+    "money.imported": "Imported operations: {n}",
+    "money.xlsxHint": "Save the Excel file as CSV (File → Save as → CSV) and upload it.",
+    "money.ddsTitle": "Cash flow statement",
+    "money.ddsText": "Where money came from and went this month — by activity and category.",
+    "money.netFlow": "Net cash flow",
+    "money.openingK": "Opening",
+    "money.inflow": "Inflow",
+    "money.outflow": "Outflow",
+    "money.closing": "Closing",
+    "money.net": "net {sum}",
+    "money.opsTitle": "Operations this month",
+    "money.opsText": "Change a category right in the table — the P&L updates.",
+    "money.noOps": "No operations yet.",
+    "money.delete": "Delete",
+    "money.confirmDelete": "Delete this operation? The linked sale or expense is removed too.",
+    "money.deleted": "Deleted",
+    "money.saved": "Saved",
+    "bal.assets": "Assets",
+    "bal.liabilities": "Liabilities",
+    "bal.equity": "Equity",
+    "bal.assetsText": "Money in accounts and receivables from Friends deals are calculated automatically. Add goods, equipment and the rest manually.",
+    "bal.liabText": "Loans, supplier debts, taxes payable.",
+    "bal.assetsTotal": "Total assets",
+    "bal.liabTotal": "Total liabilities",
+    "bal.dealsReceivable": "Owed to us in Friends deals",
+    "bal.dealsPayable": "We owe in Friends deals",
+    "bal.kind": "Kind",
+    "bal.name": "Name",
+    "bal.add": "Add",
+    "bal.kind.inventory": "Inventory",
+    "bal.kind.receivable": "Receivable",
+    "bal.kind.fixed_asset": "Equipment, furniture, vehicles",
+    "bal.kind.prepaid": "Prepayments made",
+    "bal.kind.loan": "Loan",
+    "bal.kind.payable": "Payable to suppliers",
+    "bal.kind.tax_payable": "Taxes payable",
+    "bal.kind.other": "Other",
+    "bal.note": "A management balance sheet for the owner — not a replacement for statutory accounts.",
+    "ts.title": "Timesheet",
+    "ts.text": "Built from employees' check-ins and check-outs.",
+    "ts.shifts": "Shifts",
+    "ts.late": "Late",
+    "ts.legend": "✓ — on time, ! — late. Hover a cell to see times.",
+    "error.money_accounts_limit": "No more than 30 accounts.",
+    "error.money_account_not_found": "Account not found.",
+    "error.money_account_has_operations": "The account has operations — it can only be archived.",
+    "error.money_category_invalid": "This category does not fit this operation.",
+    "error.money_transfer_account_invalid": "Choose a different account for the transfer.",
+    "error.money_op_not_found": "Operation not found.",
+    "error.money_import_unrecognized": "Could not read the statement. Use a CSV with «Date» and «Amount» (or debit/credit) columns, or a 1C export file.",
+    "error.balance_item_not_found": "Balance line not found.",
     "biz.tab.clock": "Time clock",
     "biz.tab.payroll": "Payroll",
     "biz.tab.pnl": "P&L",
@@ -10945,7 +11373,7 @@ var qrcode = function() {
     else bizWs = bizList.find(w => w.id === bizWs.id);
     const r = bizWs.role;
     const mgr = ["owner", "manager", "accountant"].includes(r);
-    const tabs = [["report", BIZ_CAN.money(r)], ["clock", true], ["sales", true], ["expenses", BIZ_CAN.expenses(r)], ["pnl", mgr], ["payroll", true], ["tasks", true], ["finance", BIZ_CAN.expenses(r)], ["team", true], ["feedback", true]].filter(x => x[1]).map(x => x[0]);
+    const tabs = [["report", BIZ_CAN.money(r)], ["clock", true], ["sales", true], ["expenses", BIZ_CAN.expenses(r)], ["money", mgr], ["pnl", mgr], ["balance", mgr], ["payroll", true], ["timesheet", mgr], ["tasks", true], ["finance", BIZ_CAN.expenses(r)], ["team", true], ["feedback", true]].filter(x => x[1]).map(x => x[0]);
     if (!tabs.includes(bizTab)) bizTab = tabs[0];
     const picker = bizList.length > 1 ? '<label class="field biz-picker"><span>' + esc(t("biz.workspace")) + '</span><select id="biz-ws">' + bizList.map(w => option(w.id, w.name, w.id === bizWs.id)).join("") + "</select></label>" : "";
     content.innerHTML = '<div class="biz-head"><div><p class="eyebrow">' + esc(I18N.label("bizRole", r)) + "</p><h2>" + esc(bizWs.name) + "</h2></div>" + picker + "</div>" +
@@ -10953,7 +11381,7 @@ var qrcode = function() {
     content.querySelectorAll("[data-biz-tab]").forEach(b => b.addEventListener("click", () => { bizTab = b.dataset.bizTab; business().catch(x => status(x.message, true)); }));
     const sel = document.querySelector("#biz-ws");
     if (sel) sel.addEventListener("change", () => { bizWs = bizList.find(w => w.id === sel.value); business().catch(x => status(x.message, true)); });
-    await ({ report: bizReport, clock: bizClock, sales: bizSales, expenses: bizExpenses, pnl: bizPnl, payroll: bizPayroll, tasks: bizTasks, finance: bizFinance, team: bizTeam, feedback: bizFeedback })[bizTab]();
+    await ({ report: bizReport, clock: bizClock, sales: bizSales, expenses: bizExpenses, money: bizMoney, pnl: bizPnl, balance: bizBalance, payroll: bizPayroll, timesheet: bizTimesheet, tasks: bizTasks, finance: bizFinance, team: bizTeam, feedback: bizFeedback })[bizTab]();
   }
   const bizBody = html => { document.querySelector("#biz-body").innerHTML = html; return document.querySelector("#biz-body"); };
 
@@ -11145,6 +11573,144 @@ var qrcode = function() {
         line(t("pnl.operating"), c.operating_profit, p.operating_profit, "strong") + line(t("pnl.taxes"), -c.taxes, -p.taxes) + line(t("pnl.net"), c.net_profit, p.net_profit, "total") + "</tbody></table></div>" +
         (c.payroll_estimated ? '<p class="muted">' + esc(t("pnl.estimated")) + "</p>" : "") + '<p class="muted">' + esc(t("pnl.howto")) + "</p>"));
     body.querySelector("#pnl-month").addEventListener("change", e => { bizPayMonth = e.target.value || null; bizPnl(); });
+  }
+
+  // ---------- Деньги: счета, ДДС, импорт выписки, баланс, табель ----------
+  const MONEY_IN = ["sales", "other_income", "loan_in", "owner_in"];
+  const MONEY_OUT = ["goods", "payroll", "rent", "marketing", "taxes", "utilities", "other", "loan_out", "owner_out", "capex"];
+  const MONEY_KINDS = ["cash", "bank", "kaspi", "card", "other"];
+  const catLabel = c => t("money.cat." + c);
+  const catOptions = (dir, sel) => (dir === "in" ? MONEY_IN : MONEY_OUT).map(c => option(c, catLabel(c), c === sel)).join("");
+  const signed = (dir, v) => (dir === "in" ? "+" : dir === "out" ? "−" : "") + money(v);
+  async function readStatement(file) {
+    const buf = await file.arrayBuffer();
+    try { return new TextDecoder("utf-8", { fatal: true }).decode(buf); } catch { return new TextDecoder("windows-1251").decode(buf); }
+  }
+
+  async function bizMoney() {
+    const month = bizPayMonth || bizMonth();
+    const [acc, dds, ops] = await Promise.all([api(bizBase() + "/money/accounts"), api(bizBase() + "/money/dds?month=" + month), api(bizBase() + "/money/ops?month=" + month)]);
+    const accounts = acc.items.filter(a => !a.archived);
+    const accOpts = sel => accounts.map(a => option(a.id, a.name, a.id === sel)).join("");
+    const accountsHtml = accounts.map(a => '<div class="list-row"><div><strong>' + esc(a.name) + "</strong><p>" + esc(t("money.kind." + a.kind)) + (a.iban ? " · " + esc(a.iban) : "") + '</p></div><strong class="num">' + esc(money(a.balance_kzt)) + "</strong></div>").join("");
+    const accountForm = '<details class="pay-setup"' + (accounts.length ? "" : " open") + "><summary>" + esc(t("money.addAccount")) + '</summary><form id="acc-form" class="app-form">' + field(t("money.accName"), "name", "", "text", 'required maxlength="80"') +
+      '<label class="field"><span>' + esc(t("money.accKind")) + '</span><select name="kind">' + MONEY_KINDS.map(k => option(k, t("money.kind." + k), k === "bank")).join("") + "</select></label>" +
+      field(t("money.iban"), "iban", "", "text", 'maxlength="20" pattern="[Kk][Zz][0-9A-Za-z]{18}" placeholder="KZ…"') + field(t("money.opening"), "opening_balance_kzt", "", "number", 'step="1"') + '<button class="outline-button">' + esc(t("biz.save")) + "</button></form></details>";
+    if (!accounts.length) {
+      const body = bizBody(panel(t("money.startTitle"), t("money.startText"), accountForm));
+      return bindAccountForm(body);
+    }
+    const opForm = '<form id="op-form" class="app-form">' +
+      '<label class="field"><span>' + esc(t("money.direction")) + '</span><select name="direction" id="op-dir">' + ["in", "out", "transfer"].map(d => option(d, t("money.dir." + d), d === "out")).join("") + "</select></label>" +
+      '<label class="field"><span>' + esc(t("money.account")) + '</span><select name="account_id">' + accOpts() + "</select></label>" +
+      '<label class="field" id="op-to" hidden><span>' + esc(t("money.toAccount")) + '</span><select name="to_account_id">' + accOpts(accounts[1]?.id) + "</select></label>" +
+      '<label class="field" id="op-cat"><span>' + esc(t("money.category")) + '</span><select name="category">' + catOptions("out", "other") + "</select></label>" +
+      field(t("money.day"), "day", almatyDay(), "date", "required") + field(t("money.amount"), "amount_kzt", "", "number", 'min="1" step="1" required') +
+      field(t("money.counterparty"), "counterparty", "", "text", 'maxlength="200"') + field(t("money.description"), "description", "", "text", 'maxlength="500"') +
+      '<button class="primary-button">' + esc(t("money.addOp")) + "</button></form>";
+    const importForm = '<form id="imp-form" class="app-form"><label class="field"><span>' + esc(t("money.account")) + '</span><select name="account_id">' + accOpts(accounts.find(a => a.kind !== "cash")?.id) + "</select></label>" +
+      '<label class="field"><span>' + esc(t("money.file")) + '</span><input type="file" name="file" accept=".csv,.txt,.tsv,text/csv,text/plain" required></label>' +
+      '<button class="outline-button">' + esc(t("money.parse")) + '</button></form><div id="imp-preview"></div>';
+    const act = dds.activities;
+    const catRows = ["operating", "investing", "financing"].map(a => {
+      const items = dds.categories.filter(c => c.activity === a);
+      return '<tr class="strong"><th>' + esc(t("money.act." + a)) + '</th><td class="num">' + esc(money(act[a])) + "</td></tr>" + items.map(c => "<tr><th>" + esc(catLabel(c.category)) + '</th><td class="num">' + esc(signed(c.direction, c.amount)) + "</td></tr>").join("");
+    }).join("");
+    const accRows = dds.accounts.map(a => "<tr><th>" + esc(a.name) + '</th><td class="num">' + esc(money(a.opening)) + '</td><td class="num">' + esc(money(a.inflow)) + '</td><td class="num">' + esc(money(a.outflow)) + '</td><td class="num">' + esc(money(a.closing)) + "</td></tr>").join("");
+    const opRows = ops.items.map(o => "<tr><td>" + esc(dayLabel(o.day)) + "</td><td>" + esc(o.account_name) + (o.to_account_name ? " → " + esc(o.to_account_name) : "") + "</td><td>" +
+      (o.direction === "transfer" ? esc(t("money.cat.transfer")) : '<select class="mini-select" data-op-cat="' + esc(o.id) + '" aria-label="' + esc(t("money.category")) + '">' + catOptions(o.direction, o.category) + "</select>") + "</td><td>" + esc([o.counterparty, o.description].filter(Boolean).join(" — ")) +
+      '</td><td class="num ' + (o.direction === "in" ? "good-text" : o.direction === "out" ? "warn-text" : "") + '">' + esc(signed(o.direction, o.amount_kzt)) + '</td><td><button type="button" class="link-button" data-op-del="' + esc(o.id) + '" aria-label="' + esc(t("money.delete")) + '">✕</button></td></tr>').join("");
+    const body = bizBody('<div class="biz-month"><label class="field"><span>' + esc(t("pay.month")) + '</span><input type="month" id="money-month" value="' + esc(month) + '"></label></div>' +
+      '<div class="kpi-grid">' + statTile(t("money.openingK"), money(dds.opening)) + statTile(t("money.inflow"), money(dds.inflow)) + statTile(t("money.outflow"), money(dds.outflow)) + statTile(t("money.closing"), money(dds.closing), t("money.net", { sum: money(dds.net) })) + "</div>" +
+      panel(t("money.accounts"), t("money.accountsText"), accountsHtml + accountForm) +
+      panel(t("money.opTitle"), t("money.opText"), opForm) +
+      panel(t("money.importTitle"), t("money.importText"), importForm) +
+      panel(t("money.ddsTitle"), t("money.ddsText"), '<div class="table-scroll"><table class="data-table pnl-table"><tbody>' + catRows + '<tr class="total"><th>' + esc(t("money.netFlow")) + '</th><td class="num">' + esc(money(dds.net)) + "</td></tr></tbody></table></div>" +
+        '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("money.account")) + '</th><th class="num">' + esc(t("money.openingK")) + '</th><th class="num">' + esc(t("money.inflow")) + '</th><th class="num">' + esc(t("money.outflow")) + '</th><th class="num">' + esc(t("money.closing")) + "</th></tr></thead><tbody>" + accRows + "</tbody></table></div>") +
+      panel(t("money.opsTitle"), t("money.opsText"), opRows ? '<div class="table-scroll"><table class="data-table ops-table"><thead><tr><th>' + esc(t("money.day")) + "</th><th>" + esc(t("money.account")) + "</th><th>" + esc(t("money.category")) + "</th><th>" + esc(t("money.counterparty")) + '</th><th class="num">' + esc(t("money.amount")) + "</th><th></th></tr></thead><tbody>" + opRows + "</tbody></table></div>" : '<p class="muted">' + esc(t("money.noOps")) + "</p>"));
+    bindAccountForm(body);
+    body.querySelector("#money-month").addEventListener("change", e => { bizPayMonth = e.target.value || null; bizMoney(); });
+    const dir = body.querySelector("#op-dir"), catSel = body.querySelector('#op-form [name="category"]');
+    dir.addEventListener("change", () => { body.querySelector("#op-to").hidden = dir.value !== "transfer"; body.querySelector("#op-cat").hidden = dir.value === "transfer"; if (dir.value !== "transfer") catSel.innerHTML = catOptions(dir.value, dir.value === "in" ? "sales" : "other"); });
+    body.querySelector("#op-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(e.currentTarget), d = String(v.get("direction"));
+      const payload = { account_id: String(v.get("account_id")), day: String(v.get("day")), direction: d, amount_kzt: Number(v.get("amount_kzt")), counterparty: String(v.get("counterparty") || "").trim() || null, description: String(v.get("description") || "").trim() || null };
+      if (d === "transfer") payload.to_account_id = String(v.get("to_account_id")); else payload.category = String(v.get("category"));
+      try { await api(bizBase() + "/money/ops", { method: "POST", body: JSON.stringify(payload) }); status(t("money.saved")); await bizMoney(); } catch (x) { status(x.message, true); }
+    });
+    body.querySelectorAll("[data-op-cat]").forEach(s => s.addEventListener("change", async () => { try { await api(bizBase() + "/money/ops/" + s.dataset.opCat, { method: "PATCH", body: JSON.stringify({ category: s.value }) }); status(t("money.saved")); await bizMoney(); } catch (x) { status(x.message, true); } }));
+    body.querySelectorAll("[data-op-del]").forEach(b => b.addEventListener("click", async () => { if (!confirm(t("money.confirmDelete"))) return; try { await api(bizBase() + "/money/ops/" + b.dataset.opDel, { method: "DELETE" }); status(t("money.deleted")); await bizMoney(); } catch (x) { status(x.message, true); } }));
+    body.querySelector("#imp-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(e.currentTarget), file = v.get("file"), accountId = String(v.get("account_id"));
+      if (!file || !file.size) return;
+      if (/\.xlsx?$/i.test(file.name)) return status(t("money.xlsxHint"), true);
+      let p;
+      try { p = await api(bizBase() + "/money/import/preview", { method: "POST", body: JSON.stringify({ account_id: accountId, text: await readStatement(file) }) }); } catch (x) { return status(x.message, true); }
+      const fresh = p.rows.filter(r => !r.duplicate).length;
+      const box = body.querySelector("#imp-preview");
+      box.innerHTML = '<p class="muted">' + esc(t("money.previewInfo", { n: p.rows.length, fresh, dup: p.rows.length - fresh, skipped: p.skipped })) + "</p>" +
+        '<div class="table-scroll"><table class="data-table ops-table"><thead><tr><th></th><th>' + esc(t("money.day")) + "</th><th>" + esc(t("money.counterparty")) + "</th><th>" + esc(t("money.category")) + '</th><th class="num">' + esc(t("money.amount")) + "</th></tr></thead><tbody>" +
+        p.rows.map((r, i) => '<tr class="' + (r.duplicate ? "muted" : "") + '"><td><input type="checkbox" data-imp-on="' + i + '"' + (r.duplicate ? " disabled" : " checked") + ' aria-label="' + esc(t("money.include")) + '"></td><td>' + esc(dayLabel(r.day)) + "</td><td>" + esc([r.counterparty, r.description].filter(Boolean).join(" — ")) + (r.duplicate ? ' <span class="pill">' + esc(t("money.duplicate")) + "</span>" : "") +
+          '</td><td><select class="mini-select" data-imp-cat="' + i + '" aria-label="' + esc(t("money.category")) + '">' + catOptions(r.direction, r.category) + '</select></td><td class="num ' + (r.direction === "in" ? "good-text" : "warn-text") + '">' + esc(signed(r.direction, r.amount_kzt)) + "</td></tr>").join("") +
+        '</tbody></table></div><button type="button" class="primary-button" id="imp-commit"' + (fresh ? "" : " disabled") + ">" + esc(t("money.commit", { n: fresh })) + "</button>";
+      box.querySelector("#imp-commit").addEventListener("click", async () => {
+        const rows = p.rows.map((r, i) => box.querySelector('[data-imp-on="' + i + '"]').checked ? { day: r.day, direction: r.direction, amount_kzt: r.amount_kzt, category: box.querySelector('[data-imp-cat="' + i + '"]').value, counterparty: r.counterparty, description: r.description, external_id: r.external_id } : null).filter(Boolean);
+        if (!rows.length) return;
+        try { const res = await api(bizBase() + "/money/import/commit", { method: "POST", body: JSON.stringify({ account_id: accountId, rows }) }); status(t("money.imported", { n: res.created })); await bizMoney(); } catch (x) { status(x.message, true); }
+      });
+    });
+  }
+  function bindAccountForm(body) {
+    body.querySelector("#acc-form")?.addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(e.currentTarget), iban = String(v.get("iban") || "").trim().toUpperCase();
+      try { await api(bizBase() + "/money/accounts", { method: "POST", body: JSON.stringify({ name: String(v.get("name")).trim(), kind: String(v.get("kind")), iban: iban || null, opening_balance_kzt: Math.round(Number(v.get("opening_balance_kzt") || 0)) }) }); status(t("money.saved")); await bizMoney(); } catch (x) { status(x.message, true); }
+    });
+  }
+
+  async function bizBalance() {
+    const d = await api(bizBase() + "/money/balance");
+    const KINDS = { asset: ["inventory", "receivable", "fixed_asset", "prepaid", "other"], liability: ["loan", "payable", "tax_payable", "other"] };
+    const line = (label, v, cls = "") => '<tr class="' + cls + '"><th>' + label + '</th><td class="num">' + esc(money(v)) + "</td></tr>";
+    const item = i => line(esc(i.name) + ' <small class="muted">' + esc(t("bal.kind." + i.kind)) + '</small> <button type="button" class="link-button" data-bal-del="' + esc(i.id) + '" aria-label="' + esc(t("money.delete")) + '">✕</button>', i.amount_kzt);
+    const assets = d.accounts.map(a => line(esc(a.name), a.balance)).join("") + (d.deals_receivable ? line(esc(t("bal.dealsReceivable")), d.deals_receivable) : "") + d.items.filter(i => i.side === "asset").map(item).join("");
+    const liab = (d.deals_payable ? line(esc(t("bal.dealsPayable")), d.deals_payable) : "") + d.items.filter(i => i.side === "liability").map(item).join("");
+    const form = side => '<form class="inline-form" data-bal-form="' + side + '"><label class="field"><span>' + esc(t("bal.kind")) + '</span><select name="kind">' + KINDS[side].map(k => option(k, t("bal.kind." + k), false)).join("") + "</select></label>" +
+      field(t("bal.name"), "name", "", "text", 'required maxlength="120"') + field(t("money.amount"), "amount_kzt", "", "number", 'min="0" step="1" required') + '<button class="outline-button">' + esc(t("bal.add")) + "</button></form>";
+    const body = bizBody('<div class="kpi-grid">' + statTile(t("bal.assets"), money(d.assets)) + statTile(t("bal.liabilities"), money(d.liabilities)) + statTile(t("bal.equity"), money(d.equity)) + "</div>" +
+      panel(t("bal.assets"), t("bal.assetsText"), '<div class="table-scroll"><table class="data-table pnl-table"><tbody>' + assets + line(esc(t("bal.assetsTotal")), d.assets, "total") + "</tbody></table></div>" + form("asset")) +
+      panel(t("bal.liabilities"), t("bal.liabText"), '<div class="table-scroll"><table class="data-table pnl-table"><tbody>' + liab + line(esc(t("bal.liabTotal")), d.liabilities, "total") + line(esc(t("bal.equity")), d.equity, "strong") + "</tbody></table></div>" + form("liability")) +
+      '<p class="muted">' + esc(t("bal.note")) + "</p>");
+    body.querySelectorAll("[data-bal-form]").forEach(f => f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(f);
+      try { await api(bizBase() + "/money/balance-items", { method: "POST", body: JSON.stringify({ side: f.dataset.balForm, kind: String(v.get("kind")), name: String(v.get("name")).trim(), amount_kzt: Math.round(Number(v.get("amount_kzt"))) }) }); status(t("money.saved")); await bizBalance(); } catch (x) { status(x.message, true); }
+    }));
+    body.querySelectorAll("[data-bal-del]").forEach(b => b.addEventListener("click", async () => { try { await api(bizBase() + "/money/balance-items/" + b.dataset.balDel, { method: "DELETE" }); await bizBalance(); } catch (x) { status(x.message, true); } }));
+  }
+
+  async function bizTimesheet() {
+    const month = bizPayMonth || bizMonth();
+    const [att, mem] = await Promise.all([api(bizBase() + "/attendance?month=" + month), bizMembers()]);
+    const [y, m] = month.split("-").map(Number), days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const people = mem.items.filter(p => p.status === "active");
+    const byKey = new Map(att.items.map(a => [a.member_id + "|" + a.day, a]));
+    const head = "<tr><th>" + esc(t("clock.who")) + "</th>" + Array.from({ length: days }, (_, i) => '<th class="ts-day">' + (i + 1) + "</th>").join("") + '<th class="num">' + esc(t("ts.shifts")) + '</th><th class="num">' + esc(t("ts.late")) + "</th></tr>";
+    const rows = people.map(p => {
+      let shifts = 0, late = 0;
+      const cells = Array.from({ length: days }, (_, i) => {
+        const a = byKey.get(p.id + "|" + month + "-" + String(i + 1).padStart(2, "0"));
+        if (!a) return '<td class="ts-cell"></td>';
+        shifts++; if (a.late_minutes) late++;
+        return '<td class="ts-cell ' + (a.late_minutes ? "ts-late" : "ts-ok") + '" title="' + esc(timeOf(a.check_in_at) + "–" + timeOf(a.check_out_at) + (a.late_minutes ? " · " + t("clock.late", { n: a.late_minutes }) : "")) + '">' + (a.late_minutes ? "!" : "✓") + "</td>";
+      }).join("");
+      return "<tr><th>" + esc(p.display_name) + "</th>" + cells + '<td class="num">' + shifts + '</td><td class="num">' + (late ? '<span class="warn-text">' + late + "</span>" : "0") + "</td></tr>";
+    }).join("");
+    const body = bizBody('<div class="biz-month"><label class="field"><span>' + esc(t("pay.month")) + '</span><input type="month" id="ts-month" value="' + esc(month) + '"></label></div>' +
+      panel(t("ts.title"), t("ts.text"), '<div class="table-scroll"><table class="data-table ts-table"><thead>' + head + "</thead><tbody>" + rows + "</tbody></table></div>" + '<p class="muted">' + esc(t("ts.legend")) + "</p>"));
+    body.querySelector("#ts-month").addEventListener("change", e => { bizPayMonth = e.target.value || null; bizTimesheet(); });
   }
 
   async function bizTeam() {

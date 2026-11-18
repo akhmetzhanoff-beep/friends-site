@@ -591,6 +591,42 @@ html[data-theme="dark"] .ref-dot.done{background:var(--btn-bg)}
 .ts-table th,.ts-table td{padding:4px 3px;font-size:.8rem}.ts-table th.ts-day{text-align:center;min-width:22px;font-weight:500}
 .ts-table tbody th{white-space:nowrap;text-align:left;position:sticky;left:0;background:var(--fb-card,#fff)}
 .ts-cell{text-align:center}.ts-ok{background:color-mix(in srgb,#2e9d57 18%,transparent)}.ts-late{background:color-mix(in srgb,#d4472f 22%,transparent);font-weight:700}
+/* Line icons */
+.ic{width:1.25em;height:1.25em;display:inline-block;vertical-align:-0.25em;flex:none}
+.ic-inline{width:1.1em;height:1.1em;vertical-align:-0.2em}
+.sidebar nav .nav-item span[data-ic] .ic{width:22px;height:22px}
+.sidebar nav .nav-qr .qr-ic .ic{width:26px;height:26px}
+.sidebar nav .nav-item[hidden]{display:none!important}
+.course-cover-icon .ic{width:44px;height:44px;color:#fff;stroke-width:1.6}
+.block-ic .ic,.stat-icon .ic,.nudge-icon .ic{width:26px;height:26px}
+.mood-btn .ic-mood{width:34px;height:34px;display:block;margin:0 auto 4px;stroke-width:1.5}
+.mood-btn:hover .ic-mood,.mood-btn:focus-visible .ic-mood{color:var(--fb-blue,#1468d8)}
+/* Topbar chat */
+.topbar-chat{position:relative;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;border:0;background:var(--fb-line,#e4e6eb);color:inherit;cursor:pointer}
+.topbar-chat .ic{width:20px;height:20px}
+.topbar-chat .nav-badge{position:absolute;top:0;right:-6px}
+/* Profile hub */
+.me-head{display:flex;gap:16px;align-items:center;padding:16px;border-radius:14px;background:var(--fb-card,#fff);margin-bottom:14px}
+.me-head h2{margin:0 0 2px;font-size:20px}.me-head p{margin:0 0 6px}
+.me-group{margin:0 0 14px}.me-group h3{margin:0 0 6px 4px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--fb-text-2,#65676b)}
+.me-list{background:var(--fb-card,#fff);border-radius:14px;overflow:hidden}
+.me-row{display:flex;align-items:center;gap:14px;width:100%;min-height:54px;padding:10px 14px;border:0;border-bottom:1px solid var(--fb-line,#e4e6eb);background:transparent;color:inherit;font:inherit;font-size:16px;text-align:left;cursor:pointer;text-decoration:none}
+.me-list .me-row:last-child{border-bottom:0}
+.me-row:hover{background:var(--fb-hover,#f2f2f2)}
+.me-ic{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--fb-blue-soft,#e7f3ff);color:var(--fb-blue,#1468d8)}
+.me-ic .ic{width:20px;height:20px}
+.me-row>span:nth-child(2){flex:1}
+.me-go{color:var(--fb-text-2,#65676b)}.me-go .ic{width:18px;height:18px}
+.mode-card{padding:14px 16px;border-radius:14px;background:var(--fb-card,#fff);margin-bottom:14px;border:1px dashed var(--fb-blue,#1468d8)}
+.mode-card p{margin:0 0 8px}
+.seg{display:inline-flex;border:1px solid var(--fb-line,#e4e6eb);border-radius:10px;overflow:hidden}
+.seg-btn{border:0;background:transparent;color:inherit;font:inherit;padding:8px 14px;cursor:pointer}
+.seg-btn.active{background:var(--fb-blue,#1468d8);color:#fff}
+/* Voice choice */
+.voice-list{display:grid;gap:4px}
+.voice-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--fb-bg,#f0f2f5)}
+.voice-row span{flex:1}
+@media (max-width:700px){body[data-mode="admin"] .sidebar nav .nav-more:not([hidden]){display:flex!important}}
 
 .pilot-banner{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
@@ -644,46 +680,46 @@ document.getElementById("dw-enter").addEventListener("click", function () {
       <a class="brand" href="#" data-view="overview" data-i18n-aria-label="brand.home"><span class="brand-mark" aria-hidden="true">f</span><span>friends<span class="brand-dot">.</span></span></a>
       <p class="nav-label" data-i18n="nav.label"></p>
       <nav data-i18n-aria-label="nav.aria">
-        <button class="nav-item active" data-view="overview" data-primary><span aria-hidden="true">⌂</span> <span data-i18n="nav.home"></span></button>
-        <button class="nav-item" data-view="business" data-primary><span aria-hidden="true">▤</span> <span data-i18n="nav.business"></span></button>
-        <button class="nav-item nav-qr" data-view="card" data-primary><span aria-hidden="true" class="qr-ic">▦</span> <span data-i18n="nav.qr"></span></button>
-        <button class="nav-item" data-view="messages" data-primary><span aria-hidden="true">💬</span> <span data-i18n="nav.messages"></span><span class="nav-badge" id="msg-badge" hidden></span></button>
-        <button class="nav-item" data-view="services" data-primary><span aria-hidden="true">⊞</span> <span data-i18n="nav.services"></span></button>
-        <button class="nav-item" data-view="events"><span aria-hidden="true">▦</span> <span data-i18n="nav.events"></span></button>
-        <button class="nav-item" data-view="learn"><span aria-hidden="true">▣</span> <span data-i18n="nav.learn"></span></button>
-        <button class="nav-item" data-view="tests"><span aria-hidden="true">🧠</span> <span data-i18n="nav.tests"></span></button>
-        <button class="nav-item" data-view="settings"><span aria-hidden="true">⚙️</span> <span data-i18n="nav.settings"></span></button>
-        <button class="nav-item" data-view="trust"><span aria-hidden="true">⭐</span> <span data-i18n="nav.trust"></span></button>
-        <button class="nav-item" data-view="deals"><span aria-hidden="true">🤝</span> <span data-i18n="nav.deals"></span></button>
-        <button class="nav-item" data-view="experts"><span aria-hidden="true">★</span> <span data-i18n="nav.experts"></span></button>
-        <button class="nav-item" data-view="discounts"><span aria-hidden="true">%</span> <span data-i18n="nav.discounts"></span></button>
-        <button class="nav-item" data-view="announcements"><span aria-hidden="true">✉</span> <span data-i18n="nav.announcements"></span></button>
-        <button class="nav-item" data-view="members"><span aria-hidden="true">◎</span> <span data-i18n="nav.members"></span></button>
-        <button class="nav-item" data-view="partner"><span aria-hidden="true">⌂</span> <span data-i18n="nav.partner"></span></button>
-        <button class="nav-item" data-view="checkin"><span aria-hidden="true">✍</span> <span data-i18n="nav.checkin"></span></button>
-        <button class="nav-item" data-view="polls"><span aria-hidden="true">?</span> <span data-i18n="nav.polls"></span></button>
-        <button class="nav-item" data-view="notifications"><span aria-hidden="true">♧</span> <span data-i18n="nav.notifications"></span></button>
-        <button class="nav-item" data-view="membership"><span aria-hidden="true">◇</span> <span data-i18n="nav.membership"></span></button>
-        <button class="nav-item" data-view="team"><span aria-hidden="true">☺</span> <span data-i18n="nav.team"></span></button>
-        <button class="nav-item" data-view="companies"><span aria-hidden="true">▤</span> <span data-i18n="nav.companies"></span></button>
-        <button class="nav-item" data-view="profile"><span aria-hidden="true">⚙</span> <span data-i18n="nav.profile"></span></button>
-      <button class="nav-item" data-view="admin-stats"><span aria-hidden="true">▤</span> <span data-i18n="nav.adminStats"></span></button>
-<button class="nav-item" data-view="admin-referrals"><span aria-hidden="true">☎</span> <span data-i18n="nav.adminReferrals"></span></button>
-<button class="nav-item" data-view="admin-deals"><span aria-hidden="true">🤝</span> <span data-i18n="nav.adminDeals"></span></button>
-<button class="nav-item" data-view="admin-trust"><span aria-hidden="true">⭐</span> <span data-i18n="nav.adminTrust"></span></button>
-<button class="nav-item" data-view="admin-chats"><span aria-hidden="true">💬</span> <span data-i18n="nav.adminChats"></span></button>
-<button class="nav-item" data-view="admin-pulse"><span aria-hidden="true">♥</span> <span data-i18n="nav.adminPulse"></span></button>
-<button class="nav-item" data-view="admin-polls"><span aria-hidden="true">?</span> <span data-i18n="nav.adminPolls"></span></button>
-<button class="nav-item" data-view="admin-learning-orders"><span aria-hidden="true">₸</span> <span data-i18n="nav.adminLearningOrders"></span></button>
-<button class="nav-item" data-view="admin-loans"><span aria-hidden="true">₸</span> <span data-i18n="nav.adminLoans"></span></button>
-<button class="nav-item" data-view="admin-feedback"><span aria-hidden="true">☺</span> <span data-i18n="nav.adminFeedback"></span></button>
-<button class="nav-item" data-view="admin-staff"><span aria-hidden="true">⚙</span> <span data-i18n="nav.adminStaff"></span></button>
-<button class="nav-item" data-view="events-admin"><span aria-hidden="true">✎</span> <span data-i18n="nav.eventsAdmin"></span></button>
-<button class="nav-item" data-view="admin"><span aria-hidden="true">✓</span> <span data-i18n="nav.admin"></span></button>
-<button class="nav-item" data-view="admin-experts"><span aria-hidden="true">★</span> <span data-i18n="nav.adminExperts"></span></button>
-<button class="nav-item" data-view="admin-announcements"><span aria-hidden="true">✉</span> <span data-i18n="nav.adminAnnouncements"></span></button>
-<button class="nav-item" data-view="admin-discounts"><span aria-hidden="true">%</span> <span data-i18n="nav.adminDiscounts"></span></button>
-<button class="nav-item" data-view="admin-learn"><span aria-hidden="true">▣</span> <span data-i18n="nav.adminLearn"></span></button>
+        <button class="nav-item active" data-view="overview" data-primary><span aria-hidden="true" data-ic="home"></span> <span data-i18n="nav.home"></span></button>
+        <button class="nav-item" data-view="business" data-primary><span aria-hidden="true" data-ic="business"></span> <span data-i18n="nav.business"></span></button>
+        <button class="nav-item nav-qr" data-view="card" data-primary><span aria-hidden="true" class="qr-ic" data-ic="qr"></span> <span data-i18n="nav.qr"></span></button>
+        <button class="nav-item" data-view="learn" data-primary><span aria-hidden="true" data-ic="learn"></span> <span data-i18n="nav.learn"></span></button>
+        <button class="nav-item" data-view="me" data-primary><span aria-hidden="true" data-ic="user"></span> <span data-i18n="nav.me"></span></button>
+        <button class="nav-item" data-view="messages"><span aria-hidden="true" data-ic="chat"></span> <span data-i18n="nav.messages"></span></button>
+        <button class="nav-item" data-view="events"><span aria-hidden="true" data-ic="calendar"></span> <span data-i18n="nav.events"></span></button>
+        <button class="nav-item" data-view="experts"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.experts"></span></button>
+        <button class="nav-item" data-view="members"><span aria-hidden="true" data-ic="users"></span> <span data-i18n="nav.members"></span></button>
+        <button class="nav-item" data-view="announcements"><span aria-hidden="true" data-ic="megaphone"></span> <span data-i18n="nav.announcements"></span></button>
+        <button class="nav-item" data-view="tests"><span aria-hidden="true" data-ic="test"></span> <span data-i18n="nav.tests"></span></button>
+        <button class="nav-item" data-view="deals"><span aria-hidden="true" data-ic="deal"></span> <span data-i18n="nav.deals"></span></button>
+        <button class="nav-item" data-view="companies"><span aria-hidden="true" data-ic="building"></span> <span data-i18n="nav.companies"></span></button>
+        <button class="nav-item" data-view="discounts"><span aria-hidden="true" data-ic="percent"></span> <span data-i18n="nav.discounts"></span></button>
+        <button class="nav-item" data-view="partner"><span aria-hidden="true" data-ic="tag"></span> <span data-i18n="nav.partner"></span></button>
+        <button class="nav-item" data-view="notifications"><span aria-hidden="true" data-ic="bell"></span> <span data-i18n="nav.notifications"></span></button>
+        <button class="nav-item" data-view="checkin"><span aria-hidden="true" data-ic="pen"></span> <span data-i18n="nav.checkin"></span></button>
+        <button class="nav-item" data-view="polls"><span aria-hidden="true" data-ic="help"></span> <span data-i18n="nav.polls"></span></button>
+        <button class="nav-item" data-view="profile"><span aria-hidden="true" data-ic="user"></span> <span data-i18n="nav.profile"></span></button>
+        <button class="nav-item" data-view="trust"><span aria-hidden="true" data-ic="shield"></span> <span data-i18n="nav.trust"></span></button>
+        <button class="nav-item" data-view="membership"><span aria-hidden="true" data-ic="card"></span> <span data-i18n="nav.membership"></span></button>
+        <button class="nav-item" data-view="team"><span aria-hidden="true" data-ic="users"></span> <span data-i18n="nav.team"></span></button>
+        <button class="nav-item" data-view="settings"><span aria-hidden="true" data-ic="gear"></span> <span data-i18n="nav.settings"></span></button>
+      <button class="nav-item" data-admin-item data-view="admin-stats"><span aria-hidden="true" data-ic="business"></span> <span data-i18n="nav.adminStats"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-referrals"><span aria-hidden="true" data-ic="phone"></span> <span data-i18n="nav.adminReferrals"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-deals"><span aria-hidden="true" data-ic="deal"></span> <span data-i18n="nav.adminDeals"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-trust"><span aria-hidden="true" data-ic="shield"></span> <span data-i18n="nav.adminTrust"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-chats"><span aria-hidden="true" data-ic="chat"></span> <span data-i18n="nav.adminChats"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-pulse"><span aria-hidden="true" data-ic="trend"></span> <span data-i18n="nav.adminPulse"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-polls"><span aria-hidden="true" data-ic="help"></span> <span data-i18n="nav.adminPolls"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-learning-orders"><span aria-hidden="true" data-ic="receipt"></span> <span data-i18n="nav.adminLearningOrders"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-loans"><span aria-hidden="true" data-ic="bank"></span> <span data-i18n="nav.adminLoans"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-feedback"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.adminFeedback"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-staff"><span aria-hidden="true" data-ic="gear"></span> <span data-i18n="nav.adminStaff"></span></button>
+<button class="nav-item" data-admin-item data-view="events-admin"><span aria-hidden="true" data-ic="calendar"></span> <span data-i18n="nav.eventsAdmin"></span></button>
+<button class="nav-item" data-admin-item data-view="admin"><span aria-hidden="true" data-ic="test"></span> <span data-i18n="nav.admin"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-experts"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.adminExperts"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-announcements"><span aria-hidden="true" data-ic="megaphone"></span> <span data-i18n="nav.adminAnnouncements"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-discounts"><span aria-hidden="true" data-ic="percent"></span> <span data-i18n="nav.adminDiscounts"></span></button>
+<button class="nav-item" data-admin-item data-view="admin-learn"><span aria-hidden="true" data-ic="learn"></span> <span data-i18n="nav.adminLearn"></span></button>
 </nav>
       <div class="sidebar-bottom"><div class="help-mark" aria-hidden="true">?</div><div><strong data-i18n="help.title"></strong><small data-i18n="help.text"></small></div></div>
     </aside>
@@ -4095,7 +4131,7 @@ var qrcode = function() {
     "nav.companies": "Мои компании",
     "nav.notifications": "Уведомления",
     "nav.admin": "Проверка чеков",
-    "nav.profile": "Профиль",
+    "nav.profile": "Мои данные",
     "help.title": "Нужна помощь?",
     "help.text": "Свяжитесь с командой Friends",
     "welcome.eyebrow": "БИЗНЕС-СООБЩЕСТВО",
@@ -4363,6 +4399,27 @@ var qrcode = function() {
     "install.android": "На Android откройте меню браузера (⋮) и выберите «Установить приложение» или «Добавить на главный экран».",
     "install.button": "Установить",
     "install.dismiss": "Скрыть",
+    "nav.me": "Профиль",
+    "view.me.title": "Профиль",
+    "view.me.subtitle": "Ваши данные, компания, подписка, сообщения и настройки.",
+    "me.groupAccount": "Аккаунт",
+    "me.groupCommunity": "Сообщество",
+    "me.groupApp": "Приложение",
+    "me.subUntil": "Подписка до {date}",
+    "mode.title": "Какое приложение показать",
+    "mode.text": "В демо можно посмотреть оба. Резиденты видят только своё приложение, админка — отдельное приложение для команды Friends.",
+    "mode.resident": "Резидент",
+    "mode.admin": "Администратор",
+    "voice.title": "Голос для «Слушать»",
+    "voice.text": "Выберите голос, которым приложение читает уроки и книги. Нажмите «Проверить», чтобы послушать.",
+    "voice.change": "Голос",
+    "voice.none": "На этом устройстве нет голосов для этого языка.",
+    "voice.male": "мужской",
+    "voice.female": "женский",
+    "voice.hq": "высокое качество",
+    "voice.try": "Проверить",
+    "voice.more": "Голоса берутся из телефона. Больше красивых голосов: iPhone — Настройки → Универсальный доступ → Устная речь → Голоса → Русский (скачайте «Милена» или «Юрий», улучшенное качество); Android — Настройки → Синтез речи → Google → установить голосовые данные.",
+    "voice.sample": "Здравствуйте! Так будут звучать уроки и книги в приложении Friends.",
     "biz.tab.money": "Деньги · ДДС",
     "biz.tab.balance": "Баланс",
     "biz.tab.timesheet": "Табель",
@@ -5967,7 +6024,7 @@ var qrcode = function() {
     "nav.companies": "Менің компанияларым",
     "nav.notifications": "Хабарламалар",
     "nav.admin": "Түбіртектерді тексеру",
-    "nav.profile": "Профиль",
+    "nav.profile": "Менің деректерім",
     "help.title": "Көмек керек пе?",
     "help.text": "Friends командасымен байланысыңыз",
     "welcome.eyebrow": "БИЗНЕС-ҚАУЫМДАСТЫҚ",
@@ -6235,6 +6292,27 @@ var qrcode = function() {
     "install.android": "Android-та браузер мәзірін (⋮) ашып, «Қосымшаны орнату» немесе «Басты экранға қосу» тармағын таңдаңыз.",
     "install.button": "Орнату",
     "install.dismiss": "Жасыру",
+    "nav.me": "Профиль",
+    "view.me.title": "Профиль",
+    "view.me.subtitle": "Деректеріңіз, компания, жазылым, хабарламалар және баптаулар.",
+    "me.groupAccount": "Аккаунт",
+    "me.groupCommunity": "Қауымдастық",
+    "me.groupApp": "Қосымша",
+    "me.subUntil": "Жазылым {date} дейін",
+    "mode.title": "Қай қосымшаны көрсету",
+    "mode.text": "Демода екеуін де көруге болады. Резиденттер тек өз қосымшасын көреді, әкімшілік — Friends командасына арналған бөлек қосымша.",
+    "mode.resident": "Резидент",
+    "mode.admin": "Әкімші",
+    "voice.title": "«Тыңдау» дауысы",
+    "voice.text": "Қосымша сабақтар мен кітаптарды оқитын дауысты таңдаңыз. Тыңдау үшін «Тексеру» басыңыз.",
+    "voice.change": "Дауыс",
+    "voice.none": "Бұл құрылғыда осы тілге дауыс жоқ.",
+    "voice.male": "ер",
+    "voice.female": "әйел",
+    "voice.hq": "жоғары сапа",
+    "voice.try": "Тексеру",
+    "voice.more": "Дауыстар телефоннан алынады. Көбірек әдемі дауыс: iPhone — Параметрлер → Арнайы мүмкіндіктер → Ауызша мазмұн → Дауыстар; Android — Параметрлер → Сөйлеу синтезі → Google → дауыс деректерін орнату.",
+    "voice.sample": "Сәлеметсіз бе! Friends қосымшасындағы сабақтар мен кітаптар осылай естіледі.",
     "biz.tab.money": "Ақша · АҚҚ",
     "biz.tab.balance": "Баланс",
     "biz.tab.timesheet": "Табель",
@@ -7839,7 +7917,7 @@ var qrcode = function() {
     "nav.companies": "My companies",
     "nav.notifications": "Notifications",
     "nav.admin": "Receipt review",
-    "nav.profile": "Profile",
+    "nav.profile": "My details",
     "help.title": "Need help?",
     "help.text": "Contact the Friends team",
     "welcome.eyebrow": "BUSINESS COMMUNITY",
@@ -8107,6 +8185,27 @@ var qrcode = function() {
     "install.android": "On Android, open the browser menu (⋮) and choose “Install app” or “Add to Home screen”.",
     "install.button": "Install",
     "install.dismiss": "Hide",
+    "nav.me": "Profile",
+    "view.me.title": "Profile",
+    "view.me.subtitle": "Your details, company, subscription, messages and settings.",
+    "me.groupAccount": "Account",
+    "me.groupCommunity": "Community",
+    "me.groupApp": "App",
+    "me.subUntil": "Subscription until {date}",
+    "mode.title": "Which app to show",
+    "mode.text": "The demo shows both. Residents see only their app; the admin panel is a separate app for the Friends team.",
+    "mode.resident": "Resident",
+    "mode.admin": "Admin",
+    "voice.title": "Voice for «Listen»",
+    "voice.text": "Choose the voice that reads lessons and books. Tap «Try» to listen.",
+    "voice.change": "Voice",
+    "voice.none": "This device has no voices for this language.",
+    "voice.male": "male",
+    "voice.female": "female",
+    "voice.hq": "high quality",
+    "voice.try": "Try",
+    "voice.more": "Voices come from your phone. For nicer voices: iPhone — Settings → Accessibility → Spoken Content → Voices (download an Enhanced voice); Android — Settings → Text-to-speech → Google → install voice data.",
+    "voice.sample": "Hello! This is how lessons and books will sound in the Friends app.",
     "biz.tab.money": "Cash flow",
     "biz.tab.balance": "Balance",
     "biz.tab.timesheet": "Timesheet",
@@ -9870,7 +9969,7 @@ var qrcode = function() {
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals"];
-  const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal"];
+  const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal"];
   let supabaseClient = null;
   function authClient() {
     if (!supabaseUrl || !supabaseKey) return Promise.reject(new Error(t("auth.notConfigured")));
@@ -9889,7 +9988,7 @@ var qrcode = function() {
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -9910,7 +10009,7 @@ var qrcode = function() {
   }
   const themeChoice = () => document.documentElement.dataset.theme === "light" ? "light" : document.documentElement.dataset.palette === "navy" ? "navy" : "dark";
   try { applyTheme(localStorage.getItem(THEME_KEY)); } catch { applyTheme("dark"); }
-  const themeButton = () => '<button type="button" class="theme-toggle" data-theme-toggle aria-label="' + esc(t(currentTheme() === "dark" ? "theme.toLight" : "theme.toDark")) + '" title="' + esc(t(currentTheme() === "dark" ? "theme.toLight" : "theme.toDark")) + '"><span aria-hidden="true">' + (currentTheme() === "dark" ? "☀" : "☾") + "</span></button>";
+  const themeButton = () => '<button type="button" class="theme-toggle" data-theme-toggle aria-label="' + esc(t(currentTheme() === "dark" ? "theme.toLight" : "theme.toDark")) + '" title="' + esc(t(currentTheme() === "dark" ? "theme.toLight" : "theme.toDark")) + '"><span aria-hidden="true">' + (currentTheme() === "dark" ? ic("sun") : ic("moon")) + "</span></button>";
   document.addEventListener("click", e => {
     const b = e.target.closest("[data-theme-toggle]");
     if (!b) return;
@@ -9921,6 +10020,61 @@ var qrcode = function() {
     document.querySelector("[data-theme-toggle]")?.focus();
   });
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Monochrome line icons (inherit the text colour) instead of colour emoji.
+  const ICON_PATHS = {
+    home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",
+    business: "M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-3",
+    qr: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2",
+    learn: "M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5M22 9v6",
+    user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6",
+    users: "M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.5c2.5.6 4 2.5 4 5.5",
+    chat: "M4 5h16v11H9l-5 4z",
+    bell: "M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4",
+    calendar: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
+    star: "M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z",
+    megaphone: "M3 10v4h4l8 4V6l-8 4zM18 9a4 4 0 0 1 0 6",
+    pin: "M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+    gift: "M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C10 5 6 5 6 7.5S9 9 12 9s6-.5 6-1.5S14 5 12 9",
+    lock: "M6 11h12v10H6zM8 11V8a4 4 0 0 1 8 0v3",
+    speaker: "M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12",
+    stop: "M7 7h10v10H7z",
+    deal: "M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1",
+    building: "M5 21V4h10v17M15 9h4v12M3 21h18M8 8h1M11 8h1M8 12h1M11 12h1M8 16h1M11 16h1",
+    bank: "M3 10l9-6 9 6zM5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18",
+    receipt: "M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6",
+    help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01",
+    test: "M8 3h8v3H8zM6 4.5H5V21h14V4.5h-1M9 14l2 2 4-4",
+    pen: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4",
+    tag: "M3 12V4h8l10 10-8 8zM7.5 8.5h.01",
+    gear: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1",
+    card: "M3 6h18v12H3zM7 10h5M7 14h8",
+    grid: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+    trend: "M3 17l6-6 4 4 8-8M15 7h6v6",
+    spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z",
+    coffee: "M4 9h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 11h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3",
+    sun: "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5",
+    moon: "M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z",
+    phone: "M7 2h10v20H7zM11 18h2",
+    cake: "M4 21h16M5 21v-7h14v7M5 16c2 1.5 4.5 1.5 7 0s5-1.5 7 0M12 14v-4M12 7.5v-.01",
+    wave: "M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM3 21c0-4 3-6 7-6M18 14v6M15 17h6",
+    scale: "M12 3v18M5 21h14M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z",
+    store: "M4 9l1.5-5h13L20 9M4 9h16v2a3 3 0 0 1-5.3 2 3 3 0 0 1-5.4 0A3 3 0 0 1 4 11zM5 13v8h14v-8",
+    book: "M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M19 19v2H6",
+    percent: "M19 5 5 19M7 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+    briefcase: "M4 7h16v12H4zM9 7V5h6v2M4 12h16",
+    shield: "M12 3l8 3v6c0 4.5-3.5 8-8 9-4.5-1-8-4.5-8-9V6z M9 12l2 2 4-4",
+    mail: "M3 6h18v12H3zM3 7l9 6 9-6",
+    logout: "M9 4H5v16h4M15 8l4 4-4 4M19 12H9",
+    chevron: "M9 6l6 6-6 6",
+    face1: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 10h.01M15 10h.01M8 16.5c2.5-2.5 5.5-2.5 8 0",
+    face2: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 10h.01M15 10h.01M9 16c2-1.3 4-1.3 6 0",
+    face3: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 10h.01M15 10h.01M9 15.5h6",
+    face4: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 10h.01M15 10h.01M9 14.5c2 1.5 4 1.5 6 0",
+    face5: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 10h.01M15 10h.01M8 14c2.5 3 5.5 3 8 0"
+  };
+  const ic = (name, cls) => '<svg class="ic' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="' + (ICON_PATHS[name] || ICON_PATHS.grid) + '"/></svg>';
+  const paintIcons = (root = document) => root.querySelectorAll("[data-ic]").forEach(el => { if (!el.firstElementChild) el.innerHTML = ic(el.dataset.ic); });
+  paintIcons();
   const safeUrl = v => { try { const u = new URL(String(v || ""), location.origin); return ["http:", "https:"].includes(u.protocol) ? u.href : ""; } catch { return ""; } };
   const date = v => I18N.formatDate(v);
   // Date without the time (subscriptions, badges).
@@ -10064,7 +10218,8 @@ var qrcode = function() {
   function authBar() {
     const el = document.querySelector(".topbar-right");
     if (!el) return;
-    el.innerHTML = themeButton() + I18N.switcherHtml() + (token()
+    const chatBtn = token() && APP !== "admin" && !(APP === "pilot" && pilotMode() === "admin") ? '<button type="button" class="icon-button topbar-chat" data-view="messages" aria-label="' + esc(t("nav.messages")) + '">' + ic("chat") + '<span class="nav-badge" id="msg-badge" hidden></span></button>' : "";
+    el.innerHTML = chatBtn + themeButton() + I18N.switcherHtml() + (token()
       ? '<span class="status-dot" aria-hidden="true"></span><span id="user-label">' + esc(user?.email || t("auth.signedInLabel")) + '</span><button class="outline-button" id="logout-button">' + esc(t("auth.logout")) + "</button>"
       : '<span>' + esc(t("auth.required")) + '</span><button class="primary-button" id="login-button">' + esc(t("auth.login")) + "</button>");
     document.querySelector("#login-button")?.addEventListener("click", login);
@@ -10083,7 +10238,7 @@ var qrcode = function() {
   const menuSheet = document.querySelector("#menu-sheet");
   function openMenu() {
     if (!menuSheet) return;
-    const items = [...document.querySelectorAll(".sidebar nav .nav-item:not([data-primary]):not(.nav-more)")];
+    const items = [...document.querySelectorAll(".sidebar nav .nav-item:not([data-primary]):not(.nav-more):not([hidden])")];
     menuSheet.innerHTML = '<div class="menu-sheet-head"><h2 id="menu-sheet-title">' + esc(t("nav.menuTitle")) + '</h2><button type="button" class="outline-button" data-close-menu>' + esc(t("common.close")) + "</button></div>";
     const list = document.createElement("div");
     list.className = "menu-sheet-list";
@@ -10098,6 +10253,7 @@ var qrcode = function() {
     lang.className = "menu-sheet-lang";
     lang.innerHTML = I18N.switcherHtml() + themeButton();
     menuSheet.appendChild(lang);
+    if (APP === "pilot") { const mode = document.createElement("div"); mode.className = "menu-sheet-lang"; mode.innerHTML = pilotModeCard(); menuSheet.appendChild(mode); wirePilotMode(); }
     if (typeof menuSheet.showModal === "function") menuSheet.showModal(); else menuSheet.setAttribute("open", "");
     I18N.applyStatic(menuSheet);
   }
@@ -10115,15 +10271,23 @@ var qrcode = function() {
     });
   }
   // Which bottom-bar block a screen belongs to, and the sub-sections shown as tabs inside a block.
-  const BLOCK_ICONS = { events: "📅", learn: "🎓", business: "📊", experts: "🤝", discounts: "%" };
-  const BLOCK_OF = { course: "learn", lesson: "learn", certificate: "learn", test: "learn", member: "experts", deal: "business", deals: "business", partner: "card", announcements: "experts", members: "experts", notifications: "messages", chat: "messages" };
-  const BLOCK_TABS = { learn: ["learn", "tests"], experts: ["experts", "announcements", "members"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+  const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
+  const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
+    course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", companies: "business", partner: "card", discounts: "card",
+    notifications: "messages", chat: "messages", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "tests"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
-  const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) || !isPrimary("services") ? b : "services"; };
+  const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
   function blockTabs() {
     const block = BLOCK_OF[active] || active;
     const tabs = BLOCK_TABS[block];
+    if (block === "me" && active !== "me" && content.firstChild) {
+      const back = document.createElement("button");
+      back.type = "button"; back.className = "text-button back-link"; back.dataset.view = "me"; back.textContent = "\u2190 " + t("nav.me");
+      content.insertBefore(back, content.firstChild);
+      return;
+    }
     if (!tabs || !content.firstChild) return;
     const row = document.createElement("div");
     row.className = "chip-tabs block-tabs";
@@ -10223,10 +10387,10 @@ var qrcode = function() {
     } catch { /* optional widget */ }
     const fbHtml = pulseHtml + fbPending.map(ev => '<div class="card-cta"><div><strong>' + esc(t("feedback.askTitle", { title: ev.title })) + "</strong><p>" + esc(t("feedback.askText")) + '</p></div><button type="button" class="primary-button" data-feedback-event="' + esc(ev.id) + '" data-title="' + esc(ev.title) + '">' + esc(t("feedback.rate")) + "</button></div>").join("");
     const bdayHtml = bdays.length ? '<section class="empty-panel birthday-panel" aria-labelledby="bday-title"><h2 id="bday-title">' + esc(t("birthdays.title")) + "</h2>" +
-      bdays.map(b => '<div class="list-row"><div class="member-avatar" aria-hidden="true">' + (b.is_today ? "🎂" : esc((b.display_name || "?").slice(0, 1))) + "</div><div><strong>" + esc(b.is_today ? t("birthdays.today", { name: b.display_name }) : b.display_name) + "</strong><p>" +
+      bdays.map(b => '<div class="list-row"><div class="member-avatar" aria-hidden="true">' + (b.is_today ? ic("cake") : esc((b.display_name || "?").slice(0, 1))) + "</div><div><strong>" + esc(b.is_today ? t("birthdays.today", { name: b.display_name }) : b.display_name) + "</strong><p>" +
         esc(b.is_today ? t("birthdays.wish") : t("birthdays.inDays", { date: pad2(b.day) + "." + pad2(b.month), days: b.in_days })) + "</p></div></div>").join("") + "</section>" : "";
     const newsHtml = news.length ? '<div class="section-heading"><div><h2>' + esc(t("announcements.newsTitle")) + '</h2></div><button class="text-button" data-view="announcements">' + esc(t("announcements.all")) + '</button></div><div class="empty-panel">' +
-      news.map(a => '<div class="list-row"><div><strong>' + (a.pinned ? "📌 " : "") + esc(a.title) + "</strong><p>" + esc(a.body) + "</p><small>" + esc(date(a.created_at)) + "</small></div></div>").join("") + "</div>" : "";
+      news.map(a => '<div class="list-row"><div><strong>' + (a.pinned ? ic("pin", "ic-inline") + " " : "") + esc(a.title) + "</strong><p>" + esc(a.body) + "</p><small>" + esc(date(a.created_at)) + "</small></div></div>").join("") + "</div>" : "";
     const due = (inv.items || []).find(i => i.status !== "paid");
     const recent = (n.items || []).map(x => '<div class="list-row"><div><strong>' + esc(x.title) + "</strong><p>" + esc(x.body) + "</p><small>" + esc(date(x.created_at)) + '</small></div><span class="pill">' + esc(x.read_at ? t("status.read") : t("status.new")) + "</span></div>").join("")
       || '<p class="muted">' + esc(t("notifications.empty")) + "</p>";
@@ -10234,7 +10398,7 @@ var qrcode = function() {
       '<div class="block-tiles">' + ["events", "learn", "business", "experts", "discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
       '<div class="stats-grid">' +
       '<article class="stat-card"><span class="stat-icon blue" aria-hidden="true">◎</span><p>' + esc(t("overview.profile")) + '</p><strong class="active-text">' + esc(p ? t("overview.profileDone") : t("overview.profileTodo")) + "</strong><small>" + esc(t("overview.profileHint")) + "</small></article>" +
-      '<article class="stat-card"><span class="stat-icon violet" aria-hidden="true">♧</span><p>' + esc(t("overview.notifications")) + "</p><strong>" + Number(n.unread_count || 0) + "</strong><small>" + esc(t("overview.unread")) + "</small></article>" +
+      '<article class="stat-card"><span class="stat-icon violet" aria-hidden="true">' + ic("bell") + '</span><p>' + esc(t("overview.notifications")) + "</p><strong>" + Number(n.unread_count || 0) + "</strong><small>" + esc(t("overview.unread")) + "</small></article>" +
       '<article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(due ? money(due.amount_kzt) : t("common.none")) + "</strong><small>" + esc(due ? due.invoice_number : t("overview.noUnpaid")) + "</small></article>" +
       "</div>" + fbHtml + bdayHtml + newsHtml + installCard() +
       '<div class="section-heading"><div><h2>' + esc(t("overview.hello", { name: p?.display_name || user?.email || t("overview.participant") })) + '</h2><p class="muted">' + esc(t("overview.helloText")) + '</p></div><button class="text-button" data-view="profile">' + esc(t("overview.myProfile")) + "</button></div>" +
@@ -10335,7 +10499,7 @@ var qrcode = function() {
         const d = await api("/v1/members?limit=50" + (q ? "&q=" + encodeURIComponent(q) : ""));
         target.innerHTML = d.items.length
           ? d.items.map(m => '<button type="button" class="member-result member-open" data-member="' + esc(m.user_id) + '"><div class="member-avatar" aria-hidden="true">' + esc((m.display_name || "?").slice(0, 1)) + '</div><div class="member-copy"><strong>' + esc(m.display_name) + "</strong><span>" + esc(m.headline || t("members.defaultHeadline")) + (m.city_name ? " · " + esc(m.city_name) : "") + "</span>" +
-              ((m.reviews_count || (m.badges || []).length) ? '<span class="member-trust">' + (m.reviews_count ? stars(m.rating) + " (" + m.reviews_count + ")" : "") + (m.badges || []).map(b => ' <span class="mini-badge" title="' + esc(t("trust.badge." + b)) + '">' + ({ tax_clear: "🧾", credit_history: "🏦", company: "🏢" }[b] || "✓") + '<span class="sr-only">' + esc(t("trust.badge." + b)) + "</span></span>").join("") + "</span>" : "") + "</div></button>").join("")
+              ((m.reviews_count || (m.badges || []).length) ? '<span class="member-trust">' + (m.reviews_count ? stars(m.rating) + " (" + m.reviews_count + ")" : "") + (m.badges || []).map(b => ' <span class="mini-badge" title="' + esc(t("trust.badge." + b)) + '">' + ({ tax_clear: ic("receipt", "ic-inline"), credit_history: ic("bank", "ic-inline"), company: ic("building", "ic-inline") }[b] || "✓") + '<span class="sr-only">' + esc(t("trust.badge." + b)) + "</span></span>").join("") + "</span>" : "") + "</div></button>").join("")
           : '<p class="muted">' + esc(t("members.empty")) + "</p>";
         target.querySelectorAll("[data-member]").forEach(b => b.addEventListener("click", () => { memberId = b.dataset.member; render("member"); }));
       } catch (e) {
@@ -10512,7 +10676,7 @@ var qrcode = function() {
     const need = d.rule.per_bonus, have = d.towards_next || 0;
     const dots = Array.from({ length: need }, (_, i) => '<span class="ref-dot' + (i < have ? " done" : "") + '" aria-hidden="true">' + (i < have ? "✓" : i + 1) + "</span>").join("");
     return '<section class="ref-progress" aria-label="' + esc(t("referral.progressLabel", { have, need })) + '"><div><strong>' + esc(t("referral.promo", { need, months: d.rule.months })) + "</strong><p>" + esc(t("referral.progress", { have, need })) + '</p></div><div class="ref-dots">' + dots + "</div></section>" +
-      (d.bonuses || []).map(b => '<p class="demo-note">🎁 ' + esc(b.status === "applied" ? t("referral.bonusApplied", { months: b.months, date: day(b.membership_until) }) : t("referral.bonusEarned", { months: b.months })) + "</p>").join("") +
+      (d.bonuses || []).map(b => '<p class="demo-note">' + ic("gift", "ic-inline") + ' ' + esc(b.status === "applied" ? t("referral.bonusApplied", { months: b.months, date: day(b.membership_until) }) : t("referral.bonusEarned", { months: b.months })) + "</p>").join("") +
       ((d.items || []).length ? '<ul class="ref-list">' + d.items.map(i => "<li><span>" + esc(i.name) + '</span><span class="pill">' + esc(I18N.label("referralStatus", i.status)) + "</span></li>").join("") + "</ul>" : "");
   }
   async function membershipWithInvite() {
@@ -10776,13 +10940,13 @@ var qrcode = function() {
   }
 
   // Course cover illustration: category colour, emoji and a pattern seeded by the slug (no image files needed).
-  const COVER = { sales: ["#1468d8", "#4fa3ff", "💼"], marketing: ["#c2306b", "#ff7aa8", "📣"], finance: ["#127a4a", "#3fd08a", "₸"], management: ["#6b3fd1", "#a98bff", "👥"],
-    growth: ["#b45a00", "#ffb04f", "🚀"], ai: ["#0b6c8a", "#3cd2f0", "🤖"], legal: ["#41506b", "#9fb0cf", "⚖️"], books: ["#3d2f8f", "#8c7ae6", "📚"], other: ["#7a4b14", "#e3a35b", "🏪"] };
+  const COVER = { sales: ["#1468d8", "#4fa3ff", "briefcase"], marketing: ["#c2306b", "#ff7aa8", "megaphone"], finance: ["#127a4a", "#3fd08a", "bank"], management: ["#6b3fd1", "#a98bff", "users"],
+    growth: ["#b45a00", "#ffb04f", "trend"], ai: ["#0b6c8a", "#3cd2f0", "spark"], legal: ["#41506b", "#9fb0cf", "scale"], books: ["#3d2f8f", "#8c7ae6", "book"], other: ["#7a4b14", "#e3a35b", "store"] };
   function courseCover(c) {
     const [a, b, icon] = COVER[c.category] || COVER.other;
     let h = 0; for (const ch of String(c.slug)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
     const shapes = Array.from({ length: 6 }, (_, k) => { const x = (h >> (k * 3)) % 300, y = (h >> (k * 2 + 1)) % 120, r = 14 + ((h >> k) % 40); return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" opacity="' + (0.06 + (k % 3) * 0.04).toFixed(2) + '"/>'; }).join("");
-    return '<div class="course-cover" aria-hidden="true"><svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g' + h + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="300" height="120" fill="url(#g' + h + ')"/>' + shapes + '</svg><span class="course-cover-icon">' + icon + "</span></div>";
+    return '<div class="course-cover" aria-hidden="true"><svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g' + h + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="300" height="120" fill="url(#g' + h + ')"/>' + shapes + '</svg><span class="course-cover-icon">' + ic(icon) + "</span></div>";
   }
   let learnFilter = "all", learnQuery = "";
   const testsTeaser = () => typeof RENDERERS !== "undefined" && RENDERERS.tests ? '<div class="card-cta tests-cta"><div><strong>' + esc(t("tests.teaserTitle")) + "</strong><p>" + esc(t("tests.teaserText")) + '</p></div><button type="button" class="primary-button" data-view="tests">' + esc(t("tests.open")) + "</button></div>" : "";
@@ -10838,7 +11002,8 @@ var qrcode = function() {
   function speak(text, lang, rate, onEnd) {
     stopSpeaking();
     const voices = speechSynthesis.getVoices();
-    const voice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(lang)) || null;
+    const saved = store.get("friends.voice");
+    const voice = voices.find(v => v.voiceURI === saved && v.lang && v.lang.toLowerCase().startsWith(lang)) || bestVoice(voices, lang);
     const parts = (text.match(/[^.!?…]+[.!?…]*/g) || [text]).reduce((acc, s) => { const last = acc[acc.length - 1]; if (last && (last + s).length < 220) acc[acc.length - 1] = last + s; else acc.push(s); return acc; }, []);
     parts.forEach((p, i) => {
       const u = new SpeechSynthesisUtterance(p.trim());
@@ -10849,15 +11014,23 @@ var qrcode = function() {
       speechSynthesis.speak(u);
     });
   }
+  // Device voices: known names tell male from female; better-quality voices first.
+  const MALE = /yuri|pavel|dmitr|maxim|aidar|daulet|daniel|alex\b|fred|tom\b|aaron|arthur|google uk english male|\bmale\b|\u043c\u0443\u0436\u0441\u043a/i;
+  const FEMALE = /milena|irina|svetlana|dariya|katya|alena|anna|elena|aigul|samantha|karen|moira|tessa|ava|allison|susan|zira|google \u0440\u0443\u0441\u0441\u043a\u0438\u0439|\bfemale\b|\u0436\u0435\u043d\u0441\u043a/i;
+  const voiceGender = v => MALE.test(v.name) ? "male" : FEMALE.test(v.name) ? "female" : "";
+  const voiceScore = v => (/premium|enhanced|natural|neural|online|\u0443\u043b\u0443\u0447\u0448/i.test(v.name) ? 2 : 0) + (v.localService === false ? 1 : 0);
+  const bestVoice = (voices, lang) => voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)).sort((a, b) => voiceScore(b) - voiceScore(a))[0] || null;
+  const loadVoices = () => new Promise(res => { const v = canSpeak() ? speechSynthesis.getVoices() : []; if (v.length || !canSpeak()) return res(v); const done = () => res(speechSynthesis.getVoices()); speechSynthesis.addEventListener("voiceschanged", done, { once: true }); setTimeout(done, 1500); });
   function listenBar(getText, lang) {
     if (!canSpeak()) return "";
-    return '<div class="listen-bar" role="group" aria-label="' + esc(t("listen.label")) + '"><button type="button" class="outline-button" id="listen-play" data-lang="' + lang + '"><span aria-hidden="true">🔊</span> ' + esc(t("listen.play")) + '</button><button type="button" class="chip" id="listen-rate" aria-label="' + esc(t("listen.rate")) + '">1×</button></div>';
+    return '<div class="listen-bar" role="group" aria-label="' + esc(t("listen.label")) + '"><button type="button" class="outline-button" id="listen-play" data-lang="' + lang + '">' + ic("speaker", "ic-inline") + ' ' + esc(t("listen.play")) + '</button><button type="button" class="chip" id="listen-rate" aria-label="' + esc(t("listen.rate")) + '">1×</button><button type="button" class="text-button" data-view="settings">' + esc(t("voice.change")) + "</button></div>";
   }
   function wireListen(getText) {
     const play = document.querySelector("#listen-play"), rateBtn = document.querySelector("#listen-rate");
     if (!play) return;
-    let playing = false, rate = 1;
-    const label = () => { play.innerHTML = '<span aria-hidden="true">' + (playing ? "⏹" : "🔊") + "</span> " + esc(t(playing ? "listen.stop" : "listen.play")); play.setAttribute("aria-pressed", String(playing)); };
+    let playing = false, rate = Number(store.get("friends.voiceRate")) || 1;
+    rateBtn.textContent = String(rate).replace(".", ",") + "\u00d7";
+    const label = () => { play.innerHTML = ic(playing ? "stop" : "speaker", "ic-inline") + " " + esc(t(playing ? "listen.stop" : "listen.play")); play.setAttribute("aria-pressed", String(playing)); };
     play.addEventListener("click", () => {
       if (playing) { stopSpeaking(); playing = false; label(); return; }
       playing = true; label();
@@ -10866,6 +11039,7 @@ var qrcode = function() {
     rateBtn.addEventListener("click", () => {
       rate = rate >= 1.5 ? 1 : Math.round((rate + 0.25) * 100) / 100;
       rateBtn.textContent = String(rate).replace(".", ",") + "×";
+      store.set("friends.voiceRate", String(rate));
       if (playing) { stopSpeaking(); speak(getText(), play.dataset.lang, rate, () => { playing = false; label(); }); }
     });
   }
@@ -11001,7 +11175,7 @@ var qrcode = function() {
   const ANN_CATS = ["services", "goods", "partnership", "jobs", "realty", "events", "other"];
   function annCard(a, mode) {
     const kindLabel = I18N.label("annKind", a.kind);
-    return '<article class="invoice-card ann-card' + (a.pinned ? " pinned" : "") + '"><div class="invoice-top"><div><span class="pill">' + esc(kindLabel) + '</span> <span class="pill">' + esc(I18N.label("annCategory", a.category)) + "</span><h3>" + (a.pinned ? "📌 " : "") + esc(a.title) +
+    return '<article class="invoice-card ann-card' + (a.pinned ? " pinned" : "") + '"><div class="invoice-top"><div><span class="pill">' + esc(kindLabel) + '</span> <span class="pill">' + esc(I18N.label("annCategory", a.category)) + "</span><h3>" + (a.pinned ? ic("pin", "ic-inline") + " " : "") + esc(a.title) +
       "</h3><small>" + esc(a.author_name || t("announcements.community")) + (mode === "admin" && a.author_email ? " · " + esc(a.author_email) : "") + " · " + esc(date(a.created_at)) + "</small></div></div><p class=\"ann-body\">" + esc(a.body) + "</p>" +
       (a.price_info ? '<p class="muted">' + esc(t("announcements.price")) + ": " + esc(a.price_info) + "</p>" : "") + (a.contact ? '<p class="muted">' + esc(t("announcements.contact")) + ": " + esc(a.contact) + "</p>" : "") +
       (mode === "mine" ? '<p class="expert-status ' + esc(a.status) + '">' + esc(I18N.label("annStatus", a.status)) + (a.review_note ? " — " + esc(a.review_note) : "") + '</p><div class="receipt-actions"><button class="outline-button" data-ann-archive="' + esc(a.id) + '">' + esc(t("announcements.remove")) + "</button></div>" : "") +
@@ -11319,7 +11493,7 @@ var qrcode = function() {
   const REF_STATUSES = ["new", "contacted", "joined", "paid", "declined"];
   async function adminReferrals() {
     const [d, bon] = await Promise.all([api("/v1/admin/referrals"), api("/v1/admin/referral-bonuses").catch(() => null)]);
-    const bonusPanel = bon ? panel(t("adminRef.bonusTitle"), t("adminRef.bonusText", { need: bon.rule.per_bonus, months: bon.rule.months }), bon.items.length ? bon.items.map(b => '<article class="invoice-card"><div class="invoice-top"><div><h3>🎁 ' + esc(b.member_name || "") + "</h3><small>" + esc(t("adminRef.brought", { names: (b.brought || []).join(", ") })) + '</small></div><span class="pill">' + esc(t("adminRef.bonus." + b.status)) + "</span></div>" +
+    const bonusPanel = bon ? panel(t("adminRef.bonusTitle"), t("adminRef.bonusText", { need: bon.rule.per_bonus, months: bon.rule.months }), bon.items.length ? bon.items.map(b => '<article class="invoice-card"><div class="invoice-top"><div><h3>' + ic("gift", "ic-inline") + ' ' + esc(b.member_name || "") + "</h3><small>" + esc(t("adminRef.brought", { names: (b.brought || []).join(", ") })) + '</small></div><span class="pill">' + esc(t("adminRef.bonus." + b.status)) + "</span></div>" +
       '<p class="muted">' + esc(b.status === "applied" ? t("adminRef.appliedUntil", { date: day(b.membership_until) }) : t("adminRef.currentUntil", { date: b.current_until ? day(b.current_until) : "—", months: b.months })) + "</p>" +
       (b.status === "earned" ? '<div class="receipt-actions"><button type="button" class="primary-button" data-bonus="' + esc(b.id) + '">' + esc(t("adminRef.apply", { months: b.months })) + "</button></div>" : "") + "</article>").join("") : '<p class="muted">' + esc(t("adminRef.noBonuses")) + "</p>") : "";
     content.innerHTML = bonusPanel + panel(t("adminRef.title"), t("adminRef.text"), d.items.length ? d.items.map(l => '<article class="invoice-card"><div class="invoice-top"><div><h3>' + esc(l.name) + '</h3><small><a href="tel:' + esc(l.phone) + '">' + esc(l.phone) + '</a> · <a href="https://wa.me/' + esc(l.phone.replace("+", "")) + '" target="_blank" rel="noopener noreferrer">WhatsApp</a></small></div><span class="pill">' + esc(I18N.label("referralStatus", l.status)) + "</span></div>" +
@@ -11851,7 +12025,7 @@ var qrcode = function() {
     }).join("");
     const draw = () => {
     const list = d.items.filter(catalogMatch);
-    const cards = list.map(c => '<article class="invoice-card course-card' + (c.locked ? " locked" : "") + '">' + courseCover(c) + '<div class="invoice-top"><div><span class="pill">' + esc(I18N.label("courseCategory", c.category)) + "</span>" + (c.is_free ? ' <span class="pill free-pill">' + esc(t("academy.free")) + "</span>" : "") + "<h3>" + (c.locked ? '<span aria-hidden="true">🔒 </span>' : "") + esc(c.title) + '</h3><small>' +
+    const cards = list.map(c => '<article class="invoice-card course-card' + (c.locked ? " locked" : "") + '">' + courseCover(c) + '<div class="invoice-top"><div><span class="pill">' + esc(I18N.label("courseCategory", c.category)) + "</span>" + (c.is_free ? ' <span class="pill free-pill">' + esc(t("academy.free")) + "</span>" : "") + "<h3>" + (c.locked ? ic("lock", "ic-inline") + " " : "") + esc(c.title) + '</h3><small>' +
       esc(t("learn.meta", { lessons: c.lesson_count, minutes: c.duration_min })) + "</small></div></div><p>" + esc(c.description || "") + "</p>" +
       (c.locked ? '<p class="muted">' + esc(t(c.track ? "academy.lockedTrack" : "academy.lockedMembers")) + "</p>" : progressBar(c.completed_count, c.lesson_count) + '<div class="receipt-actions"><button class="primary-button" data-course="' + esc(c.slug) + '">' + esc(t(c.completed_count ? "learn.continue" : "learn.start")) + "</button></div>") + "</article>").join("");
     content.innerHTML = offer + '<div class="card-cta"><div><strong>' + esc(t("academy.membersTitle")) + "</strong><p>" + esc(t("academy.membersText")) + '</p></div><button type="button" class="primary-button" data-view="membership">' + esc(t("academy.membersCta")) + "</button></div>" +
@@ -12103,32 +12277,73 @@ var qrcode = function() {
   }
 
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
-  const SERVICE_GROUPS = [
-    ["services.community", [["events", "📅"], ["experts", "⭐"], ["announcements", "📣"], ["members", "👥"], ["checkin", "✍️"], ["polls", "❓"]]],
-    ["services.learning", [["learn", "🎓"], ["tests", "🧠"], ["team", "🧑‍💼"]]],
-    ["services.business", [["business", "📊"], ["deals", "🤝"], ["companies", "🏢"], ["partner", "🏷️"]]],
-    ["services.discounts", [["discounts", "%"], ["card", "▦"]]],
-    ["services.account", [["settings", "⚙️"], ["trust", "⭐"], ["membership", "◇"], ["notifications", "🔔"], ["profile", "👤"]]]
+  // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
+  const ME_GROUPS = [
+    ["me.groupAccount", [["profile", "user"], ["companies", "building"], ["trust", "shield"], ["membership", "card"], ["team", "users"]]],
+    ["me.groupCommunity", [["messages", "chat"], ["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
+    ["me.groupApp", [["settings", "gear"]]]
   ];
-  async function services() {
-    const grouped = new Set(SERVICE_GROUPS.flatMap(g => g[1].map(x => x[0])));
-    const extra = [...document.querySelectorAll(".sidebar nav .nav-item[data-view]:not([data-primary]), .sidebar nav a[data-crm-link]")]
-      .filter(el => !grouped.has(el.dataset.view));
-    const tile = (view, icon) => '<button type="button" class="svc-tile" data-view="' + view + '"><span class="svc-ic" aria-hidden="true">' + icon + "</span><span>" + esc(t("nav." + view)) + "</span></button>";
-    content.innerHTML = SERVICE_GROUPS.map(([title, list]) => '<section class="svc-group"><h2>' + esc(t(title)) + '</h2><div class="svc-grid">' + list.map(([v, i]) => tile(v, i)).join("") + "</div></section>").join("") +
-      (extra.length ? '<section class="svc-group"><h2>' + esc(t("services.more")) + '</h2><div class="svc-grid" id="svc-extra"></div></section>' : "") +
-      "";
-    const box = document.querySelector("#svc-extra");
+  async function me() {
+    const mem = await api("/v1/me/membership").catch(() => ({ membership: null }));
+    const m = mem.membership;
+    const listed = new Set(ME_GROUPS.flatMap(g => g[1].map(x => x[0])).concat(["overview", "business", "card", "learn", "me", "services", "events", "experts", "members", "announcements", "tests", "deals", "discounts", "partner"]));
+    const extra = [...document.querySelectorAll(".sidebar nav .nav-item[data-view]:not([hidden]), .sidebar nav a[data-crm-link]")].filter(el => !listed.has(el.dataset.view) && !(APP === "pilot" && el.hasAttribute("data-admin-item")));
+    const row = (view, icon) => '<button type="button" class="me-row" data-view="' + view + '"><span class="me-ic">' + ic(icon) + "</span><span>" + esc(t("nav." + view)) + '</span><span class="me-go">' + ic("chevron") + "</span></button>";
+    const name = profile?.display_name || user?.email || "";
+    const sub = !m ? t("settings.subNone") : m.active ? (m.ends_at ? t("me.subUntil", { date: day(m.ends_at) }) : t("settings.subActive")) : t("settings.subExpired", { date: m.ends_at ? day(m.ends_at) : "—" });
+    content.innerHTML = '<section class="me-head"><div class="member-avatar big" aria-hidden="true">' + esc((name || "?").slice(0, 1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p class="muted">' + esc(user?.email || "") + '</p><span class="pill">' + esc(sub) + "</span></div></section>" +
+      (APP === "pilot" ? pilotModeCard() : "") +
+      ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i]) => row(v, i)).join("") + "</div></section>").join("") +
+      (extra.length ? '<section class="me-group"><h3>' + esc(t("services.more")) + '</h3><div class="me-list" id="me-extra"></div></section>' : "") +
+      '<div class="receipt-actions"><button type="button" class="outline-button" id="me-logout">' + ic("logout", "ic-inline") + " " + esc(t("auth.logout")) + "</button></div>";
+    const box = document.querySelector("#me-extra");
     extra.forEach(el => {
       const c2 = el.cloneNode(true);
-      c2.className = "svc-tile";
+      c2.className = "me-row";
       c2.removeAttribute("data-primary");
-      const ic = c2.querySelector("span[aria-hidden]");
-      if (ic) ic.className = "svc-ic";
+      const icn = c2.querySelector("span[aria-hidden]");
+      if (icn) icn.className = "me-ic";
       box.appendChild(c2);
     });
     I18N.applyStatic(content);
+    document.querySelector("#me-logout").addEventListener("click", logout);
+    wirePilotMode();
   }
+  const services = me;
+
+  // ---------- Demo / pilot: switch between the resident app and the admin app ----------
+  const pilotMode = () => store.get("friends.pilotMode") === "admin" ? "admin" : "resident";
+  function pilotModeCard() {
+    return '<section class="mode-card"><p class="eyebrow">' + esc(t("mode.title")) + '</p><p class="muted">' + esc(t("mode.text")) + '</p><div class="seg" role="group" aria-label="' + esc(t("mode.title")) + '">' +
+      ["resident", "admin"].map(x => '<button type="button" class="seg-btn' + (pilotMode() === x ? " active" : "") + '" data-pilot-mode="' + x + '" aria-pressed="' + (pilotMode() === x) + '">' + esc(t("mode." + x)) + "</button>").join("") + "</div></section>";
+  }
+  function wirePilotMode() {
+    document.querySelectorAll("[data-pilot-mode]").forEach(b => b.addEventListener("click", () => { closeMenu(); store.set("friends.pilotMode", b.dataset.pilotMode); applyPilotMode(); render(b.dataset.pilotMode === "admin" ? "admin-stats" : "me"); }));
+  }
+  const ADMIN_PRIMARY = ["admin-stats", "admin-referrals", "admin", "events-admin"];
+  function applyPilotMode() {
+    if (APP !== "pilot") return;
+    const admin = pilotMode() === "admin";
+    document.body.dataset.mode = pilotMode();
+    const nav = document.querySelector(".sidebar nav");
+    if (!nav) return;
+    nav.querySelectorAll(".nav-item[data-view]").forEach(b => {
+      const isAdmin = b.hasAttribute("data-admin-item") || ADMIN_VIEWS.includes(b.dataset.view);
+      b.hidden = admin ? !isAdmin : isAdmin;
+      if (!b.dataset.primaryHome) b.dataset.primaryHome = b.hasAttribute("data-primary") ? "1" : "0";
+      const primary = admin ? ADMIN_PRIMARY.includes(b.dataset.view) : b.dataset.primaryHome === "1";
+      if (primary) b.setAttribute("data-primary", ""); else b.removeAttribute("data-primary");
+    });
+    let more = nav.querySelector(".nav-more");
+    if (admin && !more) {
+      more = document.createElement("button");
+      more.type = "button"; more.className = "nav-item nav-more";
+      more.innerHTML = '<span aria-hidden="true">' + ic("grid") + '</span> <span>' + esc(t("nav.more")) + "</span>";
+      nav.appendChild(more);
+    }
+    if (more) more.hidden = !admin;
+  }
+  applyPilotMode();
 
   // ---------- Сообщения: group chats by direction + notifications ----------
   let chatRoom = null, chatTimer = null, chatLastId = null;
@@ -12343,7 +12558,7 @@ var qrcode = function() {
 
   // ---------- Карточка дня: one helpful pop-up a day ----------
   let nudgeChecked = false;
-  const MOODS = ["😞", "😕", "😐", "🙂", "😄"];
+  const MOODS = ["face1", "face2", "face3", "face4", "face5"];
   const NUDGE_GO = { event_soon: "events", missed_events: "events", poll_open: "polls", crm_sales: "business", jobs_new: "announcements", course_continue: "course", test_try: "test",
     crm_start: "business", crm_team: "business", learn_start: "learn", ai_try: "learn", chats_join: "messages", discounts_try: "discounts", whatsapp_connect: "profile" };
   async function maybeNudge() {
@@ -12358,14 +12573,14 @@ var qrcode = function() {
     if (!n || active !== "overview") return;
     const d = n.data || {};
     const when = d.starts_at ? date(d.starts_at) : "";
-    const icon = { event_soon: "📅", missed_events: "👋", poll_open: "❓", crm_sales: "📊", course_continue: "🎓", test_try: "🧠", jobs_new: "💼", mood: d.winter ? "☕" : "🌤", crm_start: "📈", crm_team: "👥", learn_start: "🎓", ai_try: "🤖", chats_join: "💬", discounts_try: "%", whatsapp_connect: "📲" }[n.kind];
+    const icon = ic({ event_soon: "calendar", missed_events: "wave", poll_open: "help", crm_sales: "business", course_continue: "learn", test_try: "test", jobs_new: "briefcase", mood: d.winter ? "coffee" : "sun", crm_start: "trend", crm_team: "users", learn_start: "learn", ai_try: "spark", chats_join: "chat", discounts_try: "percent", whatsapp_connect: "phone" }[n.kind]);
     const title = t("nudge." + n.kind + ".title" + (n.kind === "mood" && d.winter ? "Winter" : ""), { title: d.title || "", when, name: d.name || "", count: d.count || 0 });
     const text = t("nudge." + n.kind + ".text" + (n.kind === "mood" && d.winter ? "Winter" : ""), { title: d.title || d.question || "", when, name: d.name || "", count: d.count || 0, done: d.done || 0, total: d.total || 0 });
     const dlg = document.createElement("dialog");
     dlg.className = "nudge-dialog";
     dlg.setAttribute("aria-labelledby", "nudge-title");
     dlg.innerHTML = '<div class="nudge-icon" aria-hidden="true">' + icon + '</div><p class="eyebrow">' + esc(t("nudge.eyebrow")) + '</p><h2 id="nudge-title">' + esc(title) + "</h2><p>" + esc(text) + "</p>" +
-      (n.kind === "mood" ? '<div class="mood-row" role="group" aria-label="' + esc(t("nudge.moodLabel")) + '">' + MOODS.map((e, i) => '<button type="button" class="mood-btn" data-mood="' + (i + 1) + '" aria-label="' + esc(t("nudge.mood" + (i + 1))) + '"><span aria-hidden="true">' + e + "</span><small>" + esc(t("nudge.mood" + (i + 1))) + "</small></button>").join("") + '</div><div id="mood-reply" aria-live="polite"></div>'
+      (n.kind === "mood" ? '<div class="mood-row" role="group" aria-label="' + esc(t("nudge.moodLabel")) + '">' + MOODS.map((e, i) => '<button type="button" class="mood-btn" data-mood="' + (i + 1) + '" aria-label="' + esc(t("nudge.mood" + (i + 1))) + '">' + ic(e, "ic-mood") + "<small>" + esc(t("nudge.mood" + (i + 1))) + "</small></button>").join("") + '</div><div id="mood-reply" aria-live="polite"></div>'
         : '<div class="nudge-actions"><button type="button" class="primary-button" id="nudge-go">' + esc(t("nudge." + n.kind + ".cta")) + "</button></div>") +
       '<div class="nudge-foot"><button type="button" class="text-button" id="nudge-later">' + esc(t("nudge.later")) + '</button><button type="button" class="text-button" id="nudge-off">' + esc(t("nudge.off")) + "</button></div>";
     document.body.appendChild(dlg);
@@ -12416,11 +12631,13 @@ var qrcode = function() {
       panel(t("settings.language"), t("settings.languageText"), I18N.switcherHtml()) +
       panel(t("settings.look"), t("settings.lookText"), '<div class="theme-row">' + themeOpt("dark", ["#18191a", "#242526", "#4599ff"]) + themeOpt("navy", ["#0b1220", "#131c2e", "#4599ff"]) + themeOpt("light", ["#f0f2f5", "#ffffff", "#1468d8"]) + "</div>" +
         '<p class="muted settings-sub">' + esc(t("settings.accent")) + '</p><div class="accent-row">' + accentOpt("blue", "#1877f2") + accentOpt("teal", "#0f9b8e") + accentOpt("violet", "#7c3aed") + accentOpt("green", "#16a34a") + "</div>") +
+      (canSpeak() ? panel(t("voice.title"), t("voice.text"), '<div id="voice-box" class="loading-panel">' + esc(t("common.loading")) + "</div>") : "") +
       panel(t("settings.subscription"), "", '<div class="sub-box' + (warn ? " warn" : "") + '"><strong>' + esc(subText) + "</strong>" + (m && m.days_left != null && m.active ? '<div class="learn-progress" aria-hidden="true"><span style="width:' + Math.max(3, Math.min(100, Math.round(m.days_left / 365 * 100))) + '%"></span></div>' : "") + '</div><div class="receipt-actions"><button type="button" class="primary-button" data-view="membership">' + esc(t(warn || (m && !m.active) ? "settings.renew" : "settings.invoices")) + "</button></div>") +
       (trust ? panel(t("settings.trust"), t("settings.trustText"), trustSummary(trust) + '<div class="receipt-actions"><button type="button" class="outline-button" data-view="trust">' + esc(t("settings.trustOpen")) + "</button></div>") : "") +
       panel(t("settings.notifications"), "", '<label class="consent-field"><input type="checkbox" id="set-nudge"' + (nud.enabled ? " checked" : "") + "> <span>" + esc(t("nudge.settingsLabel")) + '</span></label><div class="receipt-actions"><button type="button" class="outline-button" data-view="profile">' + esc(t("settings.whatsapp")) + "</button></div>") +
       panel(t("settings.account"), "", '<div class="receipt-actions"><button type="button" class="outline-button" data-view="profile">' + esc(t("settings.profile")) + '</button><button type="button" class="outline-button" data-view="companies">' + esc(t("nav.companies")) + "</button>" +
         (privacyPolicyUrl ? '<a class="outline-button" href="' + esc(safeUrl(privacyPolicyUrl)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("consent.link")) + "</a>" : "") + "</div>");
+    voiceSettings();
     content.querySelectorAll("[data-set-theme]").forEach(b => b.addEventListener("click", () => { store.set(THEME_KEY, b.dataset.setTheme); applyTheme(b.dataset.setTheme); settings(); }));
     content.querySelectorAll("[data-set-accent]").forEach(b => b.addEventListener("click", () => { store.set("friends.accent", b.dataset.setAccent); applyTheme(themeChoice()); settings(); }));
     document.querySelector("#set-nudge").addEventListener("change", async e => {
@@ -12428,9 +12645,34 @@ var qrcode = function() {
     });
   }
 
+  async function voiceSettings() {
+    const box = document.querySelector("#voice-box");
+    if (!box) return;
+    const lang = ["kk", "en"].includes(I18N.getLocale()) ? I18N.getLocale() : "ru";
+    const all = await loadVoices();
+    let list = all.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang));
+    if (lang === "kk" && !list.length) list = all.filter(v => v.lang && v.lang.toLowerCase().startsWith("ru"));
+    list.sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name));
+    if (!document.contains(box)) return;
+    if (!list.length) { box.className = ""; box.innerHTML = '<p class="muted">' + esc(t("voice.none")) + "</p>"; return; }
+    const cur = store.get("friends.voice") || (bestVoice(list, list[0].lang.slice(0, 2).toLowerCase()) || list[0]).voiceURI;
+    const label = v => v.name.replace(/^(Microsoft|Google|Apple)\s+/, "").replace(/\s*-\s*.*$/, "") + (voiceGender(v) ? " \u00b7 " + t("voice." + voiceGender(v)) : "") + (voiceScore(v) >= 2 ? " \u00b7 " + t("voice.hq") : "");
+    box.className = "";
+    box.innerHTML = '<div class="voice-list" role="radiogroup" aria-label="' + esc(t("voice.title")) + '">' + list.map((v, i) => '<label class="voice-row"><input type="radio" name="voice" value="' + i + '"' + (v.voiceURI === cur ? " checked" : "") + "> <span>" + esc(label(v)) + '</span><button type="button" class="text-button" data-voice-try="' + i + '">' + ic("speaker", "ic-inline") + " " + esc(t("voice.try")) + "</button></label>").join("") + "</div>" +
+      '<p class="muted">' + esc(t("voice.more")) + "</p>";
+    box.querySelectorAll('input[name="voice"]').forEach(r => r.addEventListener("change", () => { store.set("friends.voice", list[Number(r.value)].voiceURI); status(t("biz.saved")); }));
+    box.querySelectorAll("[data-voice-try]").forEach(b => b.addEventListener("click", () => {
+      const v = list[Number(b.dataset.voiceTry)];
+      stopSpeaking();
+      const u = new SpeechSynthesisUtterance(t("voice.sample"));
+      u.voice = v; u.lang = v.lang; u.rate = Number(store.get("friends.voiceRate")) || 1;
+      speechSynthesis.speak(u);
+    }));
+  }
+
   // ---------- Рейтинг и доверие ----------
   const stars = r => r == null ? "" : '<span class="stars" aria-label="' + esc(t("trust.ratingLabel", { r: String(r).replace(".", ",") })) + '"><span aria-hidden="true">' + "★".repeat(Math.round(r)) + "☆".repeat(5 - Math.round(r)) + "</span> " + String(r).replace(".", ",") + "</span>";
-  const badgeHtml = k => '<span class="trust-badge badge-' + esc(k) + '"><span aria-hidden="true">' + ({ tax_clear: "🧾", credit_history: "🏦", company: "🏢" }[k] || "✓") + "</span> " + esc(t("trust.badge." + k)) + "</span>";
+  const badgeHtml = k => '<span class="trust-badge badge-' + esc(k) + '"><span aria-hidden="true">' + ({ tax_clear: ic("receipt", "ic-inline"), credit_history: ic("bank", "ic-inline"), company: ic("building", "ic-inline") }[k] || "✓") + "</span> " + esc(t("trust.badge." + k)) + "</span>";
   function trustSummary(c) {
     return '<div class="trust-summary">' + (c.reviews_count ? stars(c.rating) + ' <span class="muted">' + esc(t("trust.reviewsCount", { n: c.reviews_count })) + "</span>" : '<span class="muted">' + esc(t("trust.noReviews")) + "</span>") +
       '<div class="trust-badges">' + (c.badges || []).map(b => badgeHtml(b.kind || b)).join("") + "</div>" +
@@ -12450,7 +12692,7 @@ var qrcode = function() {
       '<section class="lesson-box member-head"><div class="member-avatar big" aria-hidden="true">' + esc((c.display_name || "?").slice(0, 1)) + "</div><div><h2>" + esc(c.display_name) + "</h2><p class=\"muted\">" + esc([c.headline, c.city_name].filter(Boolean).join(" · ")) + "</p></div></section>" +
       panel(t("trust.title"), t("trust.text"), trustSummary(c)) +
       panel(t("trust.reviews"), "", reviewList(c, false)) +
-      '<div class="receipt-actions member-deal"><button type="button" class="primary-button" id="propose-deal">🤝 ' + esc(t("deals.proposeTo")) + "</button></div>" +
+      '<div class="receipt-actions member-deal"><button type="button" class="primary-button" id="propose-deal">' + ic("deal", "ic-inline") + ' ' + esc(t("deals.proposeTo")) + "</button></div>" +
       panel(t("trust.leaveTitle"), t("trust.leaveText"), mine && mine.status !== "rejected" ? '<p class="demo-note">' + esc(t(mine.status === "pending" ? "trust.minePending" : "trust.mineDone")) + "</p>" :
         '<form id="review-form" class="app-form"><fieldset class="rating-pick"><legend>' + esc(t("trust.yourRating")) + "</legend>" + [5, 4, 3, 2, 1].map(n => '<label><input type="radio" name="rating" value="' + n + '" required> <span>' + "★".repeat(n) + "</span></label>").join("") + "</fieldset>" +
         area(t("trust.reviewText"), "body") + '<button class="primary-button">' + esc(t("trust.send")) + "</button></form>");
@@ -12614,11 +12856,11 @@ var qrcode = function() {
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals };
+  const RENDERERS = { overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;
-    if (APP === "pilot") return true;
+    if (APP === "pilot") return pilotMode() === "admin" ? !RESIDENT_ONLY.includes(view) || view === "me" : !ADMIN_VIEWS.includes(view);
     if (APP === "resident" && ADMIN_VIEWS.includes(view)) return false;
     if (APP === "admin" && RESIDENT_ONLY.includes(view)) return false;
     return true;
@@ -12636,7 +12878,7 @@ var qrcode = function() {
     if (typeof cardTimer !== "undefined") clearInterval(cardTimer);
     if (typeof chatTimer !== "undefined") clearInterval(chatTimer);
     if ("speechSynthesis" in window) speechSynthesis.cancel();
-    active = allowed(view) ? view : (APP === "admin" ? "admin-stats" : "overview");
+    active = allowed(view) ? view : (APP === "admin" || (APP === "pilot" && pilotMode() === "admin") ? "admin-stats" : "overview");
     I18N.applyStatic();
     if (!token()) { signedOut(); return; }
     authBar();

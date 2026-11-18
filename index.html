@@ -630,6 +630,13 @@ html[data-theme="dark"] .ref-dot.done{background:var(--btn-bg)}
 /* Admin app: «Ещё» sits in the bottom bar as the 5th button (all other admin sections open from it). */
 @media (max-width:700px){body[data-app="admin"] .sidebar nav .nav-more{display:flex!important}body[data-app="admin"] .topbar-menu{display:none!important}}
 
+/* Payment calendar */
+.cal-day{border-bottom:1px solid var(--fb-line,#e4e6eb);padding:10px 0}.cal-day:last-child{border-bottom:0}
+.cal-day-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}
+.cal-item{display:flex;align-items:center;gap:10px;padding:6px 0}.cal-item>div{flex:1;min-width:0}.cal-item small{display:block;color:var(--fb-text-2,#65676b)}
+.cal-item .num{white-space:nowrap;font-weight:600}
+.warn-cta{border-left:4px solid #d4472f}
+
 .pilot-banner{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
 .pilot-banner span{flex:1 1 220px;min-width:0}
@@ -3753,6 +3760,33 @@ var qrcode = function() {
           var inflow4 = list4.filter(function (c) { return c.direction === "in"; }).reduce(function (q, c) { return q + c.amount; }, 0), outflow4 = list4.filter(function (c) { return c.direction === "out"; }).reduce(function (q, c) { return q + c.amount; }, 0);
           return res(200, { month: mo4, accounts: accs, opening: accs.reduce(function (q, a) { return q + a.opening; }, 0), closing: accs.reduce(function (q, a) { return q + a.closing; }, 0), inflow: inflow4, outflow: outflow4, net: inflow4 - outflow4, categories: list4, activities: acts, daily: [] });
         }
+        if (!BIZ.planned) BIZ.planned = [
+          { id: "pl1", direction: "out", amount_kzt: 450000, category: "rent", counterparty: "ИП Арендодатель", description: "За помещение", due_day: mDay(-7), repeat: "monthly" },
+          { id: "pl2", direction: "out", amount_kzt: 1350000, category: "payroll", counterparty: "Сотрудники", description: "За месяц", due_day: mDay(-12), repeat: "monthly" },
+          { id: "pl3", direction: "out", amount_kzt: 96000, category: "taxes", counterparty: "УГД", description: "ИПН, ОПВ, СО", due_day: mDay(2), repeat: "none" },
+          { id: "pl4", direction: "in", amount_kzt: 900000, category: "sales", counterparty: "ТОО «Корпоратив»", description: "Кейтеринг, счёт №41", due_day: mDay(-15), repeat: "none" },
+          { id: "pl5", direction: "out", amount_kzt: 3200000, category: "goods", counterparty: "ТОО Поставщик", description: "Закуп на новогодний сезон", due_day: mDay(-20), repeat: "none" },
+          { id: "pl6", direction: "out", amount_kzt: 310000, category: "loan_out", counterparty: "Halyk", description: "Платёж по кредиту", due_day: mDay(-25), repeat: "monthly" }];
+        var addMonthD = function (d) { var p2 = d.split("-").map(Number), last = new Date(Date.UTC(p2[0], p2[1] + 1, 0)).getUTCDate(); return new Date(Date.UTC(p2[0], p2[1], Math.min(p2[2], last))).toISOString().slice(0, 10); };
+        if (sub === "/money/calendar" && m === "GET") {
+          var todayC = mDay(0), endC = mDay(-60), occ = [];
+          BIZ.planned.forEach(function (it) { var d = it.due_day; while (d <= endC) { occ.push({ id: it.id, direction: it.direction, amount: it.amount_kzt, category: it.category, counterparty: it.counterparty, description: it.description, repeat: it.repeat, due_day: d, day: d < todayC ? todayC : d, overdue: d < todayC }); if (it.repeat !== "monthly") break; d = addMonthD(d); } });
+          occ.sort(function (a, z) { return a.day.localeCompare(z.day) || (a.direction === "in" ? -1 : 1); });
+          var cashC = BIZ.accounts.filter(function (a) { return !a.archived; }).reduce(function (q, a) { return q + balOf(a); }, 0), balC = cashC, minC = { day: todayC, balance: cashC }, inC = 0, outC = 0, daysC = [];
+          occ.forEach(function (o) { var g = daysC[daysC.length - 1]; if (!g || g.day !== o.day) { g = { day: o.day, inflow: 0, outflow: 0, balance: 0, items: [] }; daysC.push(g); } g.items.push(o); if (o.direction === "in") { g.inflow += o.amount; inC += o.amount; balC += o.amount; } else { g.outflow += o.amount; outC += o.amount; balC -= o.amount; } g.balance = balC; if (balC < minC.balance) minC = { day: o.day, balance: balC }; });
+          var gapC = daysC.filter(function (x) { return x.balance < 0; })[0];
+          return res(200, { cash: cashC, inflow: inC, outflow: outC, closing: balC, min: minC, gap: gapC ? { day: gapC.day, balance: gapC.balance } : null, days: daysC, horizon_end: endC });
+        }
+        if (sub === "/money/calendar" && m === "POST") { BIZ.planned.push({ id: id("pl"), direction: b.direction, amount_kzt: b.amount_kzt, category: b.category, counterparty: b.counterparty || null, description: b.description || null, due_day: b.due_day, repeat: b.repeat || "none" }); await bizSave(); return res(201, {}); }
+        if ((mm = sub.match(/^\/money\/calendar\/([\w-]+)\/pay$/))) {
+          var pl = BIZ.planned.filter(function (x) { return x.id === mm[1]; })[0];
+          if (!pl) return res(404, { error: "calendar_item_not_found" });
+          var opP = { id: id("op"), account_id: b.account_id, to_account_id: null, day: b.day || mDay(0), direction: pl.direction, amount_kzt: b.amount_kzt || pl.amount_kzt, category: pl.category, counterparty: pl.counterparty, description: pl.description };
+          BIZ.ops.push(opP); linkOp(opP);
+          var nextP = null; if (pl.repeat === "monthly") { pl.due_day = addMonthD(pl.due_day); nextP = pl.due_day; } else BIZ.planned = BIZ.planned.filter(function (x) { return x !== pl; });
+          await bizSave(); return res(200, { op_id: opP.id, next_due: nextP });
+        }
+        if ((mm = sub.match(/^\/money\/calendar\/([\w-]+)$/)) && m === "DELETE") { BIZ.planned = BIZ.planned.filter(function (x) { return x.id !== mm[1]; }); await bizSave(); return new Response(null, { status: 204 }); }
         if (sub === "/money/balance") {
           var accB = BIZ.accounts.filter(function (a) { return !a.archived; }).map(function (a) { return { id: a.id, name: a.name, kind: a.kind, balance: balOf(a) }; });
           var cashB = accB.reduce(function (q, a) { return q + a.balance; }, 0), recv = 420000;
@@ -4384,6 +4418,38 @@ var qrcode = function() {
     "install.android": "На Android откройте меню браузера (⋮) и выберите «Установить приложение» или «Добавить на главный экран».",
     "install.button": "Установить",
     "install.dismiss": "Скрыть",
+    "biz.tab.calendar": "Платёжный календарь",
+    "cal.title": "Ближайшие поступления и платежи",
+    "cal.text": "Остаток после каждого дня — сразу видно, хватит ли денег на аренду, зарплату и налоги.",
+    "cal.empty": "Запланированных платежей пока нет. Добавьте аренду, зарплату, налоги и ожидаемые оплаты клиентов.",
+    "cal.cashNow": "Деньги сейчас",
+    "cal.inflow": "Ожидаем",
+    "cal.outflow": "Заплатить",
+    "cal.closing": "Останется",
+    "cal.horizon": "к {date}",
+    "cal.gapTitle": "Кассовый разрыв {date}",
+    "cal.gapText": "Не хватит {sum}. Перенесите платёж, ускорьте оплату клиентов или найдите деньги заранее.",
+    "cal.noGap": "Разрыва нет: самый низкий остаток {sum} — {date}.",
+    "cal.balanceAfter": "остаток {sum}",
+    "cal.monthly": "каждый месяц",
+    "cal.overdue": "просрочено с {date}",
+    "cal.paid": "Оплачено",
+    "cal.received": "Получено",
+    "cal.addTitle": "Запланировать платёж или поступление",
+    "cal.addText": "Регулярные платежи (аренда, зарплата, кредит) отметьте «каждый месяц» — они будут повторяться сами.",
+    "cal.dirOut": "Платёж",
+    "cal.dirIn": "Поступление",
+    "cal.dueDay": "Когда",
+    "cal.repeatMonthly": "Повторять каждый месяц",
+    "cal.add": "Добавить в календарь",
+    "cal.payTitle": "Отметить оплату",
+    "cal.actualAmount": "Фактическая сумма, ₸ (если отличается)",
+    "cal.confirm": "Сохранить",
+    "cal.paidNext": "Сохранено в ДДС. Следующий платёж — {date}.",
+    "cal.paidDone": "Сохранено в ДДС и ОПИУ.",
+    "cal.confirmDelete": "Удалить из календаря?",
+    "error.calendar_item_not_found": "Платёж не найден.",
+    "error.calendar_limit": "Не больше 500 запланированных платежей.",
     "settings.remembered": "После первого входа по SMS этот телефон запоминается — код больше не нужен, пока вы сами не выйдете.",
     "settings.logoutAll": "Выйти на всех устройствах",
     "settings.logoutAllConfirm": "Выйти из аккаунта на всех телефонах и компьютерах? На каждом нужно будет снова войти по SMS.",
@@ -6280,6 +6346,38 @@ var qrcode = function() {
     "install.android": "Android-та браузер мәзірін (⋮) ашып, «Қосымшаны орнату» немесе «Басты экранға қосу» тармағын таңдаңыз.",
     "install.button": "Орнату",
     "install.dismiss": "Жасыру",
+    "biz.tab.calendar": "Төлем күнтізбесі",
+    "cal.title": "Жақын түсімдер мен төлемдер",
+    "cal.text": "Әр күннен кейінгі қалдық — жалға, жалақыға және салыққа ақша жете ме, бірден көрінеді.",
+    "cal.empty": "Жоспарланған төлемдер әзірге жоқ. Жалға алуды, жалақыны, салықтарды және клиенттердің күтілетін төлемдерін қосыңыз.",
+    "cal.cashNow": "Қазір ақша",
+    "cal.inflow": "Күтеміз",
+    "cal.outflow": "Төлеу",
+    "cal.closing": "Қалады",
+    "cal.horizon": "{date} дейін",
+    "cal.gapTitle": "{date} кассалық алшақтық",
+    "cal.gapText": "{sum} жетпейді. Төлемді ауыстырыңыз, клиенттердің төлемін тездетіңіз немесе ақшаны алдын ала табыңыз.",
+    "cal.noGap": "Алшақтық жоқ: ең төмен қалдық {sum} — {date}.",
+    "cal.balanceAfter": "қалдық {sum}",
+    "cal.monthly": "ай сайын",
+    "cal.overdue": "{date} бастап мерзімі өтті",
+    "cal.paid": "Төленді",
+    "cal.received": "Алынды",
+    "cal.addTitle": "Төлемді немесе түсімді жоспарлау",
+    "cal.addText": "Тұрақты төлемдерді (жалға, жалақы, несие) «ай сайын» деп белгілеңіз — өзі қайталанады.",
+    "cal.dirOut": "Төлем",
+    "cal.dirIn": "Түсім",
+    "cal.dueDay": "Қашан",
+    "cal.repeatMonthly": "Ай сайын қайталау",
+    "cal.add": "Күнтізбеге қосу",
+    "cal.payTitle": "Төлемді белгілеу",
+    "cal.actualAmount": "Нақты сома, ₸ (өзгеше болса)",
+    "cal.confirm": "Сақтау",
+    "cal.paidNext": "АҚҚ-ға сақталды. Келесі төлем — {date}.",
+    "cal.paidDone": "АҚҚ мен ПШЕ-ге сақталды.",
+    "cal.confirmDelete": "Күнтізбеден жою керек пе?",
+    "error.calendar_item_not_found": "Төлем табылмады.",
+    "error.calendar_limit": "500-ден аспайтын жоспарланған төлем.",
     "settings.remembered": "SMS арқылы алғаш кіргеннен кейін бұл телефон есте сақталады — өзіңіз шықпайынша код қайта қажет емес.",
     "settings.logoutAll": "Барлық құрылғыдан шығу",
     "settings.logoutAllConfirm": "Барлық телефон мен компьютерден шығу керек пе? Әрқайсысында SMS арқылы қайта кіру керек болады.",
@@ -8176,6 +8274,38 @@ var qrcode = function() {
     "install.android": "On Android, open the browser menu (⋮) and choose “Install app” or “Add to Home screen”.",
     "install.button": "Install",
     "install.dismiss": "Hide",
+    "biz.tab.calendar": "Payment calendar",
+    "cal.title": "Upcoming receipts and payments",
+    "cal.text": "Balance after each day — see at once whether there is enough for rent, salaries and taxes.",
+    "cal.empty": "No planned payments yet. Add rent, salaries, taxes and expected client payments.",
+    "cal.cashNow": "Cash now",
+    "cal.inflow": "Expected in",
+    "cal.outflow": "To pay",
+    "cal.closing": "Will remain",
+    "cal.horizon": "by {date}",
+    "cal.gapTitle": "Cash gap on {date}",
+    "cal.gapText": "Short by {sum}. Move a payment, speed up client payments or find the money in advance.",
+    "cal.noGap": "No cash gap: lowest balance {sum} on {date}.",
+    "cal.balanceAfter": "balance {sum}",
+    "cal.monthly": "monthly",
+    "cal.overdue": "overdue since {date}",
+    "cal.paid": "Paid",
+    "cal.received": "Received",
+    "cal.addTitle": "Plan a payment or receipt",
+    "cal.addText": "Mark regular payments (rent, salaries, loan) as monthly — they repeat automatically.",
+    "cal.dirOut": "Payment",
+    "cal.dirIn": "Receipt",
+    "cal.dueDay": "When",
+    "cal.repeatMonthly": "Repeat every month",
+    "cal.add": "Add to calendar",
+    "cal.payTitle": "Record the payment",
+    "cal.actualAmount": "Actual amount, ₸ (if different)",
+    "cal.confirm": "Save",
+    "cal.paidNext": "Saved to cash flow. Next payment — {date}.",
+    "cal.paidDone": "Saved to cash flow and P&L.",
+    "cal.confirmDelete": "Remove from the calendar?",
+    "error.calendar_item_not_found": "Payment not found.",
+    "error.calendar_limit": "No more than 500 planned payments.",
     "settings.remembered": "After the first SMS sign-in this phone is remembered — no code needed until you sign out.",
     "settings.logoutAll": "Sign out on all devices",
     "settings.logoutAllConfirm": "Sign out on all phones and computers? Each will need a new SMS sign-in.",
@@ -11543,7 +11673,7 @@ var qrcode = function() {
     else bizWs = bizList.find(w => w.id === bizWs.id);
     const r = bizWs.role;
     const mgr = ["owner", "manager", "accountant"].includes(r);
-    const tabs = [["report", BIZ_CAN.money(r)], ["clock", true], ["sales", true], ["expenses", BIZ_CAN.expenses(r)], ["money", mgr], ["pnl", mgr], ["balance", mgr], ["payroll", true], ["timesheet", mgr], ["tasks", true], ["finance", BIZ_CAN.expenses(r)], ["team", true], ["feedback", true]].filter(x => x[1]).map(x => x[0]);
+    const tabs = [["report", BIZ_CAN.money(r)], ["clock", true], ["sales", true], ["expenses", BIZ_CAN.expenses(r)], ["money", mgr], ["calendar", mgr], ["pnl", mgr], ["balance", mgr], ["payroll", true], ["timesheet", mgr], ["tasks", true], ["finance", BIZ_CAN.expenses(r)], ["team", true], ["feedback", true]].filter(x => x[1]).map(x => x[0]);
     if (!tabs.includes(bizTab)) bizTab = tabs[0];
     const picker = bizList.length > 1 ? '<label class="field biz-picker"><span>' + esc(t("biz.workspace")) + '</span><select id="biz-ws">' + bizList.map(w => option(w.id, w.name, w.id === bizWs.id)).join("") + "</select></label>" : "";
     content.innerHTML = '<div class="biz-head"><div><p class="eyebrow">' + esc(I18N.label("bizRole", r)) + "</p><h2>" + esc(bizWs.name) + "</h2></div>" + picker + "</div>" +
@@ -11551,7 +11681,7 @@ var qrcode = function() {
     content.querySelectorAll("[data-biz-tab]").forEach(b => b.addEventListener("click", () => { bizTab = b.dataset.bizTab; business().catch(x => status(x.message, true)); }));
     const sel = document.querySelector("#biz-ws");
     if (sel) sel.addEventListener("change", () => { bizWs = bizList.find(w => w.id === sel.value); business().catch(x => status(x.message, true)); });
-    await ({ report: bizReport, clock: bizClock, sales: bizSales, expenses: bizExpenses, money: bizMoney, pnl: bizPnl, balance: bizBalance, payroll: bizPayroll, timesheet: bizTimesheet, tasks: bizTasks, finance: bizFinance, team: bizTeam, feedback: bizFeedback })[bizTab]();
+    await ({ report: bizReport, clock: bizClock, sales: bizSales, expenses: bizExpenses, money: bizMoney, calendar: bizCalendar, pnl: bizPnl, balance: bizBalance, payroll: bizPayroll, timesheet: bizTimesheet, tasks: bizTasks, finance: bizFinance, team: bizTeam, feedback: bizFeedback })[bizTab]();
   }
   const bizBody = html => { document.querySelector("#biz-body").innerHTML = html; return document.querySelector("#biz-body"); };
 
@@ -11830,6 +11960,47 @@ var qrcode = function() {
         if (!rows.length) return;
         try { const res = await api(bizBase() + "/money/import/commit", { method: "POST", body: JSON.stringify({ account_id: accountId, rows }) }); status(t("money.imported", { n: res.created })); await bizMoney(); } catch (x) { status(x.message, true); }
       });
+    });
+  }
+  // ---------- Платёжный календарь: what comes in and goes out, and whether money runs short ----------
+  async function bizCalendar() {
+    const [d, acc] = await Promise.all([api(bizBase() + "/money/calendar?days=60"), api(bizBase() + "/money/accounts")]);
+    const accounts = acc.items.filter(a => !a.archived);
+    const accOpts = accounts.map(a => option(a.id, a.name + " · " + money(a.balance_kzt), false)).join("");
+    const gap = d.gap ? '<div class="card-cta warn-cta"><div><strong>' + esc(t("cal.gapTitle", { date: dayLabel(d.gap.day) })) + "</strong><p>" + esc(t("cal.gapText", { sum: money(-d.gap.balance) })) + "</p></div></div>"
+      : '<p class="demo-note">' + esc(t("cal.noGap", { sum: money(d.min.balance), date: dayLabel(d.min.day) })) + "</p>";
+    const seenPay = new Set();
+    const item = o => '<div class="cal-item"><div><strong>' + esc(o.counterparty || catLabel(o.category)) + "</strong><small>" + esc(catLabel(o.category)) + (o.description && o.description !== catLabel(o.category) ? " · " + esc(o.description) : "") + (o.repeat === "monthly" ? " · " + esc(t("cal.monthly")) : "") + (o.overdue ? ' <span class="pill warn-pill">' + esc(t("cal.overdue", { date: dayLabel(o.due_day) })) + "</span>" : "") +
+      '</small></div><span class="num ' + (o.direction === "in" ? "good-text" : "warn-text") + '">' + esc(signed(o.direction, o.amount)) + "</span>" +
+      (accounts.length && !seenPay.has(o.id) && seenPay.add(o.id) ? '<button type="button" class="outline-button" data-cal-pay="' + esc(o.id) + '">' + esc(t(o.direction === "in" ? "cal.received" : "cal.paid")) + "</button>" : "") +
+      '<button type="button" class="link-button" data-cal-del="' + esc(o.id) + '" aria-label="' + esc(t("money.delete")) + '">✕</button></div>';
+    const daysHtml = d.days.map(g => '<section class="cal-day"><div class="cal-day-head"><strong>' + esc(dayLabel(g.day)) + '</strong><span class="' + (g.balance < 0 ? "warn-text" : "muted") + '">' + esc(t("cal.balanceAfter", { sum: money(g.balance) })) + "</span></div>" + g.items.map(item).join("") + "</section>").join("");
+    const form = '<form id="cal-form" class="app-form"><label class="field"><span>' + esc(t("money.direction")) + '</span><select name="direction" id="cal-dir">' + option("out", t("cal.dirOut"), true) + option("in", t("cal.dirIn"), false) + "</select></label>" +
+      '<label class="field"><span>' + esc(t("money.category")) + '</span><select name="category">' + catOptions("out", "rent") + "</select></label>" +
+      field(t("money.amount"), "amount_kzt", "", "number", 'min="1" step="1" required') + field(t("cal.dueDay"), "due_day", almatyDay(), "date", "required") +
+      field(t("money.counterparty"), "counterparty", "", "text", 'maxlength="200"') + field(t("money.description"), "description", "", "text", 'maxlength="500"') +
+      '<label class="consent-field"><input type="checkbox" name="monthly"> <span>' + esc(t("cal.repeatMonthly")) + '</span></label><button class="primary-button">' + esc(t("cal.add")) + "</button></form>";
+    const body = bizBody('<div class="kpi-grid">' + statTile(t("cal.cashNow"), money(d.cash)) + statTile(t("cal.inflow"), money(d.inflow)) + statTile(t("cal.outflow"), money(d.outflow)) + statTile(t("cal.closing"), money(d.closing), t("cal.horizon", { date: dayLabel(d.horizon_end) })) + "</div>" + gap +
+      panel(t("cal.title"), t("cal.text"), daysHtml || '<p class="muted">' + esc(t("cal.empty")) + "</p>") + panel(t("cal.addTitle"), t("cal.addText"), form) +
+      '<dialog class="nudge-dialog" id="cal-pay-dlg"><form method="dialog" class="app-form" id="cal-pay-form"><h2>' + esc(t("cal.payTitle")) + '</h2><label class="field"><span>' + esc(t("money.account")) + '</span><select name="account_id">' + accOpts + "</select></label>" + field(t("money.day"), "day", almatyDay(), "date", "required") + field(t("cal.actualAmount"), "amount_kzt", "", "number", 'min="1" step="1"') +
+      '<div class="nudge-actions"><button class="primary-button" value="ok">' + esc(t("cal.confirm")) + '</button><button type="button" class="text-button" id="cal-pay-cancel">' + esc(t("common.close")) + "</button></div></form></dialog>");
+    const dir = body.querySelector("#cal-dir"), catSel = body.querySelector('#cal-form [name="category"]');
+    dir.addEventListener("change", () => { catSel.innerHTML = catOptions(dir.value, dir.value === "in" ? "sales" : "rent"); });
+    body.querySelector("#cal-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(e.currentTarget);
+      try { await api(bizBase() + "/money/calendar", { method: "POST", body: JSON.stringify({ direction: String(v.get("direction")), category: String(v.get("category")), amount_kzt: Number(v.get("amount_kzt")), due_day: String(v.get("due_day")), counterparty: String(v.get("counterparty") || "").trim() || null, description: String(v.get("description") || "").trim() || null, repeat: v.get("monthly") ? "monthly" : "none" }) }); status(t("money.saved")); await bizCalendar(); } catch (x) { status(x.message, true); }
+    });
+    body.querySelectorAll("[data-cal-del]").forEach(b => b.addEventListener("click", async () => { if (!confirm(t("cal.confirmDelete"))) return; try { await api(bizBase() + "/money/calendar/" + b.dataset.calDel, { method: "DELETE" }); await bizCalendar(); } catch (x) { status(x.message, true); } }));
+    const dlg = body.querySelector("#cal-pay-dlg");
+    let payId = null;
+    body.querySelector("#cal-pay-cancel").addEventListener("click", () => dlg.close());
+    body.querySelectorAll("[data-cal-pay]").forEach(b => b.addEventListener("click", () => { payId = b.dataset.calPay; if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", ""); }));
+    body.querySelector("#cal-pay-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(e.currentTarget), amt = String(v.get("amount_kzt") || "").trim();
+      dlg.close();
+      try { const r = await api(bizBase() + "/money/calendar/" + payId + "/pay", { method: "POST", body: JSON.stringify(Object.assign({ account_id: String(v.get("account_id")), day: String(v.get("day")) }, amt ? { amount_kzt: Number(amt) } : {})) }); status(r.next_due ? t("cal.paidNext", { date: dayLabel(r.next_due) }) : t("cal.paidDone")); await bizCalendar(); } catch (x) { status(x.message, true); }
     });
   }
   function bindAccountForm(body) {

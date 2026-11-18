@@ -12728,16 +12728,31 @@ var qrcode = function() {
   const MOODS = ["face1", "face2", "face3", "face4", "face5"];
   const NUDGE_GO = { event_soon: "events", missed_events: "events", poll_open: "polls", crm_sales: "business", jobs_new: "announcements", course_continue: "course", test_try: "test",
     crm_start: "business", crm_team: "business", learn_start: "learn", ai_try: "learn", chats_join: "messages", discounts_try: "discounts", whatsapp_connect: "profile" };
+  // The «карточка дня» never greets a person at the door: it waits until they have spent
+  // NUDGE_AFTER_MS of visible time in the app, and until they are not typing or in another dialog.
+  const NUDGE_AFTER_MS = typeof window.FRIENDS_NUDGE_AFTER_MS === "number" ? window.FRIENDS_NUDGE_AFTER_MS : 7 * 60 * 1000;
+  function waitActiveTime(ms) {
+    return new Promise(res => {
+      let spent = 0, last = Date.now();
+      const tick = () => {
+        const now = Date.now();
+        if (document.visibilityState === "visible" && !document.querySelector("#demo-welcome")) spent += now - last;
+        last = now;
+        const busy = document.querySelector("dialog[open], #demo-welcome") || (document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+        if (spent >= ms && !busy && token()) { clearInterval(timer); res(); }
+      };
+      const timer = setInterval(tick, Math.min(1000, Math.max(100, ms / 4)));
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") last = Date.now(); });
+    });
+  }
   async function maybeNudge() {
     if (nudgeChecked) return;
     nudgeChecked = true;
-    // Demo: wait until the welcome screen is closed.
-    const welcome = document.querySelector("#demo-welcome");
-    if (welcome) await new Promise(res => { const o = new MutationObserver(() => { if (!document.contains(welcome)) { o.disconnect(); res(); } }); o.observe(welcome.parentNode, { childList: true }); });
+    await waitActiveTime(NUDGE_AFTER_MS);
     let r;
     try { r = await api("/v1/me/nudge/today", { method: "POST", body: "{}" }); } catch { return; }
     const n = r && r.nudge;
-    if (!n || active !== "overview") return;
+    if (!n) return;
     const d = n.data || {};
     const when = d.starts_at ? date(d.starts_at) : "";
     const icon = ic({ event_soon: "calendar", missed_events: "wave", poll_open: "help", crm_sales: "business", course_continue: "learn", test_try: "test", jobs_new: "briefcase", mood: d.winter ? "coffee" : "sun", crm_start: "trend", crm_team: "users", learn_start: "learn", ai_try: "spark", chats_join: "chat", discounts_try: "percent", whatsapp_connect: "phone" }[n.kind]);
@@ -13065,7 +13080,7 @@ var qrcode = function() {
       await RENDERERS[active]();
       blockTabs();
       refreshMessageBadge();
-      if (active === "overview") maybeNudge();
+      maybeNudge();
     } catch (e) {
       if (e.status === 401) { clearTokens(); signedOut(); status(t("auth.sessionExpired"), true); return; }
       content.innerHTML = '<div class="empty-panel"><h2>' + esc(t("render.errorTitle")) + "</h2><p>" + esc(e.message) + '</p><button class="primary-button" id="retry">' + esc(t("render.retry")) + "</button></div>";

@@ -261,15 +261,17 @@ if(API&&code){
   try{var vk="fr_v_"+code+"_"+new Date().toISOString().slice(0,10);if(!localStorage.getItem(vk)){localStorage.setItem(vk,"1");fetch(API+"/v1/public/partners/"+encodeURIComponent(code)+"/visit",{method:"POST",keepalive:true}).catch(function(){})}}catch(e){}
   if(!B)fetch(API+"/v1/public/partners/"+encodeURIComponent(code)).then(function(r){return r.ok?r.json():null}).then(function(d){if(!d)return;document.getElementById("ref").classList.add("on");document.getElementById("refName").textContent=d.name;document.getElementById("refAv").textContent=d.name.charAt(0)}).catch(function(){});
 }
-var waText="Здравствуйте! Хочу вступить в Friends"+(B?" (от "+B.name+", код "+code+")":"");
+var waText="Здравствуйте! Хочу вступить в Friends"+(B?" (от "+B.name+", код "+code+")":(code?" (код "+code+")":""));
+var utmStr=["utm_source","utm_medium","utm_campaign"].map(function(k){return pass.get(k)}).filter(Boolean).join("/");
 document.getElementById("wa").href="https://wa.me/"+WA+"?text="+encodeURIComponent(waText);
+document.getElementById("wa").addEventListener("click",function(){try{navigator.sendBeacon("lead.php",new URLSearchParams({t:"wa",b:source,utm:utmStr}))}catch(e){}});
 var vbox=document.getElementById("videos");
 if(VIDEOS.length){VIDEOS.slice(0,6).forEach(function(id){vbox.insertAdjacentHTML("beforeend",'<div class="vid"><iframe loading="lazy" src="https://www.youtube.com/embed/'+id+'" allowfullscreen></iframe></div>')})}
 else{document.getElementById("vsec").style.display="none"}
 document.getElementById("frf").addEventListener("submit",function(e){
   e.preventDefault();
   var d=new FormData(e.target);
-  var p=new URLSearchParams({b:source,name:d.get("name"),phone:d.get("phone"),biz:d.get("biz")||"",page:location.href});
+  var p=new URLSearchParams({b:source,name:d.get("name"),phone:d.get("phone"),biz:d.get("biz")||"",page:location.href,utm:utmStr});
   document.getElementById("ov").classList.add("on");
   var done=false,go=function(){if(!done){done=true;location.href=KASPI}};
   if(SCRIPT_URL){fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",body:p}).then(go,go);setTimeout(go,2500);}else{setTimeout(go,900)}

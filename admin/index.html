@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex">
 <meta property="og:title" content="Friends — приложение бизнес-сообщества">
 <meta property="og:description" content="Окружение, CRM «Мой бизнес», автоматизация и ИИ-академия — посмотрите приложение изнутри.">
-<meta property="og:image" content="../academy/poster-feed.png">
+<meta property="og:image" content="https://friendscommunity.kz/academy/poster-feed.png">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -647,6 +647,9 @@ html[data-theme="dark"] .ref-dot.done{background:var(--btn-bg)}
 /* Phone header stays clean like Kaspi: back on the left, chats on the right; language, theme and sign-out live in Профиль → Настройки */
 @media (max-width:700px){.topbar-right.signed-in>:not(.topbar-chat){display:none!important}.topbar{height:56px}}
 .muted-pill{background:var(--fb-line,#e4e6eb);color:var(--fb-text-2,#65676b)}
+.copy-row{display:flex;gap:8px;margin:10px 0}.copy-row input{flex:1;min-width:0;border:1px solid var(--fb-divider,#d7e1f4);border-radius:8px;padding:9px 10px;background:var(--fb-input,transparent);color:var(--fb-text);font:500 12px 'DM Sans',sans-serif}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+[data-partner-details] h4{margin:16px 0 8px;font-size:13px}
 
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
@@ -704,6 +707,7 @@ document.getElementById("dw-enter").addEventListener("click", function () {
         <button class="nav-item" data-view="events-admin" data-primary><span aria-hidden="true" data-ic="calendar"></span> <span data-i18n="nav.eventsAdmin"></span></button>
         <button class="nav-item" data-view="admin" data-primary><span aria-hidden="true" data-ic="test"></span> <span data-i18n="nav.admin"></span></button>
         <button class="nav-item" data-view="admin-referrals" data-primary><span aria-hidden="true" data-ic="phone"></span> <span data-i18n="nav.adminReferrals"></span></button>
+        <button class="nav-item" data-view="admin-partners"><span aria-hidden="true" data-ic="megaphone"></span> <span data-i18n="nav.adminPartners"></span></button>
         <button class="nav-item" data-view="admin-loans"><span aria-hidden="true" data-ic="bank"></span> <span data-i18n="nav.adminLoans"></span></button>
         <button class="nav-item" data-view="admin-feedback"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.adminFeedback"></span></button>
         <button class="nav-item" data-view="admin-experts"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.adminExperts"></span></button>
@@ -3239,7 +3243,7 @@ var qrcode = function() {
   };
 
   var KEYS = ["events", "companies", "notifications", "invoices", "receipts", "members", "profile", "prefs", "experts", "progress", "seats", "ann", "offers", "redemptions", "whatsapp", "feedback", "referrals", "staff", "biz", "loanOffers", "loanApps", "quizScores", "checkins", "polls", "learningOrders", "products", "chats", "testResults", "testInvites", "nudge", "myReviews", "verifications", "expertInvites", "refBonuses", "deals"];
-  var S = { events: [], companies: [], notifications: [], invoices: [], receipts: [], members: [], profile: null, prefs: { locale: "ru" }, experts: [], progress: [], seats: [], ann: [], offers: [], redemptions: [], whatsapp: [], feedback: [], referrals: [], staff: [], biz: [], loanOffers: [], loanApps: [], quizScores: [], checkins: [], polls: [], learningOrders: [], chats: [], testResults: [], testInvites: [], nudge: [], myReviews: [], verifications: [], expertInvites: [], refBonuses: [], deals: [], products: [{ id: "lp1", slug: "ai-academy", track: "ai-academy", title: "ИИ-академия Friends", description: "Все курсы по искусственному интеллекту. Для резидентов Friends — бесплатно.", price_kzt: 25000, status: "active" }] };
+  var S = { events: [], companies: [], notifications: [], invoices: [], receipts: [], members: [], profile: null, prefs: { locale: "ru" }, experts: [], progress: [], seats: [], ann: [], offers: [], redemptions: [], whatsapp: [], feedback: [], referrals: [], staff: [], biz: [], loanOffers: [], loanApps: [], quizScores: [], checkins: [], polls: [], learningOrders: [], chats: [], testResults: [], testInvites: [], nudge: [], myReviews: [], verifications: [], expertInvites: [], refBonuses: [], partners: [], deals: [], products: [{ id: "lp1", slug: "ai-academy", track: "ai-academy", title: "ИИ-академия Friends", description: "Все курсы по искусственному интеллекту. Для резидентов Friends — бесплатно.", price_kzt: 25000, status: "active" }] };
   var CARD_CODES = {}; // one-time card codes live only in this tab, as on the server they expire in 10 minutes
   function almatyMonth(iso) { return new Date(new Date(iso).getTime() + 5 * 3600000).toISOString().slice(0, 7); }
   // Course content is embedded at build time from apps/api/seed/learning.ru.json.
@@ -3896,6 +3900,53 @@ var qrcode = function() {
       if (m === "POST") { var rl = { id: id("l"), name: b.name, phone: b.phone, note: b.note, status: "new", event_title: null, referrer_name: (S.profile && S.profile.display_name) || "", created_at: new Date().toISOString() }; S.referrals.push(rl); await save("referrals"); return res(201, rl); }
       var paidN = S.referrals.filter(function (l) { return l.status === "paid"; }).length, bon = S.refBonuses || [];
       return res(200, { items: S.referrals.slice().reverse(), bonuses: bon, rule: { per_bonus: 2, months: 12 }, paid_total: paidN, towards_next: Math.max(0, paidN - bon.length * 2) % 2 });
+    }
+    // Bloggers (promo partners) — demo data.
+    function partnerSeed() {
+      var ago = function (d) { return new Date(Date.now() - d * 864e5).toISOString(); };
+      return [
+        { id: "pp1", code: "kappas", name: "Азамат Каппас", contact: "@kappas", trial_days: 30, first_bonus_pct: 20, renewal_bonus_pct: 10, fixed_bonus_kzt: 0, renewal_months: 12, status: "active", visits: 1840, visits_30d: 620, created_at: ago(40),
+          people: [{ member_name: "Ерлан Сейтжанов", created_at: ago(35), trial_until: ago(5), first_paid_at: ago(6), utm_source: "instagram", utm_campaign: "stories" }, { member_name: "Мадина Ахметова", created_at: ago(31), trial_until: ago(1), first_paid_at: ago(2), utm_source: "instagram", utm_campaign: "reels" }, { member_name: "Тимур Касымов", created_at: ago(12), trial_until: new Date(Date.now() + 18 * 864e5).toISOString(), first_paid_at: null, utm_source: "instagram", utm_campaign: "stories" }, { member_name: "Алия Нурланова", created_at: ago(8), trial_until: new Date(Date.now() + 22 * 864e5).toISOString(), first_paid_at: null, utm_source: "youtube", utm_campaign: null }, { member_name: "Данияр Омаров", created_at: ago(34), trial_until: ago(4), first_paid_at: null, utm_source: "instagram", utm_campaign: "reels" }],
+          commissions: [{ id: "pc1", member_name: "Ерлан Сейтжанов", kind: "first", payment_kzt: 200000, bonus_kzt: 40000, status: "paid", created_at: ago(6), paid_at: ago(3) }, { id: "pc2", member_name: "Мадина Ахметова", kind: "first", payment_kzt: 200000, bonus_kzt: 40000, status: "accrued", created_at: ago(2), paid_at: null }] },
+        { id: "pp2", code: "aigerim", name: "Айгерим Бизнес-мама", contact: "@aigerim.biz", trial_days: 30, first_bonus_pct: 15, renewal_bonus_pct: 5, fixed_bonus_kzt: 5000, renewal_months: 12, status: "active", visits: 410, visits_30d: 410, created_at: ago(9),
+          people: [{ member_name: "Сауле Жумабаева", created_at: ago(7), trial_until: new Date(Date.now() + 23 * 864e5).toISOString(), first_paid_at: null, utm_source: "instagram", utm_campaign: null }], commissions: [] }
+      ];
+    }
+    if (!S.partners || !S.partners.length) S.partners = partnerSeed();
+    var pView = function (x) {
+      var live = x.commissions.filter(function (c) { return c.status !== "cancelled"; });
+      var sum = function (arr, k) { return arr.reduce(function (a, c) { return a + Number(c[k]); }, 0); };
+      return Object.assign({}, x, { people: undefined, commissions: undefined, signups: x.people.length,
+        trials_active: x.people.filter(function (m) { return !m.first_paid_at && new Date(m.trial_until) > new Date(); }).length,
+        paid_users: x.people.filter(function (m) { return m.first_paid_at; }).length, revenue_kzt: sum(live, "payment_kzt"),
+        bonus_due_kzt: sum(x.commissions.filter(function (c) { return c.status === "accrued"; }), "bonus_kzt"), bonus_paid_kzt: sum(x.commissions.filter(function (c) { return c.status === "paid"; }), "bonus_kzt") });
+    };
+    if ((mm = p.match(/^\/v1\/public\/partners\/([\w-]+)(\/visit)?$/))) {
+      var pp = S.partners.filter(function (x) { return x.code === mm[1].toLowerCase() && x.status === "active"; })[0];
+      if (mm[2]) return res(204, {});
+      return pp ? res(200, { code: pp.code, name: pp.name, trial_days: pp.trial_days }) : res(404, { error: "partner_not_found" });
+    }
+    if (p === "/v1/me/trial") {
+      if (m === "POST") {
+        var tp = S.partners.filter(function (x) { return x.code === String(b.ref || "").toLowerCase() && x.status === "active"; })[0];
+        return res(200, { trial_until: new Date(Date.now() + (tp ? tp.trial_days : 30) * 864e5).toISOString(), invited_by: tp ? tp.name : null });
+      }
+      return res(200, { membership: null, invited_by: null, trial_available: true, trial_until: null });
+    }
+    if (p === "/v1/admin/partners") {
+      if (m === "POST") {
+        if (S.partners.some(function (x) { return x.code === b.code; })) return res(409, { error: "code_taken" });
+        S.partners.unshift(Object.assign({ id: id("pp"), contact: null, trial_days: 30, first_bonus_pct: 20, renewal_bonus_pct: 10, fixed_bonus_kzt: 0, renewal_months: 12, status: "active", visits: 0, visits_30d: 0, created_at: new Date().toISOString(), people: [], commissions: [] }, b));
+        await save("partners"); return res(201, { id: S.partners[0].id, code: b.code });
+      }
+      return res(200, { items: S.partners.filter(function (x) { return x.status !== "archived"; }).map(pView), default_trial_days: 30 });
+    }
+    if ((mm = p.match(/^\/v1\/admin\/partners\/([\w-]+)(\/commissions|\/payout)?$/))) {
+      var px = S.partners.filter(function (x) { return x.id === mm[1]; })[0];
+      if (!px) return res(404, { error: "partner_not_found" });
+      if (mm[2] === "/commissions") return res(200, { commissions: px.commissions, people: px.people });
+      if (mm[2] === "/payout") { var tot = 0, n = 0; px.commissions.forEach(function (c) { if (c.status === "accrued") { c.status = "paid"; c.paid_at = new Date().toISOString(); tot += c.bonus_kzt; n++; } }); await save("partners"); return res(200, { paid: n, total_kzt: tot }); }
+      Object.keys(b).forEach(function (k) { px[k] = b[k]; }); await save("partners"); return res(200, { updated: true });
     }
     if (p === "/v1/admin/referrals") return res(200, { items: S.referrals.slice().reverse() });
     if ((mm = p.match(/^\/v1\/admin\/referrals\/([\w-]+)\/status$/))) {
@@ -5626,6 +5677,71 @@ var qrcode = function() {
     "error.future_day": "Нельзя вносить выручку за будущие дни.",
     "nav.adminStats": "Статистика",
     "nav.adminReferrals": "Рекомендации",
+    "nav.adminPartners": "Блогеры",
+    "view.adminPartners.title": "Блогеры",
+    "view.adminPartners.subtitle": "Ссылки с бесплатным месяцем, кто пришёл, кто оплатил и сколько бонусов к выплате.",
+    "adminPartners.title": "Блогеры и партнёры",
+    "adminPartners.text": "Блогер даёт своим подписчикам ссылку с бесплатным месяцем. Когда человек оплачивает или продлевает, блогеру начисляется бонус.",
+    "adminPartners.noAccess": "Раздел доступен администратору, маркетологу и бухгалтеру.",
+    "adminPartners.listTitle": "Ссылки блогеров",
+    "adminPartners.listText": "Скопируйте ссылку и отправьте блогеру. Цифры обновляются сами.",
+    "adminPartners.empty": "Пока нет блогеров. Добавьте первого ниже.",
+    "adminPartners.addTitle": "Добавить блогера",
+    "adminPartners.addText": "Код станет частью ссылки: friendscommunity.kz/?ref=код",
+    "adminPartners.add": "Создать ссылку",
+    "adminPartners.added": "Блогер добавлен, ссылка готова",
+    "adminPartners.codeTaken": "Такой код уже занят, придумайте другой",
+    "adminPartners.name": "Имя блогера",
+    "adminPartners.code": "Код ссылки (латиница)",
+    "adminPartners.contact": "Контакт (Instagram, WhatsApp)",
+    "adminPartners.trialDays": "Бесплатных дней",
+    "adminPartners.firstPct": "Бонус с первой оплаты, %",
+    "adminPartners.renewalPct": "Бонус с продлений, %",
+    "adminPartners.renewalMonths": "Сколько месяцев платить с продлений",
+    "adminPartners.fixedKzt": "Фикс за каждого оплатившего, ₸",
+    "adminPartners.link": "Ссылка блогера",
+    "adminPartners.copy": "Скопировать",
+    "adminPartners.terms": "{days} дней бесплатно · {first}% с первой оплаты · {renewal}% с продлений {months} мес.",
+    "adminPartners.fixed": "плюс {sum} за каждого",
+    "adminPartners.visits30": "Переходы, 30 дн.",
+    "adminPartners.signups": "Зарегистрировались",
+    "adminPartners.trials": "На пробном",
+    "adminPartners.paidUsers": "Оплатили",
+    "adminPartners.revenue": "Выручка",
+    "adminPartners.bonusDue": "К выплате",
+    "adminPartners.bonusPaid": "Выплачено",
+    "adminPartners.payout": "Отметить выплату {sum}",
+    "adminPartners.payoutConfirm": "Вы перевели блогеру {sum}? Бонусы будут отмечены как выплаченные.",
+    "adminPartners.paidOut": "Отмечено: выплачено {sum}",
+    "adminPartners.details": "Кто пришёл",
+    "adminPartners.pause": "Приостановить",
+    "adminPartners.resume": "Включить",
+    "adminPartners.status.active": "Работает",
+    "adminPartners.status.paused": "На паузе",
+    "adminPartners.status.archived": "В архиве",
+    "adminPartners.people": "Пришли по ссылке",
+    "adminPartners.noPeople": "Пока никто не зарегистрировался",
+    "adminPartners.member": "Резидент",
+    "adminPartners.joined": "Пришёл",
+    "adminPartners.state": "Статус",
+    "adminPartners.source": "Метка",
+    "adminPartners.statePaid": "Оплатил {date}",
+    "adminPartners.stateTrial": "Пробный до {date}",
+    "adminPartners.stateLapsed": "Пробный закончился",
+    "adminPartners.bonuses": "Начисления",
+    "adminPartners.noBonuses": "Начислений пока нет",
+    "adminPartners.kind": "За что",
+    "adminPartners.payment": "Оплата",
+    "adminPartners.bonus": "Бонус",
+    "adminPartners.kind.first": "Первая оплата",
+    "adminPartners.kind.renewal": "Продление",
+    "adminPartners.cstatus.accrued": "Начислен",
+    "adminPartners.cstatus.paid": "Выплачен",
+    "adminPartners.cstatus.cancelled": "Отменён",
+    "trial.invitedTitle": "Вас пригласил(а) {name}",
+    "trial.invitedText": "Войдите по номеру телефона: {days} дней Friends бесплатно, без оплаты и карты.",
+    "trial.started": "Бесплатный период включён до {date}",
+    "trial.freeTitle": "Месяц Friends бесплатно",
     "nav.adminFeedback": "Отзывы о встречах",
     "nav.adminStaff": "Команда Friends",
     "view.feedback.title": "Отзыв о встрече",
@@ -7556,6 +7672,71 @@ var qrcode = function() {
     "error.future_day": "Болашақ күндерге түсім енгізуге болмайды.",
     "nav.adminStats": "Статистика",
     "nav.adminReferrals": "Ұсыныстар",
+    "nav.adminPartners": "Блогерлер",
+    "view.adminPartners.title": "Блогерлер",
+    "view.adminPartners.subtitle": "Тегін айы бар сілтемелер, кім келді, кім төледі және қанша бонус төлеу керек.",
+    "adminPartners.title": "Блогерлер мен серіктестер",
+    "adminPartners.text": "Блогер жазылушыларына тегін айы бар сілтеме береді. Адам төлегенде немесе ұзартқанда блогерге бонус есептеледі.",
+    "adminPartners.noAccess": "Бөлім әкімшіге, маркетологқа және бухгалтерге қолжетімді.",
+    "adminPartners.listTitle": "Блогерлердің сілтемелері",
+    "adminPartners.listText": "Сілтемені көшіріп, блогерге жіберіңіз. Сандар өздігінен жаңарады.",
+    "adminPartners.empty": "Әзірге блогер жоқ. Біріншісін төменде қосыңыз.",
+    "adminPartners.addTitle": "Блогер қосу",
+    "adminPartners.addText": "Код сілтеменің бөлігі болады: friendscommunity.kz/?ref=код",
+    "adminPartners.add": "Сілтеме жасау",
+    "adminPartners.added": "Блогер қосылды, сілтеме дайын",
+    "adminPartners.codeTaken": "Бұл код бос емес, басқасын ойлаңыз",
+    "adminPartners.name": "Блогердің аты",
+    "adminPartners.code": "Сілтеме коды (латынша)",
+    "adminPartners.contact": "Байланыс (Instagram, WhatsApp)",
+    "adminPartners.trialDays": "Тегін күндер",
+    "adminPartners.firstPct": "Алғашқы төлемнен бонус, %",
+    "adminPartners.renewalPct": "Ұзартудан бонус, %",
+    "adminPartners.renewalMonths": "Ұзартудан неше ай төлейміз",
+    "adminPartners.fixedKzt": "Әр төлеген адам үшін тұрақты сома, ₸",
+    "adminPartners.link": "Блогер сілтемесі",
+    "adminPartners.copy": "Көшіру",
+    "adminPartners.terms": "{days} күн тегін · алғашқы төлемнен {first}% · ұзартудан {renewal}% {months} ай",
+    "adminPartners.fixed": "әр адам үшін қосымша {sum}",
+    "adminPartners.visits30": "Өтулер, 30 күн",
+    "adminPartners.signups": "Тіркелді",
+    "adminPartners.trials": "Сынақ кезеңінде",
+    "adminPartners.paidUsers": "Төледі",
+    "adminPartners.revenue": "Түсім",
+    "adminPartners.bonusDue": "Төлеуге",
+    "adminPartners.bonusPaid": "Төленді",
+    "adminPartners.payout": "{sum} төлемін белгілеу",
+    "adminPartners.payoutConfirm": "Блогерге {sum} аудардыңыз ба? Бонустар төленді деп белгіленеді.",
+    "adminPartners.paidOut": "Белгіленді: {sum} төленді",
+    "adminPartners.details": "Кім келді",
+    "adminPartners.pause": "Тоқтата тұру",
+    "adminPartners.resume": "Қосу",
+    "adminPartners.status.active": "Жұмыс істеп тұр",
+    "adminPartners.status.paused": "Тоқтатылған",
+    "adminPartners.status.archived": "Мұрағатта",
+    "adminPartners.people": "Сілтеме арқылы келгендер",
+    "adminPartners.noPeople": "Әзірге ешкім тіркелмеді",
+    "adminPartners.member": "Резидент",
+    "adminPartners.joined": "Келген күні",
+    "adminPartners.state": "Мәртебе",
+    "adminPartners.source": "Белгі",
+    "adminPartners.statePaid": "{date} төледі",
+    "adminPartners.stateTrial": "Сынақ {date} дейін",
+    "adminPartners.stateLapsed": "Сынақ аяқталды",
+    "adminPartners.bonuses": "Есептеулер",
+    "adminPartners.noBonuses": "Әзірге есептеу жоқ",
+    "adminPartners.kind": "Не үшін",
+    "adminPartners.payment": "Төлем",
+    "adminPartners.bonus": "Бонус",
+    "adminPartners.kind.first": "Алғашқы төлем",
+    "adminPartners.kind.renewal": "Ұзарту",
+    "adminPartners.cstatus.accrued": "Есептелді",
+    "adminPartners.cstatus.paid": "Төленді",
+    "adminPartners.cstatus.cancelled": "Бас тартылды",
+    "trial.invitedTitle": "Сізді {name} шақырды",
+    "trial.invitedText": "Телефон нөмірімен кіріңіз: Friends {days} күн тегін, төлемсіз және картасыз.",
+    "trial.started": "Тегін кезең {date} дейін қосылды",
+    "trial.freeTitle": "Friends бір ай тегін",
     "nav.adminFeedback": "Кездесулер туралы пікірлер",
     "nav.adminStaff": "Friends командасы",
     "view.feedback.title": "Кездесу туралы пікір",
@@ -9486,6 +9667,71 @@ var qrcode = function() {
     "error.future_day": "Revenue can't be entered for future days.",
     "nav.adminStats": "Statistics",
     "nav.adminReferrals": "Referrals",
+    "nav.adminPartners": "Bloggers",
+    "view.adminPartners.title": "Bloggers",
+    "view.adminPartners.subtitle": "Free-month links, who came, who paid and how much bonus is due.",
+    "adminPartners.title": "Bloggers and partners",
+    "adminPartners.text": "A blogger shares a link with a free month. When a person pays or renews, the blogger earns a bonus.",
+    "adminPartners.noAccess": "Available to admins, marketing and accountants.",
+    "adminPartners.listTitle": "Blogger links",
+    "adminPartners.listText": "Copy the link and send it to the blogger. Numbers update automatically.",
+    "adminPartners.empty": "No bloggers yet. Add the first one below.",
+    "adminPartners.addTitle": "Add a blogger",
+    "adminPartners.addText": "The code becomes part of the link: friendscommunity.kz/?ref=code",
+    "adminPartners.add": "Create link",
+    "adminPartners.added": "Blogger added, link is ready",
+    "adminPartners.codeTaken": "This code is taken, choose another",
+    "adminPartners.name": "Blogger name",
+    "adminPartners.code": "Link code (latin)",
+    "adminPartners.contact": "Contact (Instagram, WhatsApp)",
+    "adminPartners.trialDays": "Free days",
+    "adminPartners.firstPct": "Bonus on first payment, %",
+    "adminPartners.renewalPct": "Bonus on renewals, %",
+    "adminPartners.renewalMonths": "Months of renewal bonuses",
+    "adminPartners.fixedKzt": "Fixed per paying member, ₸",
+    "adminPartners.link": "Blogger link",
+    "adminPartners.copy": "Copy",
+    "adminPartners.terms": "{days} days free · {first}% of first payment · {renewal}% of renewals for {months} mo.",
+    "adminPartners.fixed": "plus {sum} per member",
+    "adminPartners.visits30": "Visits, 30 d",
+    "adminPartners.signups": "Signed up",
+    "adminPartners.trials": "On trial",
+    "adminPartners.paidUsers": "Paid",
+    "adminPartners.revenue": "Revenue",
+    "adminPartners.bonusDue": "Due",
+    "adminPartners.bonusPaid": "Paid out",
+    "adminPartners.payout": "Mark {sum} as paid",
+    "adminPartners.payoutConfirm": "Have you transferred {sum} to the blogger? Bonuses will be marked as paid.",
+    "adminPartners.paidOut": "Marked as paid: {sum}",
+    "adminPartners.details": "Who came",
+    "adminPartners.pause": "Pause",
+    "adminPartners.resume": "Resume",
+    "adminPartners.status.active": "Active",
+    "adminPartners.status.paused": "Paused",
+    "adminPartners.status.archived": "Archived",
+    "adminPartners.people": "Came via link",
+    "adminPartners.noPeople": "Nobody has signed up yet",
+    "adminPartners.member": "Member",
+    "adminPartners.joined": "Joined",
+    "adminPartners.state": "Status",
+    "adminPartners.source": "Tag",
+    "adminPartners.statePaid": "Paid {date}",
+    "adminPartners.stateTrial": "Trial until {date}",
+    "adminPartners.stateLapsed": "Trial ended",
+    "adminPartners.bonuses": "Bonuses",
+    "adminPartners.noBonuses": "No bonuses yet",
+    "adminPartners.kind": "For",
+    "adminPartners.payment": "Payment",
+    "adminPartners.bonus": "Bonus",
+    "adminPartners.kind.first": "First payment",
+    "adminPartners.kind.renewal": "Renewal",
+    "adminPartners.cstatus.accrued": "Accrued",
+    "adminPartners.cstatus.paid": "Paid",
+    "adminPartners.cstatus.cancelled": "Cancelled",
+    "trial.invitedTitle": "{name} invited you",
+    "trial.invitedText": "Sign in with your phone: {days} days of Friends free, no payment or card.",
+    "trial.started": "Free period is on until {date}",
+    "trial.freeTitle": "A month of Friends for free",
     "nav.adminFeedback": "Event feedback",
     "nav.adminStaff": "Friends team",
     "view.feedback.title": "Event feedback",
@@ -10120,7 +10366,7 @@ var qrcode = function() {
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners"];
   const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal"];
   let supabaseClient = null;
   function authClient() {
@@ -10140,7 +10386,7 @@ var qrcode = function() {
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -10525,10 +10771,52 @@ var qrcode = function() {
     box.innerHTML = "<div><strong>" + esc(t("partners.inviteTitle", { cat: t("expertCategory." + d.category) })) + "</strong><p>" + esc(t("partners.inviteText", { months: d.free_months })) + "</p></div>";
     content.prepend(box);
   }
+  // ---------- Blogger links: ?ref=CODE&utm_* → free trial month after sign-in (first touch wins) ----------
+  const INVITE_KEY = "friends.invite", TRIAL_KEY = "friends.trialClaimed";
+  const SITE_URL = "https://friendscommunity.kz";
+  function readInvite() { try { return JSON.parse(store.get(INVITE_KEY) || "null"); } catch { return null; } }
+  function captureInvite() {
+    const q = new URLSearchParams(location.search);
+    const ref = (q.get("ref") || q.get("b") || "").trim().toLowerCase() || null;
+    const inv = { ref, utm_source: q.get("utm_source"), utm_medium: q.get("utm_medium"), utm_campaign: q.get("utm_campaign") };
+    if (!inv.ref && !inv.utm_source) return;
+    const prev = readInvite();
+    if (prev && prev.ref) return;
+    store.set(INVITE_KEY, JSON.stringify(inv));
+  }
+  async function inviteBanner() {
+    const inv = readInvite();
+    if (!inv || !inv.ref || APP === "admin") return;
+    let d;
+    try { d = await api("/v1/public/partners/" + encodeURIComponent(inv.ref)); } catch { return; }
+    if (document.querySelector(".trial-cta")) return;
+    const box = document.createElement("div");
+    box.className = "card-cta partner-cta trial-cta";
+    box.innerHTML = "<div><strong>" + ic("gift", "ic-inline") + " " + esc(t("trial.invitedTitle", { name: d.name })) + "</strong><p>" + esc(t("trial.invitedText", { days: d.trial_days })) + "</p></div>";
+    content.prepend(box);
+  }
+  let trialNotice = null;
+  function showTrialNotice() {
+    if (!trialNotice || document.querySelector(".trial-cta")) return;
+    const box = document.createElement("div");
+    box.className = "card-cta partner-cta trial-cta";
+    box.innerHTML = "<div><strong>" + ic("gift", "ic-inline") + " " + esc(trialNotice.invited_by ? t("trial.invitedTitle", { name: trialNotice.invited_by }) : t("trial.freeTitle")) + "</strong><p>" + esc(t("trial.started", { date: day(trialNotice.trial_until) })) + "</p></div>";
+    content.prepend(box);
+  }
+  async function claimTrial() {
+    if (APP === "admin" || store.get(TRIAL_KEY)) return;
+    const inv = readInvite() || {};
+    try {
+      const r = await api("/v1/me/trial", { method: "POST", body: JSON.stringify({ ref: inv.ref || null, utm_source: inv.utm_source || null, utm_medium: inv.utm_medium || null, utm_campaign: inv.utm_campaign || null }) });
+      store.set(TRIAL_KEY, "1"); store.set(INVITE_KEY, "");
+      if (r.trial_until) { status(t("trial.started", { date: day(r.trial_until) })); trialNotice = r; }
+    } catch (x) { if (x.status === 409) { store.set(TRIAL_KEY, "1"); store.set(INVITE_KEY, ""); } }
+  }
+
   function signedOut() {
     authBar();
     setHeading("overview");
-    setTimeout(() => { expertInviteBanner(); }, 0);
+    setTimeout(() => { expertInviteBanner(); inviteBanner(); }, 0);
     content.innerHTML = '<div class="empty-panel login-panel"><div class="brand-mark" aria-hidden="true">f</div><p class="eyebrow">' + esc(t("login.eyebrow")) + "</p><h2>" + esc(t("login.title")) + "</h2><p>" + esc(t("login.text")) +
       '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button><button class="outline-button" id="login-email">' + esc(t("login.email")) +
       '</button></div><div class="demo-note">' + esc(t("login.note")) + "</div></div>" + installCard();
@@ -11682,6 +11970,69 @@ var qrcode = function() {
       if (!confirm(t("adminRef.applyConfirm"))) return;
       try { const r = await api("/v1/admin/referral-bonuses/" + encodeURIComponent(b.dataset.bonus) + "/apply", { method: "POST", body: "{}" }); status(t("adminRef.appliedUntil", { date: day(r.membership_until) })); await adminReferrals(); } catch (x) { status(x.message, true); }
     }));
+  }
+
+
+  // ---------- Bloggers (promo partners): links, free month, funnel, bonuses ----------
+  async function adminPartners(openId) {
+    let d;
+    try { d = await api("/v1/admin/partners"); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.noAccess"), ""); return; } throw e; }
+    const canPay = (await loadRoles()).some(r => r === "admin" || r === "accountant");
+    const link = p => SITE_URL + "/?ref=" + encodeURIComponent(p.code);
+    const sum = k => d.items.reduce((a, p) => a + Number(p[k] || 0), 0);
+    const kpi = (label, v) => '<div class="stat-card"><p>' + esc(label) + "</p><strong>" + esc(String(v)) + "</strong></div>";
+    const totals = '<div class="stats-grid">' + kpi(t("adminPartners.signups"), sum("signups")) + kpi(t("adminPartners.paidUsers"), sum("paid_users")) + kpi(t("adminPartners.revenue"), money(sum("revenue_kzt"))) + kpi(t("adminPartners.bonusDue"), money(sum("bonus_due_kzt"))) + "</div>";
+    const card = p => '<article class="invoice-card"><div class="invoice-top"><div><h3>' + esc(p.name) + "</h3><small>" + esc(p.contact || "") + '</small></div><span class="pill">' + esc(t("adminPartners.status." + p.status)) + "</span></div>" +
+      '<div class="copy-row"><input readonly value="' + esc(link(p)) + '" aria-label="' + esc(t("adminPartners.link")) + '"><button type="button" class="outline-button" data-copy-link="' + esc(link(p)) + '">' + esc(t("adminPartners.copy")) + "</button></div>" +
+      '<p class="muted">' + esc(t("adminPartners.terms", { days: p.trial_days, first: Number(p.first_bonus_pct), renewal: Number(p.renewal_bonus_pct), months: p.renewal_months })) + (Number(p.fixed_bonus_kzt) ? " · " + esc(t("adminPartners.fixed", { sum: money(p.fixed_bonus_kzt) })) : "") + "</p>" +
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th class="num">' + esc(t("adminPartners.visits30")) + '</th><th class="num">' + esc(t("adminPartners.signups")) + '</th><th class="num">' + esc(t("adminPartners.trials")) + '</th><th class="num">' + esc(t("adminPartners.paidUsers")) + '</th><th class="num">' + esc(t("adminPartners.revenue")) + '</th><th class="num">' + esc(t("adminPartners.bonusDue")) + '</th><th class="num">' + esc(t("adminPartners.bonusPaid")) + "</th></tr></thead><tbody><tr>" +
+      '<td class="num">' + p.visits_30d + '</td><td class="num">' + p.signups + '</td><td class="num">' + p.trials_active + '</td><td class="num">' + p.paid_users + '</td><td class="num">' + esc(money(p.revenue_kzt)) + '</td><td class="num"><strong>' + esc(money(p.bonus_due_kzt)) + '</strong></td><td class="num">' + esc(money(p.bonus_paid_kzt)) + "</td></tr></tbody></table></div>" +
+      '<div class="receipt-actions">' + (canPay && Number(p.bonus_due_kzt) > 0 ? '<button type="button" class="primary-button" data-payout="' + esc(p.id) + '" data-sum="' + esc(money(p.bonus_due_kzt)) + '">' + esc(t("adminPartners.payout", { sum: money(p.bonus_due_kzt) })) + "</button>" : "") +
+      '<button type="button" class="outline-button" data-partner-open="' + esc(p.id) + '">' + esc(t("adminPartners.details")) + "</button>" +
+      '<button type="button" class="text-button" data-partner-toggle="' + esc(p.id) + '" data-next="' + (p.status === "active" ? "paused" : "active") + '">' + esc(t(p.status === "active" ? "adminPartners.pause" : "adminPartners.resume")) + "</button></div>" +
+      '<div data-partner-details="' + esc(p.id) + '"></div></article>';
+    const form = '<form id="partner-form" class="app-form">' + field(t("adminPartners.name"), "name", "", "text", 'required minlength="2" maxlength="120"') +
+      field(t("adminPartners.code"), "code", "", "text", 'required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,39}" placeholder="kappas"') +
+      field(t("adminPartners.contact"), "contact", "", "text", 'maxlength="200"') +
+      '<div class="form-grid">' + field(t("adminPartners.trialDays"), "trial_days", "30", "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", "20", "number", 'min="0" max="100" step="0.5"') +
+      field(t("adminPartners.renewalPct"), "renewal_bonus_pct", "10", "number", 'min="0" max="100" step="0.5"') + field(t("adminPartners.renewalMonths"), "renewal_months", "12", "number", 'min="0" max="120"') +
+      field(t("adminPartners.fixedKzt"), "fixed_bonus_kzt", "0", "number", 'min="0" step="1000"') + "</div>" +
+      '<button class="primary-button">' + esc(t("adminPartners.add")) + "</button></form>";
+    content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.text"), totals) +
+      panel(t("adminPartners.listTitle"), t("adminPartners.listText"), d.items.length ? d.items.map(card).join("") : '<p class="muted">' + esc(t("adminPartners.empty")) + "</p>") +
+      panel(t("adminPartners.addTitle"), t("adminPartners.addText"), form);
+    document.querySelector("#partner-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = new FormData(e.currentTarget);
+      const num = k => Number(f.get(k) || 0);
+      try {
+        await api("/v1/admin/partners", { method: "POST", body: JSON.stringify({ name: String(f.get("name")).trim(), code: String(f.get("code")).trim().toLowerCase(), contact: String(f.get("contact") || "").trim() || null,
+          trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: num("renewal_bonus_pct"), renewal_months: num("renewal_months"), fixed_bonus_kzt: num("fixed_bonus_kzt") }) });
+        status(t("adminPartners.added")); await adminPartners();
+      } catch (x) { status(x.code === "code_taken" ? t("adminPartners.codeTaken") : x.message, true); }
+    });
+    content.querySelectorAll("[data-copy-link]").forEach(b => b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(b.dataset.copyLink); status(t("tests.copied")); } catch { b.previousElementSibling.select(); } }));
+    content.querySelectorAll("[data-payout]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm(t("adminPartners.payoutConfirm", { sum: b.dataset.sum }))) return;
+      try { const r = await api("/v1/admin/partners/" + encodeURIComponent(b.dataset.payout) + "/payout", { method: "POST", body: "{}" }); status(t("adminPartners.paidOut", { sum: money(r.total_kzt) })); await adminPartners(); } catch (x) { status(x.message, true); }
+    }));
+    content.querySelectorAll("[data-partner-toggle]").forEach(b => b.addEventListener("click", async () => {
+      try { await api("/v1/admin/partners/" + encodeURIComponent(b.dataset.partnerToggle), { method: "PATCH", body: JSON.stringify({ status: b.dataset.next }) }); await adminPartners(); } catch (x) { status(x.message, true); }
+    }));
+    const openDetails = async id => {
+      const box = content.querySelector('[data-partner-details="' + CSS.escape(id) + '"]');
+      if (!box) return;
+      if (box.innerHTML) { box.innerHTML = ""; return; }
+      try {
+        const x = await api("/v1/admin/partners/" + encodeURIComponent(id) + "/commissions");
+        box.innerHTML = "<h4>" + esc(t("adminPartners.people")) + "</h4>" + (x.people.length ? '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("adminPartners.member")) + "</th><th>" + esc(t("adminPartners.joined")) + "</th><th>" + esc(t("adminPartners.state")) + "</th><th>" + esc(t("adminPartners.source")) + "</th></tr></thead><tbody>" +
+          x.people.map(m => "<tr><td>" + esc(m.member_name) + "</td><td>" + esc(day(m.created_at)) + "</td><td>" + esc(m.first_paid_at ? t("adminPartners.statePaid", { date: day(m.first_paid_at) }) : (m.trial_until && new Date(m.trial_until) > new Date() ? t("adminPartners.stateTrial", { date: day(m.trial_until) }) : t("adminPartners.stateLapsed"))) + "</td><td>" + esc([m.utm_source, m.utm_campaign].filter(Boolean).join(" / ") || "—") + "</td></tr>").join("") + "</tbody></table></div>" : '<p class="muted">' + esc(t("adminPartners.noPeople")) + "</p>") +
+          "<h4>" + esc(t("adminPartners.bonuses")) + "</h4>" + (x.commissions.length ? '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("adminPartners.member")) + "</th><th>" + esc(t("adminPartners.kind")) + '</th><th class="num">' + esc(t("adminPartners.payment")) + '</th><th class="num">' + esc(t("adminPartners.bonus")) + "</th><th>" + esc(t("adminPartners.state")) + "</th></tr></thead><tbody>" +
+          x.commissions.map(c => "<tr><td>" + esc(c.member_name) + "<br><small class=\"muted\">" + esc(day(c.created_at)) + "</small></td><td>" + esc(t("adminPartners.kind." + c.kind)) + '</td><td class="num">' + esc(money(c.payment_kzt)) + '</td><td class="num">' + esc(money(c.bonus_kzt)) + "</td><td>" + esc(t("adminPartners.cstatus." + c.status)) + (c.paid_at ? " " + esc(day(c.paid_at)) : "") + "</td></tr>").join("") + "</tbody></table></div>" : '<p class="muted">' + esc(t("adminPartners.noBonuses")) + "</p>");
+      } catch (x) { status(x.message, true); }
+    };
+    content.querySelectorAll("[data-partner-open]").forEach(b => b.addEventListener("click", () => openDetails(b.dataset.partnerOpen)));
+    if (openId) openDetails(openId);
   }
 
   async function adminStaff() {
@@ -13089,7 +13440,7 @@ var qrcode = function() {
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals };
+  const RENDERERS = { overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners() };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;
@@ -13153,6 +13504,7 @@ var qrcode = function() {
 
   async function boot() {
     I18N.applyStatic();
+    captureInvite();
     const expertToken = new URLSearchParams(location.search).get("expert");
     if (expertToken) { try { sessionStorage.setItem("friends.expertInvite", expertToken); } catch { /* single page */ } history.replaceState(null, "", location.pathname); }
     candidateToken = new URLSearchParams(location.search).get("test");
@@ -13169,7 +13521,9 @@ var qrcode = function() {
         try { sessionStorage.removeItem("friends.expertInvite"); } catch { /* none */ }
         try { const acc = await api("/v1/expert-invites/" + encodeURIComponent(pendingExpert) + "/accept", { method: "POST", body: "{}" }); active = "experts"; nudgeChecked = true; status(t("partners.accepted", { months: acc.free_months })); } catch (x) { status(x.message, true); }
       }
+      await claimTrial();
       await render(active);
+      showTrialNotice();
     } catch (e) {
       clearTokens();
       signedOut();

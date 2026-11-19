@@ -1,3 +1,3 @@
-# friends-site
+# friends-site (main) → app.friendscommunity.kz
 
-Собранный сайт Friends (friendscommunity.kz: лендинг, /app, /admin, /academy). Не править вручную: собирается в friends-hub командой `python3 apps/site/build_bundle.py`.
+Приложение резидентов и /admin. Не править вручную: собирается в friends-hub командой `python3 apps/site/build_bundle.py`.

@@ -11889,7 +11889,7 @@ var qrcode = function() {
     el.classList.toggle("signed-in", !!token());
     el.innerHTML = chatBtn + themeButton() + I18N.switcherHtml() + (token()
       ? '<span class="status-dot" aria-hidden="true"></span><span id="user-label">' + esc(user?.email || t("auth.signedInLabel")) + '</span><button class="outline-button" id="logout-button">' + esc(t("auth.logout")) + "</button>"
-      : '<span>' + esc(t("auth.required")) + '</span><button class="primary-button" id="login-button">' + esc(t("auth.login")) + "</button>");
+      : (ownAuth ? "" : '<span>' + esc(t("auth.required")) + '</span><button class="primary-button" id="login-button">' + esc(t("auth.login")) + "</button>"));
     document.querySelector("#login-button")?.addEventListener("click", login);
     document.querySelector("#logout-button")?.addEventListener("click", logout);
   }

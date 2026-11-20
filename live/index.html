@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#18191a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Friends">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="description" content="Friends">
+  <title>Friends</title>
+  <script>try{var t=localStorage.getItem("friends.theme"),a=localStorage.getItem("friends.accent"),r=document.documentElement;r.dataset.theme=t==="light"?"light":"dark";if(t==="navy")r.dataset.palette="navy";if(a&&a!=="blue"&&["teal","violet","green"].indexOf(a)>=0)r.dataset.accent=a}catch(e){document.documentElement.dataset.theme="dark"}</script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body data-app="resident">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" data-view="overview" data-i18n-aria-label="brand.home"><span class="brand-mark" aria-hidden="true">f</span><span>friends<span class="brand-dot">.</span></span></a>
+      <p class="nav-label" data-i18n="nav.label"></p>
+      <nav data-i18n-aria-label="nav.aria">
+        <button class="nav-item active" data-view="overview" data-primary><span aria-hidden="true" data-ic="home"></span> <span data-i18n="nav.home"></span></button>
+        <button class="nav-item" data-view="business" data-primary><span aria-hidden="true" data-ic="business"></span> <span data-i18n="nav.business"></span></button>
+        <button class="nav-item nav-qr" data-view="card" data-primary><span aria-hidden="true" class="qr-ic" data-ic="qr"></span> <span data-i18n="nav.qr"></span></button>
+        <button class="nav-item" data-view="learn" data-primary><span aria-hidden="true" data-ic="learn"></span> <span data-i18n="nav.learn"></span></button>
+        <button class="nav-item" data-view="me" data-primary><span aria-hidden="true" data-ic="user"></span> <span data-i18n="nav.me"></span></button>
+        <button class="nav-item" data-view="messages"><span aria-hidden="true" data-ic="chat"></span> <span data-i18n="nav.messages"></span></button>
+        <button class="nav-item" data-view="events"><span aria-hidden="true" data-ic="calendar"></span> <span data-i18n="nav.events"></span></button>
+        <button class="nav-item" data-view="experts"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.experts"></span></button>
+        <button class="nav-item" data-view="members"><span aria-hidden="true" data-ic="users"></span> <span data-i18n="nav.members"></span></button>
+        <button class="nav-item" data-view="announcements"><span aria-hidden="true" data-ic="megaphone"></span> <span data-i18n="nav.announcements"></span></button>
+        <button class="nav-item" data-view="tests"><span aria-hidden="true" data-ic="test"></span> <span data-i18n="nav.tests"></span></button>
+        <button class="nav-item" data-view="deals"><span aria-hidden="true" data-ic="deal"></span> <span data-i18n="nav.deals"></span></button>
+        <button class="nav-item" data-view="companies"><span aria-hidden="true" data-ic="building"></span> <span data-i18n="nav.companies"></span></button>
+        <button class="nav-item" data-view="discounts"><span aria-hidden="true" data-ic="percent"></span> <span data-i18n="nav.discounts"></span></button>
+        <button class="nav-item" data-view="partner"><span aria-hidden="true" data-ic="tag"></span> <span data-i18n="nav.partner"></span></button>
+        <button class="nav-item" data-view="notifications"><span aria-hidden="true" data-ic="bell"></span> <span data-i18n="nav.notifications"></span></button>
+        <button class="nav-item" data-view="checkin"><span aria-hidden="true" data-ic="pen"></span> <span data-i18n="nav.checkin"></span></button>
+        <button class="nav-item" data-view="polls"><span aria-hidden="true" data-ic="help"></span> <span data-i18n="nav.polls"></span></button>
+        <button class="nav-item" data-view="profile"><span aria-hidden="true" data-ic="user"></span> <span data-i18n="nav.profile"></span></button>
+        <button class="nav-item" data-view="trust"><span aria-hidden="true" data-ic="shield"></span> <span data-i18n="nav.trust"></span></button>
+        <button class="nav-item" data-view="membership"><span aria-hidden="true" data-ic="card"></span> <span data-i18n="nav.membership"></span></button>
+        <button class="nav-item" data-view="team"><span aria-hidden="true" data-ic="users"></span> <span data-i18n="nav.team"></span></button>
+        <button class="nav-item" data-view="settings"><span aria-hidden="true" data-ic="gear"></span> <span data-i18n="nav.settings"></span></button>
+      </nav>
+      <div class="sidebar-bottom"><div class="help-mark" aria-hidden="true">?</div><div><strong data-i18n="help.title"></strong><small data-i18n="help.text"></small></div></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><button type="button" class="mobile-brand" data-view="overview" data-i18n-aria-label="nav.overview">friends<span class="brand-dot">.</span></button><div class="topbar-right"></div></header>
+      <section class="welcome">
+        <div><p class="eyebrow" data-i18n="welcome.eyebrow"></p><h1 id="page-title"></h1><p class="muted" id="page-subtitle"></p></div>
+        <div class="welcome-mark" aria-hidden="true"></div>
+      </section>
+      <section id="view-content" aria-live="polite">
+        <div class="loading-panel" data-i18n="common.loading"></div>
+      </section>
+      <footer data-i18n="footer"></footer>
+    </main>
+  </div>
+  <dialog class="menu-sheet" id="menu-sheet" aria-labelledby="menu-sheet-title"></dialog>
+  <script src="./config.js"></script>
+  <script src="./vendor/qrcode.js"></script>
+  <script src="./i18n.js"></script>
+  <script src="./client.js"></script>
+  <script>if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));</script>
+</body>
+</html>

@@ -1,44 +1,36 @@
 {
-  "name": "Friends Admin — управление сообществом",
+  "name": "Friends Admin",
   "short_name": "Friends Admin",
-  "description": "Приложение команды Friends: статистика, оплаты, рекомендации, мероприятия, курсы.",
+  "description": "Админка сообщества Friends: резиденты, заявки, мероприятия, рассылки, отчёты.",
   "lang": "ru-KZ",
-  "dir": "ltr",
-  "id": "/admin.html",
-  "start_url": "/admin.html?source=pwa",
-  "scope": "/admin.html",
+  "id": "./admin.html",
+  "start_url": "./admin.html?source=pwa",
+  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "orientation": "any",
+  "background_color": "#18191a",
+  "theme_color": "#18191a",
   "categories": [
-    "business",
-    "social"
+    "business"
   ],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "../icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "../icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable-512.png",
+      "src": "../icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
     }
   ]
 }

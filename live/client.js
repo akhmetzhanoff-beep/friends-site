@@ -1432,6 +1432,21 @@
       content.insertBefore(box.firstChild, content.children[1] || null);
     }
     content.querySelectorAll("[data-lesson]").forEach(b => b.addEventListener("click", () => { learnLesson = b.dataset.lesson; render("lesson"); }));
+    addBookAudio(c);
+  }
+
+  // Short voiced version of a book ("main idea in two minutes"): mp3 files live next to the app, listed in audio/manifest.json.
+  let audioManifest = null;
+  async function addBookAudio(c) {
+    const slug = c.slug || learnCourse;
+    if (!/^book-/.test(String(slug))) return;
+    if (!audioManifest) { try { audioManifest = await (await fetch("audio/manifest.json", { cache: "no-cache" })).json(); } catch { audioManifest = {}; } }
+    const a = audioManifest[slug];
+    if (!a) return;
+    const box = document.createElement("div");
+    box.className = "card-cta book-audio";
+    box.innerHTML = "<div><strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><audio controls preload="none" src="' + esc(a.file) + '"></audio></div>';
+    content.insertBefore(box, content.children[1] || null);
   }
 
   // ---------- «Слушать»: reads the lesson aloud with the phone's built-in voice ----------

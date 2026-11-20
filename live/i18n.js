@@ -151,6 +151,9 @@
     "notifications.section": "Уведомления",
     "notifications.sectionText": "Напоминания о подписке и важные сообщения.",
 
+    "profile.city": "Город",
+    "profile.cityPick": "Выберите город",
+    "profile.welcome": "Добро пожаловать! Укажите имя и город, чтобы вас находили люди из вашего региона.",
     "profile.section": "Личные данные",
     "profile.sectionText": "Настройте описание и видимость профиля.",
     "profile.name": "Имя и фамилия",
@@ -2313,6 +2316,9 @@
     "notifications.section": "Хабарламалар",
     "notifications.sectionText": "Жазылым туралы еске салғыштар және маңызды хабарлар.",
 
+    "profile.city": "Қала",
+    "profile.cityPick": "Қаланы таңдаңыз",
+    "profile.welcome": "Қош келдіңіз! Аймағыңыздағы адамдар сізді таппас үшін атыңыз бен қалаңызды көрсетіңіз.",
     "profile.section": "Жеке деректер",
     "profile.sectionText": "Профиль сипаттамасы мен көрінуін баптаңыз.",
     "profile.name": "Аты-жөні",
@@ -4475,6 +4481,9 @@
     "notifications.section": "Notifications",
     "notifications.sectionText": "Membership reminders and important messages.",
 
+    "profile.city": "City",
+    "profile.cityPick": "Choose your city",
+    "profile.welcome": "Welcome! Add your name and city so people from your region can find you.",
     "profile.section": "Personal details",
     "profile.sectionText": "Set your description and profile visibility.",
     "profile.name": "Full name",

@@ -242,6 +242,17 @@
     }
   }
 
+  // After every sign-in: claim the free month (blogger link), ask new people for their profile and city, then show the app.
+  async function afterSignIn(onboard) {
+    await claimTrial();
+    let needProfile = false;
+    try { const pr = await api("/v1/me/profile"); needProfile = !pr.city_id; } catch (e) { if (e.status === 404) needProfile = true; }
+    if (onboard && needProfile && APP !== "admin") { active = "profile"; try { sessionStorage.setItem("friends.welcome", "1"); } catch { /* none */ } }
+    await render(active);
+    if (onboard && needProfile && APP !== "admin") status(t("profile.welcome"));
+    showTrialNotice();
+  }
+
   async function login() {
     try {
       let normalized = "";
@@ -266,7 +277,7 @@
       await callback();
       }
       await syncLocaleAfterSignIn();
-      await render(active);
+      await afterSignIn(true);
       status(t("auth.signedIn"));
     } catch (e) {
       status(e.message || t("auth.smsFailed"), true);
@@ -650,6 +661,8 @@
     p = p || { display_name: user?.email?.split("@")[0] || "", headline: "", bio: "", avatar_url: "", visibility: "members", city_id: null };
     const needsConsent = !p.consent_accepted_at;
     const needsOffer = p.offer_acceptance_required !== false;
+    const cities = (await api("/v1/cities").catch(() => ({ items: [] }))).items;
+    const cityName = c => (I18N.getLocale() === "kk" && c.name_kk) || (I18N.getLocale() === "en" && c.name_en) || c.name;
     content.innerHTML = panel(t("profile.section"), t("profile.sectionText"),
       '<form id="profile-form" class="app-form">' +
       field(t("profile.name"), "display_name", p.display_name, "text", 'required maxlength="120" autocomplete="name"') +
@@ -658,7 +671,8 @@
       field(t("profile.avatar"), "avatar_url", p.avatar_url || "", "url") +
       '<label class="field"><span>' + esc(t("profile.visibility")) + '</span><select name="visibility">' +
       ["members", "public", "private"].map(v => option(v, t("visibility." + v), p.visibility === v)).join("") +
-      '</select></label><p class="muted">' + esc(t("profile.cityNote")) + "</p>" +
+      '</select></label>' +
+      '<label class="field"><span>' + esc(t("profile.city")) + '</span><select name="city_id"' + (cities.length ? " required" : "") + '><option value="">' + esc(t("profile.cityPick")) + "</option>" + cities.map(c => option(c.id, cityName(c), p.city_id === c.id)).join("") + "</select></label>" +
       field(t("profile.birthDate"), "birth_date", p.birth_date || "", "date", 'max="2019-12-31"') +
       '<label class="consent-field"><input type="checkbox" name="birthday_visible" value="yes"' + (p.birthday_visible ? " checked" : "") + "> <span>" + esc(t("profile.birthdayVisible")) + "</span></label>" +
       (needsConsent
@@ -688,7 +702,7 @@
             headline: String(f.get("headline") || "").trim() || null,
             bio: String(f.get("bio") || "").trim() || null,
             avatar_url: String(f.get("avatar_url") || "").trim() || null,
-            city_id: p.city_id || null,
+            city_id: String(f.get("city_id") || "") || p.city_id || null,
             visibility: String(f.get("visibility")),
             birth_date: String(f.get("birth_date") || "") || null,
             birthday_visible: f.get("birthday_visible") === "yes" && !!f.get("birth_date"),
@@ -1865,14 +1879,14 @@
     try { d = await api("/v1/admin/signups?limit=1000" + (qv ? "&q=" + encodeURIComponent(qv) : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("signups.title"), t("signups.noAccess"), ""); return; } throw e; }
     const dt = v => v ? date(v) : "";
     const access = r => r.membership_status === "active" ? (r.plan_code === "trial" ? t("signups.trial", { until: day(r.trial_until) }) : t("signups.member")) : t("signups.none");
-    const rows = d.items.map(r => "<tr><td>" + esc(r.phone) + "</td><td>" + esc(r.display_name || "") + "</td><td>" + esc(r.partner_name || r.utm_source || "") + "</td><td>" + esc(access(r)) + "</td><td>" + esc(dt(r.created_at)) + "</td><td>" + esc(dt(r.last_login_at)) + "</td></tr>").join("");
+    const rows = d.items.map(r => "<tr><td>" + esc(r.phone) + "</td><td>" + esc(r.display_name || "") + "</td><td>" + esc(r.city || "") + "</td><td>" + esc(r.partner_name || r.utm_source || "") + "</td><td>" + esc(access(r)) + "</td><td>" + esc(dt(r.created_at)) + "</td><td>" + esc(dt(r.last_login_at)) + "</td></tr>").join("");
     content.innerHTML = panel(t("signups.title"), t("signups.text", { n: d.total }),
       '<form id="signups-form" class="inline-form"><input id="signups-q" type="search" value="' + esc(qv) + '" placeholder="' + esc(t("signups.search")) + '"><button class="outline-button">' + esc(t("signups.find")) + '</button><button type="button" class="primary-button" id="signups-csv">' + esc(t("signups.csv")) + "</button></form>" +
-      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("signups.source")) + "</th><th>" + esc(t("signups.access")) + "</th><th>" + esc(t("signups.joined")) + "</th><th>" + esc(t("signups.last")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("signups.empty")) + "</td></tr>") + "</tbody></table></div>");
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("profile.city")) + "</th><th>" + esc(t("signups.source")) + "</th><th>" + esc(t("signups.access")) + "</th><th>" + esc(t("signups.joined")) + "</th><th>" + esc(t("signups.last")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="7">' + esc(t("signups.empty")) + "</td></tr>") + "</tbody></table></div>");
     content.querySelector("#signups-form").addEventListener("submit", e => { e.preventDefault(); adminSignups(); });
     content.querySelector("#signups-csv").addEventListener("click", () => {
       const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
-      const lines = [["phone", "name", "source", "access", "joined", "last_login"].map(q).join(",")].concat(d.items.map(r => [r.phone, r.display_name, r.partner_name || r.utm_source, access(r), r.created_at, r.last_login_at].map(q).join(",")));
+      const lines = [["phone", "name", "city", "source", "access", "joined", "last_login"].map(q).join(",")].concat(d.items.map(r => [r.phone, r.display_name, r.city, r.partner_name || r.utm_source, access(r), r.created_at, r.last_login_at].map(q).join(",")));
       const a = document.createElement("a");
       a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
       a.download = "friends-signups.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
@@ -3446,9 +3460,7 @@
         try { sessionStorage.removeItem("friends.expertInvite"); } catch { /* none */ }
         try { const acc = await api("/v1/expert-invites/" + encodeURIComponent(pendingExpert) + "/accept", { method: "POST", body: "{}" }); active = "experts"; nudgeChecked = true; status(t("partners.accepted", { months: acc.free_months })); } catch (x) { status(x.message, true); }
       }
-      await claimTrial();
-      await render(active);
-      showTrialNotice();
+      await afterSignIn();
     } catch (e) {
       clearTokens();
       signedOut();

@@ -796,7 +796,8 @@
         "</article>";
     }).join("");
     const hostCta = APP === "admin" ? "" : '<div class="card-cta"><div><strong>' + esc(t("host.ctaTitle")) + "</strong><p>" + esc(t("host.ctaText")) + '</p></div><button type="button" class="primary-button" data-view="host">' + esc(t("host.ctaBtn")) + '</button></div><p class="center-link"><button type="button" class="text-button" data-view="recordings">' + esc(t("recordings.link")) + "</button></p>";
-    content.innerHTML = hostCta + panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
+    const week = '<section class="week-card"><h3>' + esc(t("week.title")) + '</h3><ul class="week-list">' + ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(k => '<li><strong>' + esc(t("week.d." + k)) + '</strong><span>' + esc(t("week.t." + k)) + "</span></li>").join("") + "</ul></section>";
+    content.innerHTML = week + hostCta + panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
     content.querySelectorAll("[data-event-chat]").forEach(b => b.addEventListener("click", async () => {
       try { const r = await api("/v1/events/" + encodeURIComponent(b.dataset.eventChat) + "/chat", { method: "POST", body: "{}" }); chatRoom = r.room_id; render("chat"); } catch (e) { status(e.message, true); }
     }));

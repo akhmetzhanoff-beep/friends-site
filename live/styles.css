@@ -648,3 +648,10 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .auth-code{text-align:center;font-size:30px;letter-spacing:.35em}
 .auth-error{color:#ff7a7a;font-size:14px}
 .auth-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+
+.week-card{background:var(--surface,#1d1f21);border:1px solid var(--line,rgba(255,255,255,.12));border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.week-card h3{margin:0 0 10px;font-size:18px}
+.week-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.week-list li{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline;border-top:1px solid var(--line,rgba(255,255,255,.08));padding-top:8px}
+.week-list li:first-child{border-top:0;padding-top:0}
+.week-list span{color:var(--muted,#9aa3ad)}

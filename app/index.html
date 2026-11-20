@@ -672,6 +672,13 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .auth-error{color:#ff7a7a;font-size:14px}
 .auth-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 
+.week-card{background:var(--surface,#1d1f21);border:1px solid var(--line,rgba(255,255,255,.12));border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.week-card h3{margin:0 0 10px;font-size:18px}
+.week-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.week-list li{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline;border-top:1px solid var(--line,rgba(255,255,255,.08));padding-top:8px}
+.week-list li:first-child{border-top:0;padding-top:0}
+.week-list span{color:var(--muted,#9aa3ad)}
+
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
 .pilot-banner span{flex:1 1 220px;min-width:0}
@@ -5876,6 +5883,21 @@ var qrcode = function() {
     "host.status.cancelled": "Отменено",
     "video.create": "Создать видеокомнату",
     "video.created": "Видеокомната создана: ссылка вставлена. Сохраните встречу.",
+    "week.title": "Неделя Friends",
+    "week.d.mon": "Понедельник",
+    "week.d.tue": "Вторник",
+    "week.d.wed": "Среда",
+    "week.d.thu": "Четверг",
+    "week.d.fri": "Пятница",
+    "week.d.sat": "Суббота",
+    "week.d.sun": "Воскресенье",
+    "week.t.mon": "выходной",
+    "week.t.tue": "экскурсия по бизнесу",
+    "week.t.wed": "бизнес-бранч, мастер-классы, воркшоп",
+    "week.t.thu": "баня",
+    "week.t.fri": "кубок, благотворительность",
+    "week.t.sat": "мастермайнд, мега мастер-классы",
+    "week.t.sun": "чай и встречи",
     "meeting.topic": "Тема",
     "meeting.speaker": "Спикер",
     "meeting.join": "Войти в видео",
@@ -8053,6 +8075,21 @@ var qrcode = function() {
     "host.status.cancelled": "Бас тартылды",
     "video.create": "Бейнебөлме жасау",
     "video.created": "Бейнебөлме жасалды: сілтеме қойылды. Кездесуді сақтаңыз.",
+    "week.title": "Friends аптасы",
+    "week.d.mon": "Дүйсенбі",
+    "week.d.tue": "Сейсенбі",
+    "week.d.wed": "Сәрсенбі",
+    "week.d.thu": "Бейсенбі",
+    "week.d.fri": "Жұма",
+    "week.d.sat": "Сенбі",
+    "week.d.sun": "Жексенбі",
+    "week.t.mon": "демалыс",
+    "week.t.tue": "бизнес-экскурсия",
+    "week.t.wed": "бизнес-бранч, мастер-кластар, воркшоп",
+    "week.t.thu": "монша",
+    "week.t.fri": "кубок, қайырымдылық",
+    "week.t.sat": "мастермайнд, мега мастер-кластар",
+    "week.t.sun": "шай және кездесулер",
     "meeting.topic": "Тақырып",
     "meeting.speaker": "Спикер",
     "meeting.join": "Бейнеге кіру",
@@ -10230,6 +10267,21 @@ var qrcode = function() {
     "host.status.cancelled": "Cancelled",
     "video.create": "Create video room",
     "video.created": "Video room created: link inserted. Save the event.",
+    "week.title": "The Friends week",
+    "week.d.mon": "Monday",
+    "week.d.tue": "Tuesday",
+    "week.d.wed": "Wednesday",
+    "week.d.thu": "Thursday",
+    "week.d.fri": "Friday",
+    "week.d.sat": "Saturday",
+    "week.d.sun": "Sunday",
+    "week.t.mon": "day off",
+    "week.t.tue": "business tour",
+    "week.t.wed": "business brunch, masterclasses, workshop",
+    "week.t.thu": "banya (sauna)",
+    "week.t.fri": "cup, charity",
+    "week.t.sat": "mastermind, mega masterclasses",
+    "week.t.sun": "tea and meetups",
     "meeting.topic": "Topic",
     "meeting.speaker": "Speaker",
     "meeting.join": "Join video",
@@ -11788,7 +11840,8 @@ var qrcode = function() {
         "</article>";
     }).join("");
     const hostCta = APP === "admin" ? "" : '<div class="card-cta"><div><strong>' + esc(t("host.ctaTitle")) + "</strong><p>" + esc(t("host.ctaText")) + '</p></div><button type="button" class="primary-button" data-view="host">' + esc(t("host.ctaBtn")) + '</button></div><p class="center-link"><button type="button" class="text-button" data-view="recordings">' + esc(t("recordings.link")) + "</button></p>";
-    content.innerHTML = hostCta + panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
+    const week = '<section class="week-card"><h3>' + esc(t("week.title")) + '</h3><ul class="week-list">' + ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map(k => '<li><strong>' + esc(t("week.d." + k)) + '</strong><span>' + esc(t("week.t." + k)) + "</span></li>").join("") + "</ul></section>";
+    content.innerHTML = week + hostCta + panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
     content.querySelectorAll("[data-event-chat]").forEach(b => b.addEventListener("click", async () => {
       try { const r = await api("/v1/events/" + encodeURIComponent(b.dataset.eventChat) + "/chat", { method: "POST", body: "{}" }); chatRoom = r.room_id; render("chat"); } catch (e) { status(e.message, true); }
     }));

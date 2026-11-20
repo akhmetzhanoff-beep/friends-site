@@ -251,6 +251,7 @@
     applyWatermark();
     if (onboard && needProfile && APP !== "admin") status(t("profile.welcome"));
     showTrialNotice();
+    await runClockLink();
   }
 
   async function login() {
@@ -2275,6 +2276,91 @@
   const bizMonth = () => almatyDay().slice(0, 7);
   let bizPayMonth = null;
   const timeOf = v => v ? new Date(v).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "Asia/Almaty" }) : "—";
+
+  // ---------- Time clock protection: rotating office QR + radius, scanned with the phone camera ----------
+  function getPosition() {
+    return new Promise(resolve => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(p => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }), () => resolve(null), { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 });
+    });
+  }
+  async function clockWithCode(ws, code, action) {
+    const pos = await getPosition();
+    await api("/v1/biz/" + encodeURIComponent(ws) + "/attendance/" + action, { method: "POST", body: JSON.stringify({ qr: code, ...(pos || {}) }) });
+    status(t(action === "check-in" ? "clock.inDone" : "clock.outDone"));
+  }
+  const CLOCK_KEY = "friends.clock";
+  function captureClockLink() {
+    const v = (new URLSearchParams(location.search).get("clock") || "").trim().toLowerCase();
+    if (!/^[0-9a-f-]{36}\.[0-9a-f]{12}$/.test(v)) return;
+    try { sessionStorage.setItem(CLOCK_KEY, v); } catch { /* one page only */ }
+    try { history.replaceState(null, "", location.pathname); } catch { /* none */ }
+  }
+  /** Opened from the office QR: mark arrival, or leaving if already at work today. */
+  async function runClockLink() {
+    let raw = null;
+    try { raw = sessionStorage.getItem(CLOCK_KEY); sessionStorage.removeItem(CLOCK_KEY); } catch { /* none */ }
+    const m = raw && /^([0-9a-f-]{36})\.([0-9a-f]{12})$/.exec(raw);
+    if (!m) return;
+    bizWs = { id: m[1] }; bizTab = "clock";
+    let msg = "", bad = false;
+    try {
+      const d = await api("/v1/biz/" + m[1] + "/attendance");
+      if (d.today && d.today.check_out_at) msg = t("clock.alreadyDone");
+      else { await clockWithCode(m[1], m[2], d.today ? "check-out" : "check-in"); }
+    } catch (x) { msg = x.message; bad = true; }
+    await render("business");
+    if (msg) status(msg, bad);
+  }
+  async function clockGuardPanel() {
+    let c;
+    try { c = await api(bizBase() + "/clock"); } catch { return ""; }
+    const canEdit = ["owner", "manager"].includes(bizWs.role);
+    return panel(t("clock.guardTitle"), t("clock.guardText"),
+      '<div class="clock-guard"><label class="consent-field"><input type="checkbox" id="clock-req"' + (c.qr_required ? " checked" : "") + (canEdit ? "" : " disabled") + "> <span>" + esc(t("clock.require")) + "</span></label>" +
+      '<p class="muted">' + esc(c.lat != null ? t("clock.placeSet", { r: c.radius_m }) : t("clock.placeNone")) + "</p>" +
+      '<div class="actions-row"><button type="button" class="primary-button" id="clock-show">' + esc(t("clock.showQr")) + "</button>" +
+      (canEdit ? '<button type="button" class="outline-button" id="clock-place">' + esc(t("clock.setPlace")) + "</button>" + (c.lat != null ? '<button type="button" class="text-button" id="clock-noplace">' + esc(t("clock.clearPlace")) + "</button>" : "") : "") + "</div></div>");
+  }
+  function wireClockGuard(root) {
+    const patch = body => api(bizBase() + "/clock", { method: "PATCH", body: JSON.stringify(body) });
+    const req = root.querySelector("#clock-req");
+    if (req) req.addEventListener("change", async () => { try { await patch({ qr_required: req.checked }); status(t("clock.saved")); } catch (x) { status(x.message, true); } });
+    const place = root.querySelector("#clock-place");
+    if (place) place.addEventListener("click", async () => {
+      const pos = await getPosition();
+      if (!pos) { status(t("clock.noGeo"), true); return; }
+      if (!confirm(t("clock.placeConfirm"))) return;
+      try { await patch({ lat: pos.lat, lng: pos.lng }); status(t("clock.saved")); await bizClock(); } catch (x) { status(x.message, true); }
+    });
+    const noPlace = root.querySelector("#clock-noplace");
+    if (noPlace) noPlace.addEventListener("click", async () => { try { await patch({ lat: null, lng: null }); await bizClock(); } catch (x) { status(x.message, true); } });
+    const show = root.querySelector("#clock-show");
+    if (show) show.addEventListener("click", () => showClockScreen());
+  }
+  /** Full-screen QR for the office tablet or the manager's phone. Refreshes itself; a photo of it stops working in about a minute. */
+  function showClockScreen() {
+    const wsId = bizWs.id;
+    const box = document.createElement("div");
+    box.className = "clock-screen";
+    box.innerHTML = '<div class="clock-screen-card"><h2>' + esc(bizWs.name) + '</h2><div id="cs-qr"></div><p class="clock-code" id="cs-code"></p><p>' + esc(t("clock.screenHint")) + '</p><button type="button" class="outline-button" id="cs-close">' + esc(t("clock.close")) + "</button></div>";
+    document.body.appendChild(box);
+    let timer = null, wake = null;
+    const stop = () => { clearInterval(timer); if (wake) { try { wake.release(); } catch { /* none */ } } box.remove(); };
+    box.querySelector("#cs-close").addEventListener("click", stop);
+    const tick = async () => {
+      try {
+        const c = await api("/v1/biz/" + encodeURIComponent(wsId) + "/clock");
+        const url = location.origin + location.pathname + "?clock=" + wsId + "." + c.code;
+        const q = window.qrcode(0, "M"); q.addData(url); q.make();
+        box.querySelector("#cs-qr").innerHTML = q.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+        box.querySelector("#cs-code").textContent = c.code;
+      } catch (x) { box.querySelector("#cs-code").textContent = x.message; }
+    };
+    tick(); timer = setInterval(tick, 15000);
+    try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(l => { wake = l; }).catch(() => undefined); } catch { /* none */ }
+  }
+
   async function bizClock() {
     const d = await api(bizBase() + "/attendance");
     const tdy = d.today;
@@ -2282,9 +2368,20 @@
     const big = !tdy ? '<button type="button" class="primary-button clock-btn" data-clock="check-in">' + esc(t("clock.in")) + "</button>"
       : !tdy.check_out_at ? '<p class="clock-state">' + esc(t("clock.since", { time: timeOf(tdy.check_in_at) })) + (tdy.late_minutes ? ' <span class="pill warn-pill">' + esc(t("clock.late", { n: tdy.late_minutes })) + "</span>" : "") + '</p><button type="button" class="outline-button clock-btn" data-clock="check-out">' + esc(t("clock.out")) + "</button>"
       : '<p class="clock-state">' + esc(t("clock.done", { from: timeOf(tdy.check_in_at), to: timeOf(tdy.check_out_at) })) + "</p>";
+    const qrBox = d.qr_required && !(tdy && tdy.check_out_at)
+      ? '<form class="app-form clock-qr" id="clock-code-form"><p class="muted">' + esc(t("clock.qrHint")) + "</p>" + field(t("clock.codeLabel"), "code", "", "text", 'maxlength="12" autocomplete="off" autocapitalize="off" inputmode="text" pattern="[0-9a-fA-F]{12}" required') +
+        '<button class="primary-button">' + esc(t(tdy ? "clock.out" : "clock.in")) + "</button></form>" : "";
     const rows = d.items.map(a => "<tr><td>" + esc(dayLabel(a.day)) + "</td>" + (mgr ? "<td>" + esc(a.display_name) + "</td>" : "") + "<td>" + esc(timeOf(a.check_in_at)) + "</td><td>" + esc(timeOf(a.check_out_at)) + '</td><td class="num">' + (a.late_minutes ? '<span class="warn-text">' + a.late_minutes + "</span>" : "0") + "</td></tr>").join("");
-    const body = bizBody(panel(t("clock.title"), t("clock.text"), '<div class="clock-box">' + big + "</div>") +
+    const guard = mgr ? await clockGuardPanel() : "";
+    const body = bizBody(panel(t("clock.title"), t("clock.text"), '<div class="clock-box">' + (d.qr_required ? (tdy && tdy.check_out_at ? big : (tdy ? '<p class="clock-state">' + esc(t("clock.since", { time: timeOf(tdy.check_in_at) })) + "</p>" : "") + qrBox) : big) + "</div>") + guard +
       panel(t(mgr ? "clock.journalAll" : "clock.journalMine"), "", rows ? '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("clock.day")) + "</th>" + (mgr ? "<th>" + esc(t("clock.who")) + "</th>" : "") + "<th>" + esc(t("clock.inCol")) + "</th><th>" + esc(t("clock.outCol")) + '</th><th class="num">' + esc(t("clock.lateCol")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div>" : '<p class="muted">' + esc(t("clock.empty")) + "</p>"));
+    wireClockGuard(body);
+    const codeForm = body.querySelector("#clock-code-form");
+    if (codeForm) codeForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const code = String(new FormData(codeForm).get("code") || "").trim().toLowerCase();
+      try { await clockWithCode(bizWs.id, code, tdy && !tdy.check_out_at ? "check-out" : "check-in"); await bizClock(); } catch (x) { status(x.message, true); }
+    });
     body.querySelectorAll("[data-clock]").forEach(b => b.addEventListener("click", async () => { try { await api(bizBase() + "/attendance/" + b.dataset.clock, { method: "POST", body: "{}" }); status(t(b.dataset.clock === "check-in" ? "clock.inDone" : "clock.outDone")); await bizClock(); } catch (x) { status(x.message, true); } }));
   }
 
@@ -3599,6 +3696,7 @@
   async function boot() {
     I18N.applyStatic();
     captureInvite();
+    captureClockLink();
     const evParam = new URLSearchParams(location.search).get("event");
     if (evParam && /^[0-9a-f-]{36}$/i.test(evParam)) { focusEvent = evParam; active = "events"; }
     const expertToken = new URLSearchParams(location.search).get("expert");

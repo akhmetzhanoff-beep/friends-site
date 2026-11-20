@@ -660,3 +660,9 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 
 .offer-card{max-width:560px}.offer-scroll{max-height:56vh;overflow:auto;border:1px solid var(--line,rgba(255,255,255,.15));border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55}
 .offer-scroll h1{font-size:19px}.offer-scroll h2{font-size:16px;margin:16px 0 6px}.offer-scroll p{margin:0 0 8px}.offer-box{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+.clock-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.92);padding:16px}
+.clock-screen-card{background:#fff;color:#111;border-radius:20px;padding:24px;max-width:460px;width:100%;text-align:center}
+.clock-screen-card #cs-qr svg{width:100%;height:auto;max-width:360px}
+.clock-code{font:600 18px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.08em;margin:8px 0}
+.clock-guard .actions-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}

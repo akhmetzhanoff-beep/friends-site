@@ -655,6 +655,15 @@
     status(t("account.deleted"));
   }
 
+  // Free video room (Jitsi Meet): the link is created in one tap, opens in the browser/app, no account needed.
+  const newVideoRoom = () => { const a = new Uint8Array(8); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => { a[i] = Math.floor(Math.random() * 256); }); return "https://meet.jit.si/Friends-" + Array.from(a, b => "abcdefghjkmnpqrstuvwxyz23456789"[b % 31]).join(""); };
+  function wireVideoRoom(scope) {
+    scope.querySelectorAll("[data-video-room]").forEach(b => b.addEventListener("click", () => {
+      const f = b.closest("form"); const i = f && f.querySelector('input[name="online_url"]');
+      if (i) { i.value = newVideoRoom(); i.dispatchEvent(new Event("input", { bubbles: true })); status(t("video.created")); }
+    }));
+  }
+
   async function profileView() {
     let p = profile;
     try { if (!p) p = await api("/v1/me/profile"); } catch (e) { if (e.status !== 404) throw e; }
@@ -848,7 +857,7 @@
       const ended = new Date(x.ends_at) < new Date(), live = (x.status === "pending" || x.status === "approved") && !ended;
       return '<article class="invoice-card"><div class="invoice-top"><div><span class="pill">' + esc(t("host.format." + x.format)) + "</span><h3>" + esc(x.title) + "</h3><small>" + esc(date(x.starts_at)) + " · " + esc(x.is_free ? t("host.free") : money(x.price_kzt)) + "</small></div>" + statusPill(x) + "</div>" +
         (x.review_note ? '<p class="muted">' + esc(x.review_note) + "</p>" : "") +
-        (live && x.format === "online" ? '<form class="search-form" data-link-form="' + esc(x.id) + '"><input name="online_url" type="url" inputmode="url" value="' + esc(x.online_url || "") + '" placeholder="https://" aria-label="' + esc(t("host.link")) + '"><button class="outline-button">' + esc(t("host.linkSave")) + "</button></form>" : "") +
+        (live && x.format === "online" ? '<form class="search-form" data-link-form="' + esc(x.id) + '"><input name="online_url" type="url" inputmode="url" value="' + esc(x.online_url || "") + '" placeholder="https://" aria-label="' + esc(t("host.link")) + '"><button type="button" class="outline-button" data-video-room>' + esc(t("video.create")) + '</button><button class="outline-button">' + esc(t("host.linkSave")) + "</button></form>" : "") +
         (live ? '<div class="receipt-actions"><button type="button" class="outline-button" data-prop-cancel="' + esc(x.id) + '">' + esc(t("host.cancel")) + "</button></div>" : "") +
         (x.status === "approved" && ended ? '<form class="app-form" data-rec-form="' + esc(x.id) + '"><h4>' + esc(t("host.recTitle")) + '</h4><label class="field"><span>' + esc(t("host.recUrl")) + '</span><input name="recording_url" type="url" inputmode="url" required placeholder="https://" value="' + esc(x.recording_url || "") + '"></label>' +
           '<label class="field"><span>' + esc(t("host.recWhere")) + '</span><select name="publish_to">' + ["none", "portfolio", "library"].map(v => option(v, t("host.rec." + v), v === x.publish_to)).join("") + "</select></label>" +
@@ -891,6 +900,7 @@
       if (!confirm(t("host.cancelConfirm"))) return;
       try { await api("/v1/me/event-proposals/" + encodeURIComponent(b.dataset.propCancel) + "/cancel", { method: "POST", body: "{}" }); status(t("host.cancelled")); await host(); } catch (x) { status(x.message, true); }
     }));
+    wireVideoRoom(content);
     content.querySelectorAll("[data-link-form]").forEach(fm => fm.addEventListener("submit", async e => {
       e.preventDefault();
       try { await api("/v1/me/event-proposals/" + encodeURIComponent(fm.dataset.linkForm) + "/link", { method: "POST", body: JSON.stringify({ online_url: fm.online_url.value.trim() }) }); status(t("host.linkSaved")); } catch (x) { status(x.message, true); }
@@ -945,7 +955,7 @@
       field(t("eventsAdmin.endsAt"), "ends_at", "", "datetime-local") +
       field(t("eventsAdmin.location"), "location_name") +
       field(t("eventsAdmin.address"), "address") +
-      field(t("eventsAdmin.online"), "online_url", "", "url") +
+      field(t("eventsAdmin.online"), "online_url", "", "url") + '<button type="button" class="outline-button" data-video-room>' + esc(t("video.create")) + "</button>" +
       field(t("eventsAdmin.capacity"), "capacity", "", "number", 'min="1" step="1"') +
       '<label class="field"><span>' + esc(t("eventsAdmin.access")) + '</span><select name="visibility">' + option("members", t("eventsAdmin.accessMembers"), true) + option("public", t("eventsAdmin.accessPublic"), false) + "</select></label>" +
       '<label class="field"><span>' + esc(t("eventsAdmin.statusOnCreate")) + '</span><select name="status">' + option("draft", t("eventStatus.draft"), true) + option("published", t("eventsAdmin.publishNow"), false) + "</select></label>" +
@@ -985,6 +995,7 @@
         status(e.message, true);
       }
     }
+    wireVideoRoom(content);
     document.querySelector("#event-form").addEventListener("submit", async e => {
       e.preventDefault();
       const form = e.currentTarget;

@@ -12857,6 +12857,11 @@ var qrcode = function() {
         '<article class="course-card"><h3>' + esc(x.title) + "</h3><p>" + esc(x.desc) + '</p><p class="muted">' + esc(x.type === "xlsx" ? "Excel" : "Word") + " · " + esc(size(x.bytes || 0)) + '</p><a class="primary-button" href="' + esc(x.file) + '" download>' + esc(t("tpl.download")) + "</a></article>").join("") + "</div>";
     }).join("");
     content.innerHTML = panel(t("tpl.title"), t("tpl.text"), (groups || '<p class="muted">' + esc(t("learn.empty")) + "</p>") + '<p class="demo-note">' + esc(t("tpl.legal")) + "</p>");
+    // Who downloads what: one count per click, shown to staff as "dl-<file>" in the activity report.
+    content.querySelectorAll("a[download]").forEach(a => a.addEventListener("click", () => {
+      const slug = "dl-" + String(a.getAttribute("href") || "").replace(/^.*\//, "").replace(/\.[a-z]+$/, "").replace(/[^a-z0-9-]/g, "-").slice(0, 36);
+      trackSend({ view: slug, hit: true });
+    }));
   }
 
   // Short voiced version of a book ("main idea in two minutes"): mp3 files live next to the app, listed in audio/manifest.json.

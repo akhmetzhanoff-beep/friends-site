@@ -229,6 +229,7 @@
   // After every sign-in: claim the free month (blogger link), ask new people for their profile and city, then show the app.
   async function afterSignIn(onboard) {
     await claimTrial();
+    await claimRefInvite();
     let needProfile = false;
     try { const pr = await api("/v1/me/profile"); needProfile = !pr.city_id; } catch (e) { if (e.status === 404) needProfile = true; }
     if (onboard && needProfile && APP !== "admin") { active = "profile"; try { sessionStorage.setItem("friends.welcome", "1"); } catch { /* none */ } }
@@ -519,7 +520,19 @@
   const INVITE_KEY = "friends.invite", TRIAL_KEY = "friends.trialClaimed";
   const SITE_URL = "https://friendscommunity.kz";
   function readInvite() { try { return JSON.parse(store.get(INVITE_KEY) || "null"); } catch { return null; } }
+  const REFINV_KEY = "friends.refInv";
+  function captureRefInvite() {
+    const code = (new URLSearchParams(location.search).get("inv") || "").trim().toLowerCase();
+    if (/^[a-z0-9]{4,20}$/.test(code) && !store.get(REFINV_KEY)) store.set(REFINV_KEY, code);
+  }
+  async function claimRefInvite() {
+    const code = store.get(REFINV_KEY);
+    if (!code) return;
+    try { await api("/v1/me/invite/claim", { method: "POST", body: JSON.stringify({ code }) }); } catch { /* try again next time unless invalid */ }
+    store.set(REFINV_KEY, "");
+  }
   function captureInvite() {
+    captureRefInvite();
     const q = new URLSearchParams(location.search);
     const ref = (q.get("ref") || q.get("b") || "").trim().toLowerCase() || null;
     const inv = { ref, utm_source: q.get("utm_source"), utm_medium: q.get("utm_medium"), utm_campaign: q.get("utm_campaign") };
@@ -1067,17 +1080,16 @@
   }
   async function membershipWithInvite() {
     await membership();
-    const mine = await api("/v1/me/referrals").catch(() => null);
+    const [mine, inv] = await Promise.all([api("/v1/me/referrals").catch(() => null), api("/v1/me/invite").catch(() => null)]);
     const box = document.createElement("div");
-    box.innerHTML = panel(t("referral.title"), t("referral.text"), referralProgress(mine) + '<form id="ref-form" class="app-form">' + referralFields("") + '<button class="primary-button">' + esc(t("referral.send")) + "</button></form>");
+    const link = inv ? inv.link : "";
+    box.innerHTML = panel(t("referral.title"), t("referral.textOnline"), referralProgress(mine) + (link
+      ? '<div class="copy-row"><input readonly value="' + esc(link) + '" aria-label="' + esc(t("referral.myLink")) + '"><button type="button" class="outline-button" id="ref-copy">' + esc(t("adminPartners.copy")) + '</button></div><div class="receipt-actions"><button type="button" class="primary-button" id="ref-share">' + esc(t("referral.share")) + "</button></div>" : ""));
     content.appendChild(box);
-    document.querySelector("#ref-form").addEventListener("submit", async e => {
-      e.preventDefault();
-      const form = e.currentTarget;
-      const r = readReferral(new FormData(form));
-      if (r === false) return;
-      if (r === null) { status(t("referral.incomplete"), true); return; }
-      try { await api("/v1/me/referrals", { method: "POST", body: JSON.stringify(r) }); status(t("referral.sent")); await membershipWithInvite(); } catch (x) { status(x.message, true); }
+    const copy = box.querySelector("#ref-copy"), share = box.querySelector("#ref-share");
+    if (copy) copy.addEventListener("click", async () => { try { await navigator.clipboard.writeText(link); status(t("tests.copied")); } catch { /* manual copy */ } });
+    if (share) share.addEventListener("click", async () => {
+      try { if (navigator.share) await navigator.share({ url: link, title: "Friends", text: t("referral.shareText") }); else { await navigator.clipboard.writeText(link); status(t("tests.copied")); } } catch { /* cancelled */ }
     });
   }
 

@@ -6092,6 +6092,10 @@ var qrcode = function() {
     "referral.phone": "Телефон",
     "referral.note": "Чем занимается (необязательно)",
     "referral.consent": "Этот человек согласен, чтобы Friends ему позвонили или написали.",
+    "referral.textOnline": "Отправьте свою ссылку знакомым предпринимателям. Они входят по SMS и получают месяц бесплатно. Когда двое оплатят, вы получаете год в подарок. Звонки и сообщения от команды не нужны: всё считается автоматически.",
+    "referral.myLink": "Ваша личная ссылка",
+    "referral.share": "Отправить ссылку",
+    "referral.shareText": "Заходи в бизнес-сообщество Friends: месяц бесплатно",
     "referral.send": "Отправить рекомендацию",
     "referral.sent": "Спасибо! Мы свяжемся с ним.",
     "referral.incomplete": "Укажите имя и телефон.",
@@ -8293,6 +8297,10 @@ var qrcode = function() {
     "referral.phone": "Телефон",
     "referral.note": "Немен айналысады (міндетті емес)",
     "referral.consent": "Бұл адам Friends-тің қоңырау шалуына немесе жазуына келісті.",
+    "referral.textOnline": "Жеке сілтемеңізді таныс кәсіпкерлерге жіберіңіз. Олар SMS арқылы кіріп, бір ай тегін алады. Екеуі төлегенде, сіз бір жылды сыйға аласыз. Команданың қоңырауы мен хабарламасы қажет емес: бәрі автоматты түрде есептеледі.",
+    "referral.myLink": "Сіздің жеке сілтемеңіз",
+    "referral.share": "Сілтемені жіберу",
+    "referral.shareText": "Friends бизнес-қауымдастығына кіріңіз: бір ай тегін",
     "referral.send": "Ұсынысты жіберу",
     "referral.sent": "Рахмет! Біз онымен хабарласамыз.",
     "referral.incomplete": "Аты мен телефонын көрсетіңіз.",
@@ -10494,6 +10502,10 @@ var qrcode = function() {
     "referral.phone": "Phone",
     "referral.note": "What they do (optional)",
     "referral.consent": "This person agreed that Friends may call or message them.",
+    "referral.textOnline": "Send your personal link to entrepreneurs you know. They sign in by SMS and get a free month. When two of them pay, you get a free year. No calls or messages from the team: it is all counted automatically.",
+    "referral.myLink": "Your personal link",
+    "referral.share": "Share link",
+    "referral.shareText": "Join the Friends business community: a free month",
     "referral.send": "Send referral",
     "referral.sent": "Thanks! We'll contact them.",
     "referral.incomplete": "Enter a name and a phone number.",
@@ -11303,6 +11315,7 @@ var qrcode = function() {
   // After every sign-in: claim the free month (blogger link), ask new people for their profile and city, then show the app.
   async function afterSignIn(onboard) {
     await claimTrial();
+    await claimRefInvite();
     let needProfile = false;
     try { const pr = await api("/v1/me/profile"); needProfile = !pr.city_id; } catch (e) { if (e.status === 404) needProfile = true; }
     if (onboard && needProfile && APP !== "admin") { active = "profile"; try { sessionStorage.setItem("friends.welcome", "1"); } catch { /* none */ } }
@@ -11593,7 +11606,19 @@ var qrcode = function() {
   const INVITE_KEY = "friends.invite", TRIAL_KEY = "friends.trialClaimed";
   const SITE_URL = "https://friendscommunity.kz";
   function readInvite() { try { return JSON.parse(store.get(INVITE_KEY) || "null"); } catch { return null; } }
+  const REFINV_KEY = "friends.refInv";
+  function captureRefInvite() {
+    const code = (new URLSearchParams(location.search).get("inv") || "").trim().toLowerCase();
+    if (/^[a-z0-9]{4,20}$/.test(code) && !store.get(REFINV_KEY)) store.set(REFINV_KEY, code);
+  }
+  async function claimRefInvite() {
+    const code = store.get(REFINV_KEY);
+    if (!code) return;
+    try { await api("/v1/me/invite/claim", { method: "POST", body: JSON.stringify({ code }) }); } catch { /* try again next time unless invalid */ }
+    store.set(REFINV_KEY, "");
+  }
   function captureInvite() {
+    captureRefInvite();
     const q = new URLSearchParams(location.search);
     const ref = (q.get("ref") || q.get("b") || "").trim().toLowerCase() || null;
     const inv = { ref, utm_source: q.get("utm_source"), utm_medium: q.get("utm_medium"), utm_campaign: q.get("utm_campaign") };
@@ -12141,17 +12166,16 @@ var qrcode = function() {
   }
   async function membershipWithInvite() {
     await membership();
-    const mine = await api("/v1/me/referrals").catch(() => null);
+    const [mine, inv] = await Promise.all([api("/v1/me/referrals").catch(() => null), api("/v1/me/invite").catch(() => null)]);
     const box = document.createElement("div");
-    box.innerHTML = panel(t("referral.title"), t("referral.text"), referralProgress(mine) + '<form id="ref-form" class="app-form">' + referralFields("") + '<button class="primary-button">' + esc(t("referral.send")) + "</button></form>");
+    const link = inv ? inv.link : "";
+    box.innerHTML = panel(t("referral.title"), t("referral.textOnline"), referralProgress(mine) + (link
+      ? '<div class="copy-row"><input readonly value="' + esc(link) + '" aria-label="' + esc(t("referral.myLink")) + '"><button type="button" class="outline-button" id="ref-copy">' + esc(t("adminPartners.copy")) + '</button></div><div class="receipt-actions"><button type="button" class="primary-button" id="ref-share">' + esc(t("referral.share")) + "</button></div>" : ""));
     content.appendChild(box);
-    document.querySelector("#ref-form").addEventListener("submit", async e => {
-      e.preventDefault();
-      const form = e.currentTarget;
-      const r = readReferral(new FormData(form));
-      if (r === false) return;
-      if (r === null) { status(t("referral.incomplete"), true); return; }
-      try { await api("/v1/me/referrals", { method: "POST", body: JSON.stringify(r) }); status(t("referral.sent")); await membershipWithInvite(); } catch (x) { status(x.message, true); }
+    const copy = box.querySelector("#ref-copy"), share = box.querySelector("#ref-share");
+    if (copy) copy.addEventListener("click", async () => { try { await navigator.clipboard.writeText(link); status(t("tests.copied")); } catch { /* manual copy */ } });
+    if (share) share.addEventListener("click", async () => {
+      try { if (navigator.share) await navigator.share({ url: link, title: "Friends", text: t("referral.shareText") }); else { await navigator.clipboard.writeText(link); status(t("tests.copied")); } } catch { /* cancelled */ }
     });
   }
 

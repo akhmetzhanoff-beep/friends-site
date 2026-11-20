@@ -775,21 +775,34 @@
     try { await load(); } catch (e) { document.querySelector("#company-list").textContent = e.message; }
   }
 
+  let focusEvent = null;
   async function events() {
     const d = await api("/v1/events?limit=50");
     const cards = (d.items || []).map(x => {
       const registered = x.registration_status === "registered";
       const count = Number(x.registered_count || 0);
       return '<article class="invoice-card"><div class="invoice-top"><div><span class="pill">' + esc(I18N.label("eventType", x.event_type, "events.defaultType")) + "</span><h3>" + esc(x.title) + "</h3><small>" + esc(date(x.starts_at)) + '</small></div><span class="pill">' + esc(I18N.label("registration", x.registration_status, "events.notRegistered")) + "</span></div>" +
+        (x.topic ? '<p><strong>' + esc(t("meeting.topic")) + ":</strong> " + esc(x.topic) + "</p>" : "") +
+        (x.speaker_name ? '<p><strong>' + esc(t("meeting.speaker")) + ":</strong> " + esc(x.speaker_name) + (x.speaker_bio ? " · " + esc(x.speaker_bio) : "") + "</p>" : "") +
         "<p>" + esc(x.description || "") + '</p><p class="muted">' + esc(x.location_name || "") + (x.address ? " · " + esc(x.address) : "") + "</p>" +
         '<p class="muted">' + esc(x.capacity ? t("events.registeredCountCapacity", { count, capacity: Number(x.capacity) }) : t("events.registeredCount", { count })) + "</p>" +
-        (x.online_url ? '<p><a href="' + esc(safeUrl(x.online_url)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("events.online")) + "</a></p>" : "") +
+        '<div class="receipt-actions">' + (x.online_url ? '<a class="primary-button" href="' + esc(safeUrl(x.online_url)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("meeting.join")) + "</a>" : "") +
+        (APP === "admin" ? "" : '<button type="button" class="outline-button" data-event-chat="' + esc(x.id) + '">' + esc(t("meeting.chat")) + "</button>") +
+        '<button type="button" class="outline-button" data-event-share="' + esc(x.id) + '">' + esc(t("meeting.share")) + "</button></div>" +
         '<div class="receipt-actions">' + (registered ? '<button class="outline-button" data-cancel-event="' + esc(x.id) + '">' + esc(t("events.cancel")) + "</button>" : '<button class="primary-button" data-register-event="' + esc(x.id) + '">' + esc(t("events.register")) + "</button>" +
           (x.registration_status === "declined" ? "" : '<button class="outline-button" data-decline-event="' + esc(x.id) + '">' + esc(t("events.decline")) + "</button>")) + "</div>" +
         "</article>";
     }).join("");
     const hostCta = APP === "admin" ? "" : '<div class="card-cta"><div><strong>' + esc(t("host.ctaTitle")) + "</strong><p>" + esc(t("host.ctaText")) + '</p></div><button type="button" class="primary-button" data-view="host">' + esc(t("host.ctaBtn")) + '</button></div><p class="center-link"><button type="button" class="text-button" data-view="recordings">' + esc(t("recordings.link")) + "</button></p>";
     content.innerHTML = hostCta + panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
+    content.querySelectorAll("[data-event-chat]").forEach(b => b.addEventListener("click", async () => {
+      try { const r = await api("/v1/events/" + encodeURIComponent(b.dataset.eventChat) + "/chat", { method: "POST", body: "{}" }); chatRoom = r.room_id; render("chat"); } catch (e) { status(e.message, true); }
+    }));
+    content.querySelectorAll("[data-event-share]").forEach(b => b.addEventListener("click", async () => {
+      const url = SITE_URL + "/live/?event=" + encodeURIComponent(b.dataset.eventShare);
+      try { if (navigator.share) await navigator.share({ url, title: t("meeting.shareTitle") }); else { await navigator.clipboard.writeText(url); status(t("tests.copied")); } } catch { /* cancelled */ }
+    }));
+    if (focusEvent) { const el = content.querySelector('[data-event-share="' + focusEvent + '"]'); if (el) el.closest("article").scrollIntoView({ block: "start" }); focusEvent = null; }
     content.querySelectorAll("[data-register-event]").forEach(b => b.addEventListener("click", async () => {
       b.disabled = true;
       try {
@@ -949,6 +962,8 @@
     const types = ["breakfast", "masterclass", "business_tour", "mastermind", "networking", "sports", "trip", "other"];
     const body = '<form id="event-form" class="app-form">' +
       field(t("eventsAdmin.title"), "title", "", "text", 'required maxlength="180"') +
+      field(t("meeting.topic"), "topic", "", "text", 'maxlength="200"') +
+      field(t("meeting.speaker"), "speaker_name", "", "text", 'maxlength="160"') +
       area(t("eventsAdmin.description"), "description", "") +
       '<label class="field"><span>' + esc(t("eventsAdmin.type")) + '</span><select name="event_type">' + types.map(v => option(v, t("eventType." + v), false)).join("") + "</select></label>" +
       field(t("eventsAdmin.startsAt"), "starts_at", "", "datetime-local", "required") +
@@ -1015,6 +1030,8 @@
             location_name: String(f.get("location_name") || "").trim() || null,
             address: String(f.get("address") || "").trim() || null,
             online_url: String(f.get("online_url") || "").trim() || null,
+            topic: String(f.get("topic") || "").trim() || null,
+            speaker_name: String(f.get("speaker_name") || "").trim() || null,
             capacity: cap ? Number(cap) : null,
             visibility: String(f.get("visibility")),
             status: String(f.get("status"))
@@ -3455,6 +3472,8 @@
   async function boot() {
     I18N.applyStatic();
     captureInvite();
+    const evParam = new URLSearchParams(location.search).get("event");
+    if (evParam && /^[0-9a-f-]{36}$/i.test(evParam)) { focusEvent = evParam; active = "events"; }
     const expertToken = new URLSearchParams(location.search).get("expert");
     if (expertToken) { try { sessionStorage.setItem("friends.expertInvite", expertToken); } catch { /* single page */ } history.replaceState(null, "", location.pathname); }
     candidateToken = new URLSearchParams(location.search).get("test");

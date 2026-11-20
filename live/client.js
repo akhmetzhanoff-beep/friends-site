@@ -14,7 +14,7 @@
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity"];
   const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -534,6 +534,8 @@
   // ---------- Blogger links: ?ref=CODE&utm_* → free trial month after sign-in (first touch wins) ----------
   const INVITE_KEY = "friends.invite", TRIAL_KEY = "friends.trialClaimed";
   const SITE_URL = "https://friendscommunity.kz";
+  // One working WhatsApp number for the whole team: a first message from the member opens a free 24-hour conversation window.
+  const WA_URL = "https://wa.me/77010999592?text=" + encodeURIComponent("Здравствуйте! Я зарегистрировался(ась) в Friends.");
   function readInvite() { try { return JSON.parse(store.get(INVITE_KEY) || "null"); } catch { return null; } }
   const REFINV_KEY = "friends.refInv";
   function captureRefInvite() {
@@ -1961,6 +1963,24 @@
     }));
   }
 
+  async function adminActivity() {
+    const days = Number((content.querySelector("#act-days") || {}).value || 30);
+    const inactive = Number((content.querySelector("#act-inactive") || {}).value || 0);
+    let d;
+    try { d = await api("/v1/admin/activity?days=" + days + (inactive ? "&inactive=" + inactive : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("act.title"), t("act.noAccess"), ""); return; } throw e; }
+    const k = d.kpi;
+    const kpi = [["act.dau", k.dau], ["act.wau", k.wau], ["act.mau", k.mau], ["act.total", k.total]].map(([l, v]) => '<div class="kpi"><strong>' + esc(String(v)) + "</strong><span>" + esc(t(l)) + "</span></div>").join("");
+    const vrows = d.views.map(v => "<tr><td>" + esc(v.view) + "</td><td>" + v.people + "</td><td>" + v.hits + "</td><td>" + v.minutes + "</td></tr>").join("");
+    const prows = d.people.map(p => "<tr><td>" + esc(p.name || "—") + "</td><td>" + esc(p.city || "") + "</td><td>" + esc(p.phone || "") + "</td><td>" + (p.last_seen ? esc(date(p.last_seen)) : esc(t("act.never"))) + "</td><td>" + p.active_days + "</td><td>" + p.minutes + "</td><td>" + esc(p.top_views || "") + "</td><td>" + esc(p.membership || "") + "</td></tr>").join("");
+    const sel = (id, opts, cur) => '<select id="' + id + '">' + opts.map(([v, l]) => '<option value="' + v + '"' + (Number(v) === cur ? " selected" : "") + ">" + esc(l) + "</option>").join("") + "</select>";
+    content.innerHTML = panel(t("act.title"), t("act.text"),
+      '<div class="kpi-row">' + kpi + "</div>" +
+      '<div class="app-form"><label>' + esc(t("act.period")) + sel("act-days", [[7, "7"], [30, "30"], [90, "90"]], days) + "</label><label>" + esc(t("act.filter")) + sel("act-inactive", [[0, t("act.all")], [7, t("act.inactive", { n: 7 })], [14, t("act.inactive", { n: 14 })], [30, t("act.inactive", { n: 30 })]], inactive) + "</label></div>" +
+      "<h3>" + esc(t("act.sections")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.view")) + "</th><th>" + esc(t("act.people")) + "</th><th>" + esc(t("act.opens")) + "</th><th>" + esc(t("act.minutes")) + "</th></tr></thead><tbody>" + (vrows || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
+      "<h3>" + esc(t("act.persons")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("act.city")) + "</th><th>" + esc(t("signups.phone")) + "</th><th>" + esc(t("act.last")) + "</th><th>" + esc(t("act.days")) + "</th><th>" + esc(t("act.minutes")) + "</th><th>" + esc(t("act.top")) + "</th><th>" + esc(t("act.member")) + "</th></tr></thead><tbody>" + (prows || '<tr><td colspan="8">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>");
+    content.querySelectorAll("#act-days, #act-inactive").forEach(el => el.addEventListener("change", () => adminActivity()));
+  }
+
   async function adminSignups() {
     let d;
     const qv = (content.querySelector("#signups-q") || {}).value || "";
@@ -1986,6 +2006,7 @@
     });
   }
 
+  const parseTiers = v => { const a = String(v || "").split(",").map(x => x.trim()).filter(Boolean).map(Number); return a.length && a.every(n => Number.isFinite(n) && n >= 0 && n <= 100) ? a.slice(0, 5) : null; };
   async function adminPartners(openId) {
     let d;
     try { d = await api("/v1/admin/partners"); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.noAccess"), ""); return; } throw e; }
@@ -2001,14 +2022,17 @@
       '<td class="num">' + p.visits_30d + '</td><td class="num">' + p.signups + '</td><td class="num">' + p.trials_active + '</td><td class="num">' + p.paid_users + '</td><td class="num">' + esc(money(p.revenue_kzt)) + '</td><td class="num"><strong>' + esc(money(p.bonus_due_kzt)) + '</strong></td><td class="num">' + esc(money(p.bonus_paid_kzt)) + "</td></tr></tbody></table></div>" +
       '<div class="receipt-actions">' + (canPay && Number(p.bonus_due_kzt) > 0 ? '<button type="button" class="primary-button" data-payout="' + esc(p.id) + '" data-sum="' + esc(money(p.bonus_due_kzt)) + '">' + esc(t("adminPartners.payout", { sum: money(p.bonus_due_kzt) })) + "</button>" : "") +
       '<button type="button" class="outline-button" data-partner-open="' + esc(p.id) + '">' + esc(t("adminPartners.details")) + "</button>" +
+      '<button type="button" class="outline-button" data-partner-edit="' + esc(p.id) + '">' + esc(t("adminPartners.edit")) + "</button>" +
       '<button type="button" class="text-button" data-partner-toggle="' + esc(p.id) + '" data-next="' + (p.status === "active" ? "paused" : "active") + '">' + esc(t(p.status === "active" ? "adminPartners.pause" : "adminPartners.resume")) + "</button></div>" +
-      '<div data-partner-details="' + esc(p.id) + '"></div></article>';
+      '<div data-partner-edit-box="' + esc(p.id) + '"></div><div data-partner-details="' + esc(p.id) + '"></div></article>';
     const form = '<form id="partner-form" class="app-form">' + field(t("adminPartners.name"), "name", "", "text", 'required minlength="2" maxlength="120"') +
       field(t("adminPartners.code"), "code", "", "text", 'required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,39}" placeholder="kappas"') +
       field(t("adminPartners.contact"), "contact", "", "text", 'maxlength="200"') +
       '<div class="form-grid">' + field(t("adminPartners.trialDays"), "trial_days", "30", "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", "20", "number", 'min="0" max="100" step="0.5"') +
       field(t("adminPartners.renewalPct"), "renewal_bonus_pct", "10", "number", 'min="0" max="100" step="0.5"') + field(t("adminPartners.renewalMonths"), "renewal_months", "12", "number", 'min="0" max="120"') +
       field(t("adminPartners.fixedKzt"), "fixed_bonus_kzt", "0", "number", 'min="0" step="1000"') + "</div>" +
+      field(t("adminPartners.tiers"), "tiers", "", "text", 'placeholder="20,10" maxlength="40"') + '<p class="muted">' + esc(t("adminPartners.tiersHint")) + "</p>" +
+      field(t("adminPartners.ownerPhone"), "owner_phone", "", "tel", 'placeholder="+7 701 123 45 67" inputmode="tel"') + '<p class="muted">' + esc(t("adminPartners.ownerHint")) + "</p>" +
       '<button class="primary-button">' + esc(t("adminPartners.add")) + "</button></form>";
     content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.text"), totals) +
       panel(t("adminPartners.listTitle"), t("adminPartners.listText"), d.items.length ? d.items.map(card).join("") : '<p class="muted">' + esc(t("adminPartners.empty")) + "</p>") +
@@ -2019,9 +2043,10 @@
       const num = k => Number(f.get(k) || 0);
       try {
         await api("/v1/admin/partners", { method: "POST", body: JSON.stringify({ name: String(f.get("name")).trim(), code: String(f.get("code")).trim().toLowerCase(), contact: String(f.get("contact") || "").trim() || null,
-          trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: num("renewal_bonus_pct"), renewal_months: num("renewal_months"), fixed_bonus_kzt: num("fixed_bonus_kzt") }) });
+          trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: num("renewal_bonus_pct"), renewal_months: num("renewal_months"), fixed_bonus_kzt: num("fixed_bonus_kzt"),
+          renewal_tiers: parseTiers(f.get("tiers")), ...(String(f.get("owner_phone") || "").trim() ? { owner_phone: String(f.get("owner_phone")).replace(/[ ()-]/g, "") } : {}) }) });
         status(t("adminPartners.added")); await adminPartners();
-      } catch (x) { status(x.code === "code_taken" ? t("adminPartners.codeTaken") : x.message, true); }
+      } catch (x) { status(x.code === "code_taken" ? t("adminPartners.codeTaken") : x.code === "owner_not_signed_in" ? t("adminPartners.ownerNotSignedIn") : x.message, true); }
     });
     content.querySelectorAll("[data-copy-link]").forEach(b => b.addEventListener("click", async () => { try { await navigator.clipboard.writeText(b.dataset.copyLink); status(t("tests.copied")); } catch { b.previousElementSibling.select(); } }));
     content.querySelectorAll("[data-payout]").forEach(b => b.addEventListener("click", async () => {
@@ -2044,6 +2069,25 @@
       } catch (x) { status(x.message, true); }
     };
     content.querySelectorAll("[data-partner-open]").forEach(b => b.addEventListener("click", () => openDetails(b.dataset.partnerOpen)));
+    content.querySelectorAll("[data-partner-edit]").forEach(b => b.addEventListener("click", () => {
+      const id = b.dataset.partnerEdit, p = d.items.find(x => x.id === id), box = content.querySelector('[data-partner-edit-box="' + CSS.escape(id) + '"]');
+      if (!p || !box) return;
+      if (box.innerHTML) { box.innerHTML = ""; return; }
+      box.innerHTML = '<form class="app-form" data-edit-form="' + esc(id) + '"><div class="form-grid">' +
+        field(t("adminPartners.trialDays"), "trial_days", p.trial_days, "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", Number(p.first_bonus_pct), "number", 'min="0" max="100" step="0.5"') +
+        field(t("adminPartners.renewalPct"), "renewal_bonus_pct", Number(p.renewal_bonus_pct), "number", 'min="0" max="100" step="0.5"') + field(t("adminPartners.renewalMonths"), "renewal_months", p.renewal_months, "number", 'min="0" max="120"') + "</div>" +
+        field(t("adminPartners.tiers"), "tiers", (p.renewal_tiers || []).join(","), "text", 'placeholder="20,10"') +
+        field(t("adminPartners.ownerPhone"), "owner_phone", p.owner_phone || "", "tel", 'placeholder="+7 701 123 45 67"') +
+        '<button class="primary-button">' + esc(t("adminPartners.save")) + "</button></form>";
+      box.querySelector("form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const f = new FormData(e.currentTarget), num = k => Number(f.get(k) || 0), ph = String(f.get("owner_phone") || "").replace(/[ ()-]/g, "");
+        try {
+          await api("/v1/admin/partners/" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: num("renewal_bonus_pct"), renewal_months: num("renewal_months"), renewal_tiers: parseTiers(f.get("tiers")), owner_phone: ph || null }) });
+          status(t("adminPartners.saved")); await adminPartners();
+        } catch (x) { status(x.code === "owner_not_signed_in" ? t("adminPartners.ownerNotSignedIn") : x.message, true); }
+      });
+    }));
     if (openId) openDetails(openId);
   }
 
@@ -2892,7 +2936,9 @@
     const name = profile?.display_name || user?.email || "";
     const sub = !m ? t("settings.subNone") : m.active ? (m.ends_at ? t("me.subUntil", { date: day(m.ends_at) }) : t("settings.subActive")) : t("settings.subExpired", { date: m.ends_at ? day(m.ends_at) : "—" });
     content.innerHTML = '<section class="me-head"><div class="member-avatar big" aria-hidden="true">' + esc((name || "?").slice(0, 1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p class="muted">' + esc(user?.email || "") + '</p><span class="pill">' + esc(sub) + "</span></div></section>" +
-      (APP === "pilot" ? pilotModeCard() : "") + (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : "") +
+      (APP === "pilot" ? pilotModeCard() : "") +
+      (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><a class="me-row" href="' + esc(WA_URL) + '" target="_blank" rel="noopener noreferrer"><span class="me-ic">' + ic("chat") + "</span><span>" + esc(t("wa.writeUs")) + '</span><span class="me-go">›</span></a></div></section>') +
+      (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : "") +
       ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i]) => row(v, i)).join("") + "</div></section>").join("") +
       (extra.length ? '<section class="me-group"><h3>' + esc(t("services.more")) + '</h3><div class="me-list" id="me-extra"></div></section>' : "") +
       '<div class="receipt-actions"><button type="button" class="outline-button" id="me-logout">' + ic("logout", "ic-inline") + " " + esc(t("auth.logout")) + "</button></div>";
@@ -3472,7 +3518,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "admin-bans": adminBans, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
+  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;
@@ -3517,6 +3563,7 @@
     content.innerHTML = '<div class="loading-panel">' + esc(t("common.loading")) + "</div>";
     try {
       await RENDERERS[active]();
+      trackView(active);
       blockTabs();
       refreshMessageBadge();
       maybeNudge();
@@ -3526,6 +3573,19 @@
       document.querySelector("#retry").addEventListener("click", () => render(active));
     }
   }
+
+  // Usage stats for the team: which section is open and for how long. No content, never blocks the UI.
+  let trackedView = "";
+  function trackSend(body) {
+    if (!token() || APP === "admin" || (APP === "pilot" && pilotMode() === "admin")) return;
+    api("/v1/me/activity", { method: "POST", body: JSON.stringify(body) }).catch(() => undefined);
+  }
+  function trackView(view) {
+    if (ADMIN_VIEWS.includes(view)) { trackedView = ""; return; }
+    trackedView = view;
+    trackSend({ view, hit: true });
+  }
+  setInterval(() => { if (trackedView && !document.hidden && token()) trackSend({ view: trackedView, seconds: 30 }); }, 30000);
 
   document.addEventListener("click", e => {
     const b = e.target.closest("[data-view]");

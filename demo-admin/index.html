@@ -15015,7 +15015,7 @@ var qrcode = function() {
 
   // ---------- Настройки ----------
   async function settings() {
-    const [mem, nud, trust] = await Promise.all([api("/v1/me/membership").catch(() => ({ membership: null })), api("/v1/me/nudge/settings").catch(() => ({ enabled: true })), api("/v1/me/trust").catch(() => null)]);
+    const [mem, nud] = await Promise.all([api("/v1/me/membership").catch(() => ({ membership: null })), api("/v1/me/nudge/settings").catch(() => ({ enabled: true }))]);
     const m = mem.membership;
     const themeOpt = (id, sw) => '<button type="button" class="theme-card' + (themeChoice() === id ? " active" : "") + '" data-set-theme="' + id + '" aria-pressed="' + (themeChoice() === id) + '"><span class="theme-swatch" style="background:' + sw[0] + '"><i style="background:' + sw[1] + '"></i><i style="background:' + sw[2] + '"></i></span><span>' + esc(t("settings.theme." + id)) + "</span></button>";
     const accent = store.get("friends.accent") || "blue";
@@ -15028,9 +15028,8 @@ var qrcode = function() {
         '<p class="muted settings-sub">' + esc(t("settings.accent")) + '</p><div class="accent-row">' + accentOpt("blue", "#1877f2") + accentOpt("teal", "#0f9b8e") + accentOpt("violet", "#7c3aed") + accentOpt("green", "#16a34a") + "</div>") +
       (canSpeak() ? panel(t("voice.title"), t("voice.text"), '<div id="voice-box" class="loading-panel">' + esc(t("common.loading")) + "</div>") : "") +
       panel(t("settings.subscription"), "", '<div class="sub-box' + (warn ? " warn" : "") + '"><strong>' + esc(subText) + "</strong>" + (m && m.days_left != null && m.active ? '<div class="learn-progress" aria-hidden="true"><span style="width:' + Math.max(3, Math.min(100, Math.round(m.days_left / 365 * 100))) + '%"></span></div>' : "") + '</div><div class="receipt-actions"><button type="button" class="primary-button" data-view="membership">' + esc(t(warn || (m && !m.active) ? "settings.renew" : "settings.invoices")) + "</button></div>") +
-      (trust ? panel(t("settings.trust"), t("settings.trustText"), trustSummary(trust) + '<div class="receipt-actions"><button type="button" class="outline-button" data-view="trust">' + esc(t("settings.trustOpen")) + "</button></div>") : "") +
       panel(t("settings.notifications"), "", '<label class="consent-field"><input type="checkbox" id="set-nudge"' + (nud.enabled ? " checked" : "") + "> <span>" + esc(t("nudge.settingsLabel")) + '</span></label><div class="receipt-actions"><button type="button" class="outline-button" data-view="profile">' + esc(t("settings.whatsapp")) + "</button></div>") +
-      panel(t("settings.account"), t("settings.remembered"), '<div class="receipt-actions"><button type="button" class="outline-button" data-view="profile">' + esc(t("settings.profile")) + '</button><button type="button" class="outline-button" data-view="companies">' + esc(t("nav.companies")) + '</button><button type="button" class="outline-button" id="logout-all">' + esc(t("settings.logoutAll")) + "</button>" +
+      panel(t("settings.account"), t("settings.remembered"), '<div class="receipt-actions"><button type="button" class="outline-button" data-view="profile">' + esc(t("settings.profile")) + '</button><button type="button" class="outline-button" id="logout-all">' + esc(t("settings.logoutAll")) + "</button>" +
         (privacyPolicyUrl ? '<a class="outline-button" href="' + esc(safeUrl(privacyPolicyUrl)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("consent.link")) + "</a>" : "") + "</div>");
     voiceSettings();
     document.querySelector("#logout-all")?.addEventListener("click", () => { if (confirm(t("settings.logoutAllConfirm"))) logout(true); });

@@ -123,6 +123,8 @@
     percent: "M19 5 5 19M7 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
     briefcase: "M4 7h16v12H4zM9 7V5h6v2M4 12h16",
     shield: "M12 3l8 3v6c0 4.5-3.5 8-8 9-4.5-1-8-4.5-8-9V6z M9 12l2 2 4-4",
+    play: "M8 5v14l11-7z",
+    pause: "M7 5h4v14H7z M13 5h4v14h-4z",
     mail: "M3 6h18v12H3zM3 7l9 6 9-6",
     logout: "M9 4H5v16h4M15 8l4 4-4 4M19 12H9",
     chevron: "M9 6l6 6-6 6",
@@ -1463,6 +1465,52 @@
     }));
   }
 
+  // ---------- Mini player docked above the tab bar (like audiobook apps): keeps playing while you browse ----------
+  let miniAudio = null, miniBar = null;
+  const mmss = sec => { sec = Math.max(0, Math.round(sec || 0)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); };
+  function ensureMiniPlayer() {
+    if (miniBar) return;
+    miniAudio = new Audio(); miniAudio.preload = "metadata";
+    miniBar = document.createElement("div");
+    miniBar.className = "mini-player"; miniBar.hidden = true; miniBar.setAttribute("role", "region"); miniBar.setAttribute("aria-label", t("player.label"));
+    miniBar.innerHTML = '<img class="mp-cover" alt="" hidden><div class="mp-main"><div class="mp-title"></div><div class="mp-row"><input type="range" class="mp-seek" min="0" max="1000" value="0" aria-label="' + esc(t("player.seek")) + '"><span class="mp-time">0:00</span></div></div>' +
+      '<button type="button" class="mp-btn" data-mp="back" aria-label="' + esc(t("player.back15")) + '">−15</button><button type="button" class="mp-btn mp-play" data-mp="play" aria-label="' + esc(t("player.play")) + '"></button><button type="button" class="mp-btn" data-mp="fwd" aria-label="' + esc(t("player.fwd15")) + '">+15</button><button type="button" class="mp-btn mp-close" data-mp="close" aria-label="' + esc(t("player.close")) + '">×</button>';
+    document.body.appendChild(miniBar);
+    const playBtn = miniBar.querySelector('[data-mp="play"]'), seek = miniBar.querySelector(".mp-seek"), time = miniBar.querySelector(".mp-time");
+    const paint = () => { playBtn.innerHTML = ic(miniAudio.paused ? "play" : "pause"); playBtn.setAttribute("aria-label", t(miniAudio.paused ? "player.play" : "player.pause")); };
+    miniAudio.addEventListener("play", paint); miniAudio.addEventListener("pause", paint); miniAudio.addEventListener("ended", paint);
+    miniAudio.addEventListener("timeupdate", () => {
+      if (miniAudio.duration) { seek.value = String(Math.round(miniAudio.currentTime / miniAudio.duration * 1000)); time.textContent = "−" + mmss(miniAudio.duration - miniAudio.currentTime); }
+    });
+    seek.addEventListener("input", () => { if (miniAudio.duration) miniAudio.currentTime = Number(seek.value) / 1000 * miniAudio.duration; });
+    miniBar.addEventListener("click", e => {
+      const b = e.target.closest("[data-mp]"); if (!b) return;
+      if (b.dataset.mp === "play") { miniAudio.paused ? miniAudio.play().catch(() => undefined) : miniAudio.pause(); }
+      else if (b.dataset.mp === "back") miniAudio.currentTime = Math.max(0, miniAudio.currentTime - 15);
+      else if (b.dataset.mp === "fwd") miniAudio.currentTime = Math.min(miniAudio.duration || 1e9, miniAudio.currentTime + 15);
+      else if (b.dataset.mp === "close") { miniAudio.pause(); miniBar.hidden = true; document.body.classList.remove("has-player"); }
+    });
+    paint();
+  }
+  function playBook({ file, title, cover }) {
+    ensureMiniPlayer();
+    if (!miniAudio.src.endsWith(file)) miniAudio.src = file;
+    miniBar.querySelector(".mp-title").textContent = title;
+    const img = miniBar.querySelector(".mp-cover");
+    if (cover) { img.src = cover; img.hidden = false; } else img.hidden = true;
+    miniBar.hidden = false; document.body.classList.add("has-player");
+    miniAudio.play().catch(() => undefined);
+    if ("mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({ title, artist: "Friends", artwork: cover ? [{ src: cover, sizes: "240x360", type: "image/jpeg" }] : [] });
+        navigator.mediaSession.setActionHandler("play", () => miniAudio.play());
+        navigator.mediaSession.setActionHandler("pause", () => miniAudio.pause());
+        navigator.mediaSession.setActionHandler("seekbackward", () => { miniAudio.currentTime = Math.max(0, miniAudio.currentTime - 15); });
+        navigator.mediaSession.setActionHandler("seekforward", () => { miniAudio.currentTime += 15; });
+      } catch { /* optional */ }
+    }
+  }
+
   // Short voiced version of a book ("main idea in two minutes"): mp3 files live next to the app, listed in audio/manifest.json.
   let audioManifest = null;
   async function loadAudioManifest() {
@@ -1486,8 +1534,9 @@
     if (a) {
       const box = document.createElement("div");
       box.className = "card-cta book-audio";
-      box.innerHTML = "<div><strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><audio controls preload="none" src="' + esc(a.file) + '"></audio></div>';
+      box.innerHTML = "<div><strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><button type="button" class="primary-button" id="book-listen">' + ic("speaker", "ic-inline") + " " + esc(t("player.listen")) + "</button></div>";
       content.insertBefore(box, content.children[1] || null);
+      box.querySelector("#book-listen").addEventListener("click", () => playBook({ file: a.file, title: c.title, cover: coverManifest && coverManifest[slug] }));
     }
     // The rating folds down at the bottom of the page: tap the heading to open it.
     const row = (key, mine) => '<div class="chip-tabs book-rate" data-row="' + key + '">' + Array.from({ length: 10 }, (_, i) => '<button type="button" class="chip-tab' + (mine === i + 1 ? " active" : "") + '" data-' + key + '="' + (i + 1) + '" aria-pressed="' + (mine === i + 1) + '">' + (i + 1) + "</button>").join("") + "</div>";

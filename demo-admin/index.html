@@ -718,6 +718,24 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .book-cover img{display:block;height:170px;width:auto;max-width:60%;border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.25);object-fit:cover}
 .book-cover.big{margin:0 0 14px;border-radius:14px}.book-cover.big img{height:260px}
 
+/* Mini player docked above the tab bar */
+.mini-player{position:fixed;left:8px;right:8px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:16px;background:#1b2a41;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.mini-player[hidden]{display:none}
+.mp-cover{width:36px;height:52px;border-radius:5px;object-fit:cover;flex:none}
+.mp-main{flex:1;min-width:0}
+.mp-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.mp-seek{flex:1;min-width:0;accent-color:#6fb1ff}
+.mp-time{font-size:12px;color:#c9d6e8;min-width:40px;text-align:right}
+.mp-btn{flex:none;min-width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font:600 13px/1 inherit;cursor:pointer}
+.mp-play{width:46px;height:46px;background:#fff;color:#1b2a41}
+.mp-play .ic{width:22px;height:22px}
+.mp-close{background:transparent;font-size:22px}
+body.has-player .main{padding-bottom:calc(160px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){.mini-player{left:auto;right:16px;bottom:16px;width:420px}}
+.book-audio .primary-button{background:#fff;color:#0f5bc4;border:0}
+.book-audio .primary-button .ic{color:#0f5bc4}
+
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-top:calc(7px + env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
 .pilot-banner span{flex:1 1 220px;min-width:0}
@@ -5953,6 +5971,14 @@ var qrcode = function() {
     "messages.quotaPremium": "Premium: чатов без ограничений.",
     "error.chat_limit_reached": "Достигнут лимит чатов. Выйдите из одного чата или оформите подписку с большим лимитом.",
     "nav.account": "Мой кабинет",
+    "player.listen": "Слушать",
+    "player.label": "Плеер",
+    "player.play": "Воспроизвести",
+    "player.pause": "Пауза",
+    "player.close": "Закрыть плеер",
+    "player.back15": "Назад на 15 секунд",
+    "player.fwd15": "Вперёд на 15 секунд",
+    "player.seek": "Перемотка",
     "act.persons": "Люди",
     "act.last": "Последний визит",
     "act.days": "Дней активности",
@@ -8272,6 +8298,14 @@ var qrcode = function() {
     "messages.quotaPremium": "Premium: чаттар саны шектелмеген.",
     "error.chat_limit_reached": "Чат лимиті таусылды. Бір чаттан шығыңыз немесе лимиті жоғары жазылым рәсімдеңіз.",
     "nav.account": "Менің кабинетім",
+    "player.listen": "Тыңдау",
+    "player.label": "Плеер",
+    "player.play": "Ойнату",
+    "player.pause": "Үзіліс",
+    "player.close": "Плеерді жабу",
+    "player.back15": "15 секунд артқа",
+    "player.fwd15": "15 секунд алға",
+    "player.seek": "Айналдыру",
     "act.persons": "Адамдар",
     "act.last": "Соңғы кіру",
     "act.days": "Белсенді күн",
@@ -10591,6 +10625,14 @@ var qrcode = function() {
     "messages.quotaPremium": "Premium: unlimited chats.",
     "error.chat_limit_reached": "Chat limit reached. Leave a chat or get a subscription with a higher limit.",
     "nav.account": "My account",
+    "player.listen": "Listen",
+    "player.label": "Player",
+    "player.play": "Play",
+    "player.pause": "Pause",
+    "player.close": "Close player",
+    "player.back15": "Back 15 seconds",
+    "player.fwd15": "Forward 15 seconds",
+    "player.seek": "Seek",
     "act.persons": "People",
     "act.last": "Last visit",
     "act.days": "Active days",
@@ -11590,6 +11632,8 @@ var qrcode = function() {
     percent: "M19 5 5 19M7 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
     briefcase: "M4 7h16v12H4zM9 7V5h6v2M4 12h16",
     shield: "M12 3l8 3v6c0 4.5-3.5 8-8 9-4.5-1-8-4.5-8-9V6z M9 12l2 2 4-4",
+    play: "M8 5v14l11-7z",
+    pause: "M7 5h4v14H7z M13 5h4v14h-4z",
     mail: "M3 6h18v12H3zM3 7l9 6 9-6",
     logout: "M9 4H5v16h4M15 8l4 4-4 4M19 12H9",
     chevron: "M9 6l6 6-6 6",
@@ -12930,6 +12974,52 @@ var qrcode = function() {
     }));
   }
 
+  // ---------- Mini player docked above the tab bar (like audiobook apps): keeps playing while you browse ----------
+  let miniAudio = null, miniBar = null;
+  const mmss = sec => { sec = Math.max(0, Math.round(sec || 0)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); };
+  function ensureMiniPlayer() {
+    if (miniBar) return;
+    miniAudio = new Audio(); miniAudio.preload = "metadata";
+    miniBar = document.createElement("div");
+    miniBar.className = "mini-player"; miniBar.hidden = true; miniBar.setAttribute("role", "region"); miniBar.setAttribute("aria-label", t("player.label"));
+    miniBar.innerHTML = '<img class="mp-cover" alt="" hidden><div class="mp-main"><div class="mp-title"></div><div class="mp-row"><input type="range" class="mp-seek" min="0" max="1000" value="0" aria-label="' + esc(t("player.seek")) + '"><span class="mp-time">0:00</span></div></div>' +
+      '<button type="button" class="mp-btn" data-mp="back" aria-label="' + esc(t("player.back15")) + '">−15</button><button type="button" class="mp-btn mp-play" data-mp="play" aria-label="' + esc(t("player.play")) + '"></button><button type="button" class="mp-btn" data-mp="fwd" aria-label="' + esc(t("player.fwd15")) + '">+15</button><button type="button" class="mp-btn mp-close" data-mp="close" aria-label="' + esc(t("player.close")) + '">×</button>';
+    document.body.appendChild(miniBar);
+    const playBtn = miniBar.querySelector('[data-mp="play"]'), seek = miniBar.querySelector(".mp-seek"), time = miniBar.querySelector(".mp-time");
+    const paint = () => { playBtn.innerHTML = ic(miniAudio.paused ? "play" : "pause"); playBtn.setAttribute("aria-label", t(miniAudio.paused ? "player.play" : "player.pause")); };
+    miniAudio.addEventListener("play", paint); miniAudio.addEventListener("pause", paint); miniAudio.addEventListener("ended", paint);
+    miniAudio.addEventListener("timeupdate", () => {
+      if (miniAudio.duration) { seek.value = String(Math.round(miniAudio.currentTime / miniAudio.duration * 1000)); time.textContent = "−" + mmss(miniAudio.duration - miniAudio.currentTime); }
+    });
+    seek.addEventListener("input", () => { if (miniAudio.duration) miniAudio.currentTime = Number(seek.value) / 1000 * miniAudio.duration; });
+    miniBar.addEventListener("click", e => {
+      const b = e.target.closest("[data-mp]"); if (!b) return;
+      if (b.dataset.mp === "play") { miniAudio.paused ? miniAudio.play().catch(() => undefined) : miniAudio.pause(); }
+      else if (b.dataset.mp === "back") miniAudio.currentTime = Math.max(0, miniAudio.currentTime - 15);
+      else if (b.dataset.mp === "fwd") miniAudio.currentTime = Math.min(miniAudio.duration || 1e9, miniAudio.currentTime + 15);
+      else if (b.dataset.mp === "close") { miniAudio.pause(); miniBar.hidden = true; document.body.classList.remove("has-player"); }
+    });
+    paint();
+  }
+  function playBook({ file, title, cover }) {
+    ensureMiniPlayer();
+    if (!miniAudio.src.endsWith(file)) miniAudio.src = file;
+    miniBar.querySelector(".mp-title").textContent = title;
+    const img = miniBar.querySelector(".mp-cover");
+    if (cover) { img.src = cover; img.hidden = false; } else img.hidden = true;
+    miniBar.hidden = false; document.body.classList.add("has-player");
+    miniAudio.play().catch(() => undefined);
+    if ("mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({ title, artist: "Friends", artwork: cover ? [{ src: cover, sizes: "240x360", type: "image/jpeg" }] : [] });
+        navigator.mediaSession.setActionHandler("play", () => miniAudio.play());
+        navigator.mediaSession.setActionHandler("pause", () => miniAudio.pause());
+        navigator.mediaSession.setActionHandler("seekbackward", () => { miniAudio.currentTime = Math.max(0, miniAudio.currentTime - 15); });
+        navigator.mediaSession.setActionHandler("seekforward", () => { miniAudio.currentTime += 15; });
+      } catch { /* optional */ }
+    }
+  }
+
   // Short voiced version of a book ("main idea in two minutes"): mp3 files live next to the app, listed in audio/manifest.json.
   let audioManifest = null;
   async function loadAudioManifest() {
@@ -12953,8 +13043,9 @@ var qrcode = function() {
     if (a) {
       const box = document.createElement("div");
       box.className = "card-cta book-audio";
-      box.innerHTML = "<div><strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><audio controls preload="none" src="' + esc(a.file) + '"></audio></div>';
+      box.innerHTML = "<div><strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><button type="button" class="primary-button" id="book-listen">' + ic("speaker", "ic-inline") + " " + esc(t("player.listen")) + "</button></div>";
       content.insertBefore(box, content.children[1] || null);
+      box.querySelector("#book-listen").addEventListener("click", () => playBook({ file: a.file, title: c.title, cover: coverManifest && coverManifest[slug] }));
     }
     // The rating folds down at the bottom of the page: tap the heading to open it.
     const row = (key, mine) => '<div class="chip-tabs book-rate" data-row="' + key + '">' + Array.from({ length: 10 }, (_, i) => '<button type="button" class="chip-tab' + (mine === i + 1 ? " active" : "") + '" data-' + key + '="' + (i + 1) + '" aria-pressed="' + (mine === i + 1) + '">' + (i + 1) + "</button>").join("") + "</div>";

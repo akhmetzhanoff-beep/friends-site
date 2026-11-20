@@ -837,7 +837,8 @@
   const HOST_DURATIONS = [30, 45, 60, 90, 120, 180, 240];
   const localKey = d => d.getFullYear() + "-" + pad2h(d.getMonth() + 1) + "-" + pad2h(d.getDate());
   const hhmm = d => pad2h(d.getHours()) + ":" + pad2h(d.getMinutes());
-  let hostMonth = null, hostPick = null;
+  let hostMonth = null, hostPick = null, hostKind = "masterclass";
+  const WEEKDAY_KEY = { 1: "mon", 2: "tue", 3: "wed", 4: "thu", 5: "fri", 6: "sat", 7: "sun" };
   async function host() {
     let slots, mine;
     try { [slots, mine] = await Promise.all([api("/v1/me/event-slots"), api("/v1/me/event-proposals")]); } catch (e) {
@@ -851,7 +852,11 @@
     if (!hostMonth) hostMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const monthName = () => hostMonth.toLocaleDateString(loc, { month: "long", year: "numeric" });
     const dow = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(loc, { weekday: "short" }));
-    const dayOff = d => d.getTime() + 86399e3 < minAt || d.getTime() > maxAt;
+    const kinds = slots.kinds || [];
+    const kindInfo = () => kinds.find(k => k.kind === hostKind) || null;
+    const kindDow = () => { const k = kindInfo(); return k ? (k.weekday % 7) : null; };
+    const dayOff = d => d.getTime() + 86399e3 < minAt || d.getTime() > maxAt || (kindDow() != null && d.getDay() !== kindDow());
+    const kindBar = () => kinds.length ? '<fieldset class="kind-pick"><legend>' + esc(t("host.kindTitle")) + '</legend><div class="chip-row" role="group">' + kinds.map(k => '<button type="button" class="chip' + (k.kind === hostKind ? " active" : "") + '" aria-pressed="' + (k.kind === hostKind) + '" data-kind="' + esc(k.kind) + '">' + esc(t("host.kind." + k.kind)) + "</button>").join("") + '</div><p class="muted">' + esc(t("host.kindHint", { day: t("week.d." + WEEKDAY_KEY[(kindInfo() || { weekday: 3 }).weekday]) })) + "</p></fieldset>" : "";
     function calendar() {
       const first = new Date(hostMonth), lead = (first.getDay() + 6) % 7, cells = [];
       for (let i = 0; i < lead; i++) cells.push('<span class="cal-cell empty"></span>');
@@ -860,7 +865,7 @@
         const d = new Date(first.getFullYear(), first.getMonth(), n), k = localKey(d), b = busy[k] || [], off = dayOff(d);
         cells.push('<button type="button" class="cal-cell ' + (off ? "off" : b.length ? "busy" : "free") + (k === hostPick ? " sel" : "") + '" data-day="' + k + '"' + (off ? " disabled" : "") + ' aria-label="' + esc(d.toLocaleDateString(loc, { day: "numeric", month: "long" }) + (b.length ? ", " + t("host.busyCount", { n: b.length }) : "")) + '"><span>' + n + "</span>" + (b.length ? "<i>" + b.length + "</i>" : "") + "</button>");
       }
-      return '<div class="cal-head"><button type="button" class="outline-button" data-cal="-1" aria-label="' + esc(t("host.prevMonth")) + '">&lsaquo;</button><strong>' + esc(monthName()) + '</strong><button type="button" class="outline-button" data-cal="1" aria-label="' + esc(t("host.nextMonth")) + '">&rsaquo;</button></div>' +
+      return kindBar() + '<div class="cal-head"><button type="button" class="outline-button" data-cal="-1" aria-label="' + esc(t("host.prevMonth")) + '">&lsaquo;</button><strong>' + esc(monthName()) + '</strong><button type="button" class="outline-button" data-cal="1" aria-label="' + esc(t("host.nextMonth")) + '">&rsaquo;</button></div>' +
         '<div class="cal-grid">' + dow.map(x => '<span class="cal-dow">' + esc(x) + "</span>").join("") + cells.join("") + "</div>";
     }
     function dayInfo() {
@@ -893,7 +898,8 @@
     const draw = () => { content.querySelector("#host-cal").innerHTML = calendar(); content.querySelector("#host-day").innerHTML = dayInfo(); };
     draw();
     content.querySelector("#host-cal").addEventListener("click", e => {
-      const nav = e.target.closest("[data-cal]"), dayBtn = e.target.closest("[data-day]");
+      const nav = e.target.closest("[data-cal]"), dayBtn = e.target.closest("[data-day]"), kindBtn = e.target.closest("[data-kind]");
+      if (kindBtn) { hostKind = kindBtn.dataset.kind; if (hostPick && new Date(hostPick + "T12:00").getDay() !== kindDow()) { hostPick = null; content.querySelector('#host-form [name="date"]').value = ""; } draw(); }
       if (nav) { hostMonth = new Date(hostMonth.getFullYear(), hostMonth.getMonth() + Number(nav.dataset.cal), 1); draw(); }
       if (dayBtn) { hostPick = dayBtn.dataset.day; content.querySelector('#host-form [name="date"]').value = hostPick; draw(); }
     });
@@ -908,7 +914,7 @@
       const paid = v.get("paid") === "1", num = k => (v.get(k) ? Number(v.get(k)) : null), str = k => String(v.get(k) || "").trim() || null;
       try {
         await api("/v1/me/event-proposals", { method: "POST", body: JSON.stringify({ title: String(v.get("title")).trim(), topic: str("topic"), description: str("description"), format: String(v.get("format")), location_name: str("location_name"), address: str("address"),
-          starts_at: starts.toISOString(), duration_min: mins, is_free: !paid, price_kzt: paid ? num("price_kzt") : null, capacity: num("capacity"), speaker_name: str("speaker_name"), speaker_bio: str("speaker_bio") }) });
+          starts_at: starts.toISOString(), duration_min: mins, is_free: !paid, price_kzt: paid ? num("price_kzt") : null, capacity: num("capacity"), speaker_name: str("speaker_name"), speaker_bio: str("speaker_bio"), kind: kinds.length ? hostKind : null }) });
         hostPick = null; status(t("host.sent")); await host();
       } catch (x) { status(x.message, true); }
     });
@@ -962,7 +968,7 @@
   }
 
   async function eventsAdmin() {
-    const types = ["breakfast", "masterclass", "business_tour", "mastermind", "networking", "sports", "trip", "other"];
+    const types = ["breakfast", "masterclass", "business_tour", "mastermind", "networking", "sports", "trip", "workshop", "charity", "other"];
     const body = '<form id="event-form" class="app-form">' +
       field(t("eventsAdmin.title"), "title", "", "text", 'required maxlength="180"') +
       field(t("meeting.topic"), "topic", "", "text", 'maxlength="200"') +

@@ -655,3 +655,5 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .week-list li{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline;border-top:1px solid var(--line,rgba(255,255,255,.08));padding-top:8px}
 .week-list li:first-child{border-top:0;padding-top:0}
 .week-list span{color:var(--muted,#9aa3ad)}
+
+.kind-pick{border:0;margin:0 0 12px;padding:0}.kind-pick legend{font-weight:600;margin-bottom:8px;padding:0}

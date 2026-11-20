@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups"];
-  const RESIDENT_ONLY = ["blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -423,8 +423,8 @@
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", companies: "business", partner: "card", discounts: "card",
-    notifications: "messages", chat: "messages", host: "overview", blogger: "me", recordings: "learn", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "tests", "recordings"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+    notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", recordings: "learn", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "books", "tests", "recordings"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -1293,11 +1293,15 @@
     const shapes = Array.from({ length: 6 }, (_, k) => { const x = (h >> (k * 3)) % 300, y = (h >> (k * 2 + 1)) % 120, r = 14 + ((h >> k) % 40); return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" opacity="' + (0.06 + (k % 3) * 0.04).toFixed(2) + '"/>'; }).join("");
     return '<div class="course-cover" aria-hidden="true"><svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g' + h + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="300" height="120" fill="url(#g' + h + ')"/>' + shapes + '</svg><span class="course-cover-icon">' + ic(icon) + "</span></div>";
   }
-  let learnFilter = "all", learnQuery = "";
+  let learnFilter = "all", learnQuery = "", catalogScope = "courses";
+  const scoped = items => items.filter(c => catalogScope === "books" ? c.category === "books" : c.category !== "books");
+  const switchCatalog = scope => { if (catalogScope !== scope) { catalogScope = scope; learnFilter = "all"; learnQuery = ""; } };
   const testsTeaser = () => typeof RENDERERS !== "undefined" && RENDERERS.tests ? '<div class="card-cta tests-cta"><div><strong>' + esc(t("tests.teaserTitle")) + "</strong><p>" + esc(t("tests.teaserText")) + '</p></div><button type="button" class="primary-button" data-view="tests">' + esc(t("tests.open")) + "</button></div>" : "";
   function catalogTools(items) {
     const cats = ["all", ...Object.keys(COVER).filter(k => items.some(c => c.category === k))];
-    return '<div class="learn-tools"><input type="search" id="learn-search" placeholder="' + esc(t("learn.search")) + '" aria-label="' + esc(t("learn.search")) + '" value="' + esc(learnQuery) + '"><div class="chip-row" role="group" aria-label="' + esc(t("learn.categories")) + '">' +
+    const ph = t(catalogScope === "books" ? "books.search" : "learn.search");
+    if (catalogScope === "books") return '<div class="learn-tools"><input type="search" id="learn-search" placeholder="' + esc(ph) + '" aria-label="' + esc(ph) + '" value="' + esc(learnQuery) + '"></div>';
+    return '<div class="learn-tools"><input type="search" id="learn-search" placeholder="' + esc(ph) + '" aria-label="' + esc(ph) + '" value="' + esc(learnQuery) + '"><div class="chip-row" role="group" aria-label="' + esc(t("learn.categories")) + '">' +
       cats.map(k => '<button type="button" class="chip' + (k === learnFilter ? " active" : "") + '" aria-pressed="' + (k === learnFilter) + '" data-learn-cat="' + k + '">' + esc(k === "all" ? t("learn.all", { n: items.length }) : I18N.label("courseCategory", k) + " · " + items.filter(c => c.category === k).length) + "</button>").join("") + "</div></div>";
   }
   function wireCatalog(rerender) {
@@ -1311,13 +1315,14 @@
     const access = await api("/v1/learn/access");
     if (!access.access) return learnGuest(access);
     const d = await api("/v1/learn/courses");
+    d.items = scoped(d.items);
     const via = access.via === "employer" ? '<p class="demo-note">' + esc(t("learn.viaEmployer", { name: access.employer_name || t("admin.member") })) + "</p>" : "";
     const draw = () => {
     const list = d.items.filter(catalogMatch);
     const cards = list.map(c => '<article class="invoice-card course-card">' + courseCover(c) + '<div class="invoice-top"><div><span class="pill">' + esc(I18N.label("courseCategory", c.category)) + "</span>" + (I18N.getLocale() === "kk" && !c.translated ? ' <span class="pill muted-pill">' + esc(t("learn.ruOnly")) + "</span>" : "") + "<h3>" + esc(c.title) + '</h3><small>' +
       esc(t("learn.meta", { lessons: c.lesson_count, minutes: c.duration_min })) + "</small></div></div><p>" + esc(c.description || "") + "</p>" + progressBar(c.completed_count, c.lesson_count) +
       '<div class="receipt-actions"><button class="primary-button" data-course="' + esc(c.slug) + '">' + esc(t(c.completed_count ? (c.completed_count >= c.lesson_count ? "learn.review" : "learn.continue") : "learn.start")) + "</button></div></article>").join("");
-    content.innerHTML = via + testsTeaser() + panel(t("learn.section"), t("learn.sectionText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>");
+    content.innerHTML = via + (catalogScope === "books" ? "" : testsTeaser()) + panel(t(catalogScope === "books" ? "books.section" : "learn.section"), t(catalogScope === "books" ? "books.sectionText" : "learn.sectionText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>");
     content.querySelectorAll("[data-course]").forEach(b => b.addEventListener("click", () => { learnCourse = b.dataset.course; render("course"); }));
     wireCatalog(draw);
     };
@@ -2482,6 +2487,7 @@
   // ---------- Learning for non-members: catalog with locks and the AI academy ----------
   async function learnGuest(access) {
     const [d, prods] = await Promise.all([api("/v1/learn/courses"), api("/v1/learn/products").catch(() => ({ items: [] }))]);
+    d.items = scoped(d.items);
     const owned = new Set(access.tracks || []);
     const offer = (prods.items || []).map(pr => {
       const o = pr.my_order;
@@ -2497,7 +2503,7 @@
       esc(t("learn.meta", { lessons: c.lesson_count, minutes: c.duration_min })) + "</small></div></div><p>" + esc(c.description || "") + "</p>" +
       (c.locked ? '<p class="muted">' + esc(t(c.track ? "academy.lockedTrack" : "academy.lockedMembers")) + "</p>" : progressBar(c.completed_count, c.lesson_count) + '<div class="receipt-actions"><button class="primary-button" data-course="' + esc(c.slug) + '">' + esc(t(c.completed_count ? "learn.continue" : "learn.start")) + "</button></div>") + "</article>").join("");
     content.innerHTML = offer + '<div class="card-cta"><div><strong>' + esc(t("academy.membersTitle")) + "</strong><p>" + esc(t("academy.membersText")) + '</p></div><button type="button" class="primary-button" data-view="membership">' + esc(t("academy.membersCta")) + "</button></div>" +
-      testsTeaser() + panel(t("learn.section"), t("academy.catalogText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>") +
+      (catalogScope === "books" ? "" : testsTeaser()) + panel(t(catalogScope === "books" ? "books.section" : "learn.section"), t(catalogScope === "books" ? "books.sectionText" : "academy.catalogText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>") +
       panel(t("learn.noAccessTitle"), t("learn.noAccessText"), joinForm());
     wireJoin(learn);
     wireCatalog(draw);
@@ -3359,7 +3365,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
+  const RENDERERS = { blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

@@ -377,7 +377,7 @@
   function authBar() {
     const el = document.querySelector(".topbar-right");
     if (!el) return;
-    const chatBtn = token() && APP !== "admin" && !(APP === "pilot" && pilotMode() === "admin") ? '<button type="button" class="icon-button topbar-chat" data-view="messages" aria-label="' + esc(t("nav.messages")) + '">' + ic("chat") + '<span class="nav-badge" id="msg-badge" hidden></span></button>' : "";
+    const chatBtn = token() && APP !== "admin" && !(APP === "pilot" && pilotMode() === "admin") ? '<button type="button" class="icon-button topbar-chat" data-view="messages" aria-label="' + esc(t("nav.messages")) + '">' + ic("chat") + "<span class=\"topbar-chat-label\">" + esc(t("nav.messages")) + '</span><span class="nav-badge" id="msg-badge" hidden></span></button>' : "";
     el.classList.toggle("signed-in", !!token());
     el.innerHTML = chatBtn + themeButton() + I18N.switcherHtml() + (token()
       ? '<span class="status-dot" aria-hidden="true"></span><span id="user-label">' + esc(user?.email || t("auth.signedInLabel")) + '</span><button class="outline-button" id="logout-button">' + esc(t("auth.logout")) + "</button>"
@@ -434,14 +434,14 @@
   // Which bottom-bar block a screen belongs to, and the sub-sections shown as tabs inside a block.
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
-    course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", companies: "business", partner: "card", discounts: "card",
-    notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", recordings: "learn", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "books", "templates", "tests", "recordings"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+    course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
+    notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
   // ---------- «Назад» как в Kaspi: всегда в одном месте — слева вверху, на всех внутренних экранах ----------
-  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events" };
+  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events", profile: "me", companies: "me", trust: "me", membership: "me", team: "me" };
   const ROOT_ADMIN = "admin-stats";
   const isRoot = v => isPrimary(v) || v === ROOT_ADMIN || (APP === "admin" && v !== "chat");
   const parentOf = v => PARENT[v] || (BLOCK_OF[v] && BLOCK_OF[v] !== v ? BLOCK_OF[v] : (APP === "admin" || (APP === "pilot" && pilotMode() === "admin") ? ROOT_ADMIN : "overview"));
@@ -1377,7 +1377,14 @@
   // Course cover illustration: category colour, emoji and a pattern seeded by the slug (no image files needed).
   const COVER = { sales: ["#1468d8", "#4fa3ff", "briefcase"], marketing: ["#c2306b", "#ff7aa8", "megaphone"], finance: ["#127a4a", "#3fd08a", "bank"], management: ["#6b3fd1", "#a98bff", "users"],
     growth: ["#b45a00", "#ffb04f", "trend"], ai: ["#0b6c8a", "#3cd2f0", "spark"], legal: ["#41506b", "#9fb0cf", "scale"], books: ["#3d2f8f", "#8c7ae6", "book"], other: ["#7a4b14", "#e3a35b", "store"] };
+  // Real book covers (small copies kept next to the app); books without one keep the drawn cover.
+  let coverManifest = null;
+  async function loadCovers() {
+    if (!coverManifest) { try { coverManifest = await (await fetch("covers/manifest.json", { cache: "no-cache" })).json(); } catch { coverManifest = {}; } }
+    return coverManifest;
+  }
   function courseCover(c) {
+    if (c.category === "books" && coverManifest && coverManifest[c.slug]) return '<div class="book-cover" aria-hidden="true"><img src="' + esc(coverManifest[c.slug]) + '" alt="" loading="lazy" decoding="async"></div>';
     const [a, b, icon] = COVER[c.category] || COVER.other;
     let h = 0; for (const ch of String(c.slug)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
     const shapes = Array.from({ length: 6 }, (_, k) => { const x = (h >> (k * 3)) % 300, y = (h >> (k * 2 + 1)) % 120, r = 14 + ((h >> k) % 40); return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" opacity="' + (0.06 + (k % 3) * 0.04).toFixed(2) + '"/>'; }).join("");
@@ -1432,6 +1439,7 @@
       content.insertBefore(box.firstChild, content.children[1] || null);
     }
     content.querySelectorAll("[data-lesson]").forEach(b => b.addEventListener("click", () => { learnLesson = b.dataset.lesson; render("lesson"); }));
+    if (/^book-/.test(String(c.slug))) { await loadCovers(); const cv = coverManifest[c.slug]; if (cv) { const box = document.createElement("div"); box.className = "book-cover big"; box.innerHTML = '<img src="' + esc(cv) + '" alt="' + esc(c.title) + '">'; content.insertBefore(box, content.firstChild); } }
     addBookAudio(c);
   }
 
@@ -1464,6 +1472,7 @@
   /** Voiced books first, the rest keep their order. */
   async function sortVoicedFirst(items) {
     if (catalogScope !== "books") return items;
+    await loadCovers();
     const m = await loadAudioManifest();
     const rank = c => (m[c.slug] ? 0 : 1);
     return items.map((c, i) => [c, i]).sort((x, y) => rank(x[0]) - rank(y[0]) || x[1] - y[1]).map(x => x[0]);
@@ -3065,7 +3074,7 @@
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
   // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
   const ME_GROUPS = [
-    ["me.groupAccount", [["profile", "user"], ["business", "business"], ["companies", "building"], ["trust", "shield"], ["membership", "card"], ["team", "users"]]],
+    ["me.groupAccount", [["profile", "user", "nav.account"]]],
     ["me.groupCommunity", [["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
     ["me.groupApp", [["settings", "gear"]]]
   ];
@@ -3093,14 +3102,14 @@
     const hasPartner = APP === "admin" ? false : await api("/v1/me/partner").then(() => true, () => false);
     const listed = new Set(ME_GROUPS.flatMap(g => g[1].map(x => x[0])).concat(["overview", "business", "card", "learn", "me", "services", "events", "experts", "members", "announcements", "tests", "deals", "discounts", "partner"]));
     const extra = [...document.querySelectorAll(".sidebar nav .nav-item[data-view]:not([hidden]), .sidebar nav a[data-crm-link]")].filter(el => !listed.has(el.dataset.view) && !(APP === "pilot" && el.hasAttribute("data-admin-item")));
-    const row = (view, icon) => '<button type="button" class="me-row" data-view="' + view + '"><span class="me-ic">' + ic(icon) + "</span><span>" + esc(t("nav." + view)) + '</span><span class="me-go">' + ic("chevron") + "</span></button>";
+    const row = (view, icon, label) => '<button type="button" class="me-row" data-view="' + view + '"><span class="me-ic">' + ic(icon) + "</span><span>" + esc(t(label || "nav." + view)) + '</span><span class="me-go">' + ic("chevron") + "</span></button>";
     const name = profile?.display_name || user?.email || "";
     const sub = !m ? t("settings.subNone") : m.active ? (m.ends_at ? t("me.subUntil", { date: day(m.ends_at) }) : t("settings.subActive")) : t("settings.subExpired", { date: m.ends_at ? day(m.ends_at) : "—" });
     content.innerHTML = '<section class="me-head"><div class="member-avatar big" aria-hidden="true">' + esc((name || "?").slice(0, 1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p class="muted">' + esc(user?.email || "") + '</p><span class="pill">' + esc(sub) + "</span></div></section>" +
       (APP === "pilot" ? pilotModeCard() : "") +
       (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><a class="me-row" href="' + esc(WA_URL) + '" target="_blank" rel="noopener noreferrer"><span class="me-ic">' + ic("chat") + "</span><span>" + esc(t("wa.writeUs")) + '</span><span class="me-go">›</span></a></div></section>') +
       (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : "") +
-      ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i]) => row(v, i)).join("") + "</div></section>").join("") +
+      ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i, l]) => row(v, i, l)).join("") + "</div></section>").join("") +
       (extra.length ? '<section class="me-group"><h3>' + esc(t("services.more")) + '</h3><div class="me-list" id="me-extra"></div></section>' : "") +
       '<div class="receipt-actions"><button type="button" class="outline-button" id="me-logout">' + ic("logout", "ic-inline") + " " + esc(t("auth.logout")) + "</button></div>";
     const box = document.querySelector("#me-extra");

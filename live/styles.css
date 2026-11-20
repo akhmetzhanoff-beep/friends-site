@@ -682,3 +682,15 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 @media (min-width:900px){.me-list .me-row:last-child:nth-child(odd)>span:nth-child(2){flex:0}}
 .chat-pinned{margin-bottom:12px;border:1px solid var(--fb-blue,#1468d8);border-radius:14px;overflow:hidden}
 .chat-pinned .chat-avatar{background:var(--fb-blue,#1468d8);color:#fff}
+
+/* Chats: the most used button, shown as a labelled pill in the top bar */
+.topbar-chat.topbar-chat{width:auto;height:40px;padding:0 14px;border-radius:999px;display:inline-flex;gap:8px;align-items:center;background:var(--fb-blue,#1468d8);color:#fff;font-weight:600}
+.topbar-chat-label{font-size:15px}
+.topbar-chat .nav-badge{top:-4px;right:-4px}
+.topbar-chat.topbar-chat{background:#0f5bc4;color:#fff}
+.topbar-chat .topbar-chat-label,.topbar-chat .ic{color:#fff}
+
+/* Real book covers */
+.book-cover{display:flex;justify-content:center;margin:0 -16px 12px;padding:14px 0;background:var(--fb-blue-soft,#e7f3ff)}
+.book-cover img{display:block;height:170px;width:auto;max-width:60%;border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.25);object-fit:cover}
+.book-cover.big{margin:0 0 14px;border-radius:14px}.book-cover.big img{height:260px}

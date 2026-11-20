@@ -650,6 +650,17 @@ html[data-theme="dark"] .ref-dot.done{background:var(--btn-bg)}
 .copy-row{display:flex;gap:8px;margin:10px 0}.copy-row input{flex:1;min-width:0;border:1px solid var(--fb-divider,#d7e1f4);border-radius:8px;padding:9px 10px;background:var(--fb-input,transparent);color:var(--fb-text);font:500 12px 'DM Sans',sans-serif}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 [data-partner-details] h4{margin:16px 0 8px;font-size:13px}
+a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
+.center-link{text-align:center;margin:8px 0 0}
+.plain-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.cal-head strong{text-transform:capitalize}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-dow{font-size:11px;color:var(--fb-text-2);text-align:center;text-transform:uppercase;padding:2px 0}
+.cal-cell{position:relative;aspect-ratio:1;min-height:38px;border:1px solid var(--fb-divider,rgba(128,128,128,.25));border-radius:10px;background:transparent;color:var(--fb-text);font:600 14px inherit;font-family:inherit;display:grid;place-items:center;cursor:pointer}
+.cal-cell.empty{border:0;cursor:default}.cal-cell.free{border-color:rgba(66,184,131,.6)}.cal-cell.busy{border-color:rgba(240,180,60,.7)}
+.cal-cell.off{opacity:.35;cursor:not-allowed}.cal-cell.sel{background:#1877f2;border-color:#1877f2;color:#fff}
+.cal-cell i{position:absolute;right:4px;bottom:2px;font:600 10px inherit;font-family:inherit;font-style:normal;opacity:.85}
+.day-info{margin-top:14px;display:grid;gap:6px}
 
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
@@ -708,6 +719,7 @@ document.getElementById("dw-enter").addEventListener("click", function () {
         <button class="nav-item" data-view="admin" data-primary><span aria-hidden="true" data-ic="test"></span> <span data-i18n="nav.admin"></span></button>
         <button class="nav-item" data-view="admin-referrals" data-primary><span aria-hidden="true" data-ic="phone"></span> <span data-i18n="nav.adminReferrals"></span></button>
         <button class="nav-item" data-view="admin-partners"><span aria-hidden="true" data-ic="megaphone"></span> <span data-i18n="nav.adminPartners"></span></button>
+        <button class="nav-item" data-view="admin-proposals"><span aria-hidden="true" data-ic="calendar"></span> <span data-i18n="nav.adminProposals"></span></button>
         <button class="nav-item" data-view="admin-loans"><span aria-hidden="true" data-ic="bank"></span> <span data-i18n="nav.adminLoans"></span></button>
         <button class="nav-item" data-view="admin-feedback"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.adminFeedback"></span></button>
         <button class="nav-item" data-view="admin-experts"><span aria-hidden="true" data-ic="star"></span> <span data-i18n="nav.adminExperts"></span></button>
@@ -3243,7 +3255,7 @@ var qrcode = function() {
   };
 
   var KEYS = ["events", "companies", "notifications", "invoices", "receipts", "members", "profile", "prefs", "experts", "progress", "seats", "ann", "offers", "redemptions", "whatsapp", "feedback", "referrals", "staff", "biz", "loanOffers", "loanApps", "quizScores", "checkins", "polls", "learningOrders", "products", "chats", "testResults", "testInvites", "nudge", "myReviews", "verifications", "expertInvites", "refBonuses", "deals"];
-  var S = { events: [], companies: [], notifications: [], invoices: [], receipts: [], members: [], profile: null, prefs: { locale: "ru" }, experts: [], progress: [], seats: [], ann: [], offers: [], redemptions: [], whatsapp: [], feedback: [], referrals: [], staff: [], biz: [], loanOffers: [], loanApps: [], quizScores: [], checkins: [], polls: [], learningOrders: [], chats: [], testResults: [], testInvites: [], nudge: [], myReviews: [], verifications: [], expertInvites: [], refBonuses: [], partners: [], deals: [], products: [{ id: "lp1", slug: "ai-academy", track: "ai-academy", title: "ИИ-академия Friends", description: "Все курсы по искусственному интеллекту. Для резидентов Friends — бесплатно.", price_kzt: 25000, status: "active" }] };
+  var S = { events: [], companies: [], notifications: [], invoices: [], receipts: [], members: [], profile: null, prefs: { locale: "ru" }, experts: [], progress: [], seats: [], ann: [], offers: [], redemptions: [], whatsapp: [], feedback: [], referrals: [], staff: [], biz: [], loanOffers: [], loanApps: [], quizScores: [], checkins: [], polls: [], learningOrders: [], chats: [], testResults: [], testInvites: [], nudge: [], myReviews: [], verifications: [], expertInvites: [], refBonuses: [], partners: [], hostProps: [], deals: [], products: [{ id: "lp1", slug: "ai-academy", track: "ai-academy", title: "ИИ-академия Friends", description: "Все курсы по искусственному интеллекту. Для резидентов Friends — бесплатно.", price_kzt: 25000, status: "active" }] };
   var CARD_CODES = {}; // one-time card codes live only in this tab, as on the server they expire in 10 minutes
   function almatyMonth(iso) { return new Date(new Date(iso).getTime() + 5 * 3600000).toISOString().slice(0, 7); }
   // Course content is embedded at build time from apps/api/seed/learning.ru.json.
@@ -3900,6 +3912,60 @@ var qrcode = function() {
       if (m === "POST") { var rl = { id: id("l"), name: b.name, phone: b.phone, note: b.note, status: "new", event_title: null, referrer_name: (S.profile && S.profile.display_name) || "", created_at: new Date().toISOString() }; S.referrals.push(rl); await save("referrals"); return res(201, rl); }
       var paidN = S.referrals.filter(function (l) { return l.status === "paid"; }).length, bon = S.refBonuses || [];
       return res(200, { items: S.referrals.slice().reverse(), bonuses: bon, rule: { per_bonus: 2, months: 12 }, paid_total: paidN, towards_next: Math.max(0, paidN - bon.length * 2) % 2 });
+    }
+    // Residents host events — demo data.
+    function hostSeed() {
+      var at = function (d, h, m) { var x = new Date(Date.now() + d * 864e5); x.setHours(h, m || 0, 0, 0); return x.toISOString(); };
+      var end = function (iso, min) { return new Date(new Date(iso).getTime() + min * 6e4).toISOString(); };
+      var mk = function (o) { return Object.assign({ id: id("hp"), topic: null, description: null, location_name: null, address: null, online_url: null, is_free: true, price_kzt: null, capacity: null, speaker_name: null, speaker_bio: null, review_note: null, community_event_id: null, recording_url: null, publish_to: "none", library_status: "none", host_name: "Айгерим Сатпаева", mine: false, created_at: new Date().toISOString() }, o); };
+      var p1 = at(9, 19, 0), p2 = at(14, 11, 0), done = at(-12, 18, 0);
+      return [
+        mk({ title: "Как мы вышли на 20 млн в месяц в общепите", topic: "Продажи", description: "Разберём воронку, меню и работу с отзывами. Покажу цифры по трём точкам.", format: "online", starts_at: p1, ends_at: end(p1, 90), status: "pending", host_name: "Данияр Омаров", speaker_name: "Данияр Омаров" }),
+        mk({ title: "Найм без выгорания: система для малого бизнеса", topic: "Команда", format: "offline", location_name: "Коворкинг Friends", address: "Астана, Туран 37", starts_at: p2, ends_at: end(p2, 120), status: "pending", is_free: false, price_kzt: 5000, capacity: 30, host_name: "Мадина Ахметова" }),
+        mk({ title: "Налоги ИП: что поменялось в 2026", topic: "Финансы", description: "Практика: упрощёнка, НДС, кассы. Вопросы и ответы.", format: "online", starts_at: done, ends_at: end(done, 60), status: "approved", recording_url: "https://www.youtube.com/watch?v=jZfzWBlJPgA", publish_to: "library", library_status: "requested", host_name: "Ерлан Сейтжанов" })
+      ];
+    }
+    var libSeed = [
+      { id: "lib1", title: "Как продавать в Instagram без бюджета", topic: "Маркетинг", description: "Контент-план на месяц и три рабочих связки.", starts_at: new Date(Date.now() - 40 * 864e5).toISOString(), recording_url: "https://www.youtube.com/watch?v=eNyRFP3947Y", speaker_name: null, host_name: "Аружан Беков", host_user_id: "u9" },
+      { id: "lib2", title: "Финансовая модель кофейни за вечер", topic: "Финансы", description: null, starts_at: new Date(Date.now() - 70 * 864e5).toISOString(), recording_url: "https://www.youtube.com/watch?v=Kv6A1CAVfco", speaker_name: null, host_name: "Айгерим Сатпаева", host_user_id: "u8" }
+    ];
+    if (!S.hostProps || !S.hostProps.length) S.hostProps = hostSeed();
+    var overlapP = function (a, b, c, d) { return new Date(a) < new Date(d) && new Date(c) < new Date(b); };
+    if (p === "/v1/me/event-slots") {
+      var items = S.events.filter(function (e) { return e.status === "published" && new Date(e.starts_at) > new Date(Date.now() - 864e5); }).map(function (e) { return { kind: "community", title: e.title, starts_at: e.starts_at, ends_at: e.ends_at || new Date(new Date(e.starts_at).getTime() + 120 * 6e4).toISOString(), mine: false }; })
+        .concat(S.hostProps.filter(function (x) { return x.status === "pending" || x.status === "approved"; }).map(function (x) { return { kind: "resident", title: x.mine || x.status === "approved" ? x.title : null, starts_at: x.starts_at, ends_at: x.ends_at, mine: !!x.mine }; }));
+      return res(200, { items: items, rules: { min_lead_hours: 48, max_ahead_days: 120, max_active: 2, min_minutes: 30, max_minutes: 480 } });
+    }
+    if (p === "/v1/me/event-proposals") {
+      if (m === "POST") {
+        var ends = new Date(new Date(b.starts_at).getTime() + b.duration_min * 6e4).toISOString();
+        if (new Date(b.starts_at).getTime() < Date.now() + 48 * 36e5) return res(400, { error: "too_soon" });
+        if (b.format === "offline" && !b.location_name) return res(400, { error: "location_required" });
+        if (S.hostProps.filter(function (x) { return x.mine && (x.status === "pending" || x.status === "approved") && new Date(x.ends_at) > new Date(); }).length >= 2) return res(409, { error: "too_many_active" });
+        var taken = S.events.some(function (e) { return e.status === "published" && overlapP(b.starts_at, ends, e.starts_at, e.ends_at || new Date(new Date(e.starts_at).getTime() + 120 * 6e4).toISOString()); }) || S.hostProps.some(function (x) { return (x.status === "pending" || x.status === "approved") && overlapP(b.starts_at, ends, x.starts_at, x.ends_at); });
+        if (taken) return res(409, { error: "slot_taken" });
+        var np = Object.assign({ id: id("hp"), topic: null, description: null, location_name: null, address: null, online_url: null, price_kzt: null, capacity: null, speaker_name: null, speaker_bio: null, review_note: null, community_event_id: null, recording_url: null, publish_to: "none", library_status: "none", status: "pending", mine: true, host_name: (S.profile && S.profile.display_name) || "Вы", created_at: new Date().toISOString() }, b, { ends_at: ends });
+        delete np.duration_min; S.hostProps.unshift(np); await save("hostProps"); return res(201, { id: np.id, status: "pending" });
+      }
+      return res(200, { items: S.hostProps.filter(function (x) { return x.mine; }).sort(function (a, z) { return String(z.starts_at).localeCompare(String(a.starts_at)); }) });
+    }
+    if ((mm = p.match(/^\/v1\/me\/event-proposals\/([\w-]+)\/(cancel|link|recording)$/))) {
+      var hp = S.hostProps.filter(function (x) { return x.id === mm[1] && x.mine; })[0];
+      if (!hp) return res(404, { error: "proposal_not_found" });
+      if (mm[2] === "cancel") { hp.status = "cancelled"; }
+      if (mm[2] === "link") { hp.online_url = b.online_url; }
+      if (mm[2] === "recording") { hp.recording_url = b.recording_url; hp.publish_to = b.publish_to; hp.library_status = b.publish_to === "library" ? "requested" : "none"; }
+      await save("hostProps"); return res(200, { saved: true, cancelled: true, library_status: hp.library_status });
+    }
+    if (p === "/v1/library/recordings") return res(200, { items: libSeed.concat(S.hostProps.filter(function (x) { return x.library_status === "approved"; }).map(function (x) { return { id: x.id, title: x.title, topic: x.topic, description: x.description, starts_at: x.starts_at, recording_url: x.recording_url, speaker_name: x.speaker_name, host_name: x.host_name, host_user_id: "u" }; })) });
+    if (p === "/v1/admin/event-proposals") return res(200, { items: S.hostProps.filter(function (x) { return x.status === "pending" || x.library_status === "requested" || (x.status === "approved" && new Date(x.ends_at) > new Date()); }) });
+    if ((mm = p.match(/^\/v1\/admin\/event-proposals\/([\w-]+)\/(approve|reject|library)$/))) {
+      var ap = S.hostProps.filter(function (x) { return x.id === mm[1]; })[0];
+      if (!ap) return res(404, { error: "proposal_not_found" });
+      if (mm[2] === "approve") { ap.status = "approved"; S.events.push({ id: id("e"), title: ap.title, description: ap.description, event_type: "masterclass", starts_at: ap.starts_at, ends_at: ap.ends_at, location_name: ap.format === "offline" ? ap.location_name : "Онлайн", status: "published", registered_count: 0 }); await save("events"); }
+      if (mm[2] === "reject") { ap.status = "rejected"; ap.review_note = b.note; }
+      if (mm[2] === "library") { ap.library_status = b.approved ? "approved" : "rejected"; }
+      await save("hostProps"); return res(200, { approved: true, rejected: true, library_status: ap.library_status });
     }
     // Bloggers (promo partners) — demo data.
     function partnerSeed() {
@@ -5678,6 +5744,117 @@ var qrcode = function() {
     "nav.adminStats": "Статистика",
     "nav.adminReferrals": "Рекомендации",
     "nav.adminPartners": "Блогеры",
+    "nav.host": "Провести встречу",
+    "nav.recordings": "Записи встреч",
+    "nav.adminProposals": "Встречи резидентов",
+    "view.host.title": "Провести своё мероприятие",
+    "view.host.subtitle": "Выберите свободный день и отправьте заявку.",
+    "view.recordings.title": "Записи встреч",
+    "view.recordings.subtitle": "Лучшие встречи резидентов в записи.",
+    "view.adminProposals.title": "Встречи резидентов",
+    "view.adminProposals.subtitle": "Заявки на мероприятия и записи для библиотеки.",
+    "host.ctaTitle": "Проведите своё мероприятие",
+    "host.ctaText": "Выберите свободную дату в календаре сообщества и расскажите резидентам о своём опыте. Онлайн-встречу может провести каждый резидент.",
+    "host.ctaBtn": "Выбрать дату",
+    "recordings.link": "Записи прошедших встреч",
+    "host.title": "Календарь сообщества",
+    "host.text": "Серые дни недоступны, цифра на дне показывает, сколько встреч уже запланировано. Выберите день и посмотрите свободное время.",
+    "host.needMembership": "Проводить встречи могут резиденты с активной подпиской или пробным месяцем.",
+    "host.prevMonth": "Предыдущий месяц",
+    "host.nextMonth": "Следующий месяц",
+    "host.pickDay": "Выберите день в календаре.",
+    "host.dayFree": "В этот день пока ничего нет, любое время свободно.",
+    "host.busyCount": "занято встреч: {n}",
+    "host.busyAnon": "Занято",
+    "host.mine": "моя",
+    "host.formTitle": "Заявка",
+    "host.formText": "После проверки встреча появится в календаре сообщества, и резиденты смогут записаться.",
+    "host.fTitle": "Название встречи",
+    "host.fTopic": "Тема",
+    "host.fDesc": "О чём расскажете и кому будет полезно",
+    "host.fFormat": "Формат",
+    "host.format.online": "Онлайн",
+    "host.format.offline": "Офлайн",
+    "host.fLocation": "Место проведения",
+    "host.fAddress": "Адрес",
+    "host.fDate": "Дата",
+    "host.fTime": "Начало",
+    "host.fDuration": "Длительность",
+    "host.minutes": "{n} мин",
+    "host.fCapacity": "Мест (если ограничено)",
+    "host.fPrice": "Стоимость для участников",
+    "host.free": "Бесплатно",
+    "host.paid": "Платно",
+    "host.fPriceKzt": "Цена, ₸",
+    "host.fSpeaker": "Спикер (если приглашаете гостя)",
+    "host.fSpeakerBio": "Коротко о спикере",
+    "host.rules": "Правила: заявку нужно подать минимум за {days} дня. Одновременно можно иметь не больше {max} активных заявок. На одно время одна встреча.",
+    "host.submit": "Отправить на проверку",
+    "host.sent": "Заявка отправлена. Мы ответим после проверки.",
+    "host.myTitle": "Мои мероприятия",
+    "host.myText": "Статус заявок, ссылка на трансляцию и запись после встречи.",
+    "host.myEmpty": "Вы ещё не подавали заявок.",
+    "host.status.pending": "На проверке",
+    "host.status.approved": "Одобрено",
+    "host.status.rejected": "Отклонено",
+    "host.status.cancelled": "Отменено",
+    "host.link": "Ссылка на трансляцию",
+    "host.linkSave": "Сохранить ссылку",
+    "host.linkSaved": "Ссылка сохранена",
+    "host.cancel": "Отменить встречу",
+    "host.cancelConfirm": "Отменить встречу? Время освободится для других.",
+    "host.cancelled": "Встреча отменена",
+    "host.recTitle": "Запись и портфолио",
+    "host.recUrl": "Ссылка на запись (https)",
+    "host.recWhere": "Куда поместить запись",
+    "host.rec.none": "Никуда, только у меня",
+    "host.rec.portfolio": "В моё портфолио",
+    "host.rec.library": "В портфолио и в библиотеку записей (после проверки)",
+    "host.lib.requested": "Запись на проверке для библиотеки.",
+    "host.lib.approved": "Запись опубликована в библиотеке.",
+    "host.lib.rejected": "В библиотеку запись не взяли, она осталась в вашем портфолио.",
+    "host.recSave": "Сохранить",
+    "host.recSaved": "Запись сохранена",
+    "recordings.title": "Библиотека записей",
+    "recordings.text": "Встречи, которые провели резиденты. Лучшие записи отбирает команда Friends.",
+    "recordings.empty": "Записей пока нет.",
+    "recordings.by": "Ведёт {name}",
+    "recordings.watch": "Смотреть запись",
+    "recordings.defaultTopic": "Встреча",
+    "adminProp.title": "Заявки на мероприятия",
+    "adminProp.text": "Резиденты предлагают встречи. После одобрения встреча появится в календаре сообщества.",
+    "adminProp.noAccess": "Раздел доступен администратору и модератору.",
+    "adminProp.noPending": "Новых заявок нет.",
+    "adminProp.speaker": "Спикер: {name}",
+    "adminProp.approve": "Одобрить и опубликовать",
+    "adminProp.reject": "Отклонить",
+    "adminProp.rejectPrompt": "Причина отказа (её увидит резидент)",
+    "adminProp.approved": "Встреча опубликована",
+    "adminProp.rejected": "Заявка отклонена",
+    "adminProp.libTitle": "Записи для библиотеки",
+    "adminProp.libText": "Резиденты предлагают свои записи. Берите только качественные.",
+    "adminProp.noLib": "Записей на проверке нет.",
+    "adminProp.libApprove": "В библиотеку",
+    "adminProp.libReject": "Не брать",
+    "adminProp.libDone": "Готово",
+    "adminProp.upTitle": "Ближайшие встречи резидентов",
+    "adminProp.upText": "Одобренные и ещё не прошедшие.",
+    "adminProp.noUp": "Нет предстоящих встреч.",
+    "error.slot_taken": "Это время уже занято. Выберите другое.",
+    "error.too_soon": "Заявку нужно подать минимум за 2 дня до встречи.",
+    "error.too_far": "Можно планировать не дальше чем на 4 месяца вперёд.",
+    "error.duration_invalid": "Длительность от 30 минут до 8 часов.",
+    "error.location_required": "Для офлайн-встречи укажите место.",
+    "error.price_required": "Укажите цену или выберите «Бесплатно».",
+    "error.url_invalid": "Нужна ссылка, которая начинается с https://",
+    "error.too_many_active": "У вас уже две активные заявки. Дождитесь встречи или отмените одну.",
+    "error.membership_required": "Нужна активная подписка или пробный месяц.",
+    "error.event_not_finished": "Запись можно добавить после окончания встречи.",
+    "error.title_required": "Укажите название встречи.",
+    "error.starts_at_invalid": "Проверьте дату и время.",
+    "error.capacity_invalid": "Число мест от 2 до 1000.",
+    "error.event_in_past": "Встреча уже прошла.",
+    "error.format_invalid": "Выберите формат.",
     "view.adminPartners.title": "Блогеры",
     "view.adminPartners.subtitle": "Ссылки с бесплатным месяцем, кто пришёл, кто оплатил и сколько бонусов к выплате.",
     "adminPartners.title": "Блогеры и партнёры",
@@ -7673,6 +7850,117 @@ var qrcode = function() {
     "nav.adminStats": "Статистика",
     "nav.adminReferrals": "Ұсыныстар",
     "nav.adminPartners": "Блогерлер",
+    "nav.host": "Кездесу өткізу",
+    "nav.recordings": "Кездесу жазбалары",
+    "nav.adminProposals": "Резиденттер кездесулері",
+    "view.host.title": "Өз іс-шараңызды өткізіңіз",
+    "view.host.subtitle": "Бос күнді таңдап, өтінім жіберіңіз.",
+    "view.recordings.title": "Кездесу жазбалары",
+    "view.recordings.subtitle": "Резиденттердің үздік кездесулері жазбада.",
+    "view.adminProposals.title": "Резиденттер кездесулері",
+    "view.adminProposals.subtitle": "Іс-шара өтінімдері және кітапханаға арналған жазбалар.",
+    "host.ctaTitle": "Өз іс-шараңызды өткізіңіз",
+    "host.ctaText": "Қауымдастық күнтізбесінен бос күнді таңдап, резиденттерге тәжірибеңізбен бөлісіңіз. Онлайн кездесуді кез келген резидент өткізе алады.",
+    "host.ctaBtn": "Күн таңдау",
+    "recordings.link": "Өткен кездесулердің жазбалары",
+    "host.title": "Қауымдастық күнтізбесі",
+    "host.text": "Сұр күндер қолжетімсіз, күндегі сан қанша кездесу жоспарланғанын көрсетеді. Күнді таңдап, бос уақытты қараңыз.",
+    "host.needMembership": "Кездесуді белсенді жазылымы немесе сынақ айы бар резиденттер өткізе алады.",
+    "host.prevMonth": "Алдыңғы ай",
+    "host.nextMonth": "Келесі ай",
+    "host.pickDay": "Күнтізбеден күнді таңдаңыз.",
+    "host.dayFree": "Бұл күні әзірге ештеңе жоқ, кез келген уақыт бос.",
+    "host.busyCount": "кездесу саны: {n}",
+    "host.busyAnon": "Бос емес",
+    "host.mine": "менікі",
+    "host.formTitle": "Өтінім",
+    "host.formText": "Тексергеннен кейін кездесу қауымдастық күнтізбесінде пайда болады, резиденттер жазыла алады.",
+    "host.fTitle": "Кездесу атауы",
+    "host.fTopic": "Тақырып",
+    "host.fDesc": "Не туралы айтасыз және кімге пайдалы",
+    "host.fFormat": "Формат",
+    "host.format.online": "Онлайн",
+    "host.format.offline": "Офлайн",
+    "host.fLocation": "Өтетін орны",
+    "host.fAddress": "Мекенжай",
+    "host.fDate": "Күні",
+    "host.fTime": "Басталуы",
+    "host.fDuration": "Ұзақтығы",
+    "host.minutes": "{n} мин",
+    "host.fCapacity": "Орын саны (шектеулі болса)",
+    "host.fPrice": "Қатысушыларға құны",
+    "host.free": "Тегін",
+    "host.paid": "Ақылы",
+    "host.fPriceKzt": "Бағасы, ₸",
+    "host.fSpeaker": "Спикер (қонақ шақырсаңыз)",
+    "host.fSpeakerBio": "Спикер туралы қысқаша",
+    "host.rules": "Ережелер: өтінімді кемінде {days} күн бұрын беру керек. Бір мезгілде {max} белсенді өтінімнен артық болмайды. Бір уақытта бір кездесу.",
+    "host.submit": "Тексеруге жіберу",
+    "host.sent": "Өтінім жіберілді. Тексергеннен кейін жауап береміз.",
+    "host.myTitle": "Менің іс-шараларым",
+    "host.myText": "Өтінім мәртебесі, трансляция сілтемесі және кездесуден кейінгі жазба.",
+    "host.myEmpty": "Сіз әлі өтінім берген жоқсыз.",
+    "host.status.pending": "Тексеруде",
+    "host.status.approved": "Мақұлданды",
+    "host.status.rejected": "Қабылданбады",
+    "host.status.cancelled": "Бас тартылды",
+    "host.link": "Трансляция сілтемесі",
+    "host.linkSave": "Сілтемені сақтау",
+    "host.linkSaved": "Сілтеме сақталды",
+    "host.cancel": "Кездесуден бас тарту",
+    "host.cancelConfirm": "Кездесуден бас тартасыз ба? Уақыт басқаларға босайды.",
+    "host.cancelled": "Кездесу болдырылмады",
+    "host.recTitle": "Жазба және портфолио",
+    "host.recUrl": "Жазба сілтемесі (https)",
+    "host.recWhere": "Жазбаны қайда орналастыру",
+    "host.rec.none": "Ешқайда, тек менде",
+    "host.rec.portfolio": "Менің портфолиомға",
+    "host.rec.library": "Портфолиоға және жазбалар кітапханасына (тексергеннен кейін)",
+    "host.lib.requested": "Жазба кітапхана үшін тексеруде.",
+    "host.lib.approved": "Жазба кітапханада жарияланды.",
+    "host.lib.rejected": "Кітапханаға алынбады, жазба портфолиоңызда қалды.",
+    "host.recSave": "Сақтау",
+    "host.recSaved": "Жазба сақталды",
+    "recordings.title": "Жазбалар кітапханасы",
+    "recordings.text": "Резиденттер өткізген кездесулер. Үздік жазбаларды Friends командасы таңдайды.",
+    "recordings.empty": "Жазбалар әзірге жоқ.",
+    "recordings.by": "Жүргізуші: {name}",
+    "recordings.watch": "Жазбаны көру",
+    "recordings.defaultTopic": "Кездесу",
+    "adminProp.title": "Іс-шара өтінімдері",
+    "adminProp.text": "Резиденттер кездесу ұсынады. Мақұлдаудан кейін кездесу қауымдастық күнтізбесінде пайда болады.",
+    "adminProp.noAccess": "Бөлім әкімші мен модераторға қолжетімді.",
+    "adminProp.noPending": "Жаңа өтінім жоқ.",
+    "adminProp.speaker": "Спикер: {name}",
+    "adminProp.approve": "Мақұлдап, жариялау",
+    "adminProp.reject": "Қабылдамау",
+    "adminProp.rejectPrompt": "Бас тарту себебі (резидент көреді)",
+    "adminProp.approved": "Кездесу жарияланды",
+    "adminProp.rejected": "Өтінім қабылданбады",
+    "adminProp.libTitle": "Кітапханаға арналған жазбалар",
+    "adminProp.libText": "Резиденттер өз жазбаларын ұсынады. Тек сапалысын алыңыз.",
+    "adminProp.noLib": "Тексеруде жазба жоқ.",
+    "adminProp.libApprove": "Кітапханаға",
+    "adminProp.libReject": "Алмау",
+    "adminProp.libDone": "Дайын",
+    "adminProp.upTitle": "Резиденттердің жақын кездесулері",
+    "adminProp.upText": "Мақұлданған және әлі өтпегендер.",
+    "adminProp.noUp": "Алдағы кездесулер жоқ.",
+    "error.slot_taken": "Бұл уақыт бос емес. Басқасын таңдаңыз.",
+    "error.too_soon": "Өтінімді кездесуге кемінде 2 күн қалғанда беру керек.",
+    "error.too_far": "4 айдан артық алдын ала жоспарлауға болмайды.",
+    "error.duration_invalid": "Ұзақтығы 30 минуттан 8 сағатқа дейін.",
+    "error.location_required": "Офлайн кездесу үшін орынды көрсетіңіз.",
+    "error.price_required": "Бағаны көрсетіңіз немесе «Тегін» таңдаңыз.",
+    "error.url_invalid": "Сілтеме https:// деп басталуы керек.",
+    "error.too_many_active": "Сізде екі белсенді өтінім бар. Кездесуді күтіңіз немесе біреуінен бас тартыңыз.",
+    "error.membership_required": "Белсенді жазылым немесе сынақ айы керек.",
+    "error.event_not_finished": "Жазбаны кездесу аяқталғаннан кейін қосуға болады.",
+    "error.title_required": "Кездесу атауын көрсетіңіз.",
+    "error.starts_at_invalid": "Күні мен уақытын тексеріңіз.",
+    "error.capacity_invalid": "Орын саны 2-ден 1000-ға дейін.",
+    "error.event_in_past": "Кездесу өтіп кеткен.",
+    "error.format_invalid": "Форматты таңдаңыз.",
     "view.adminPartners.title": "Блогерлер",
     "view.adminPartners.subtitle": "Тегін айы бар сілтемелер, кім келді, кім төледі және қанша бонус төлеу керек.",
     "adminPartners.title": "Блогерлер мен серіктестер",
@@ -9668,6 +9956,117 @@ var qrcode = function() {
     "nav.adminStats": "Statistics",
     "nav.adminReferrals": "Referrals",
     "nav.adminPartners": "Bloggers",
+    "nav.host": "Host a meetup",
+    "nav.recordings": "Recordings",
+    "nav.adminProposals": "Resident events",
+    "view.host.title": "Host your own event",
+    "view.host.subtitle": "Pick a free day and send a request.",
+    "view.recordings.title": "Recordings",
+    "view.recordings.subtitle": "The best resident meetups on video.",
+    "view.adminProposals.title": "Resident events",
+    "view.adminProposals.subtitle": "Event requests and recordings for the library.",
+    "host.ctaTitle": "Host your own event",
+    "host.ctaText": "Pick a free date on the community calendar and share your experience with residents. Any resident can host an online meetup.",
+    "host.ctaBtn": "Choose a date",
+    "recordings.link": "Recordings of past meetups",
+    "host.title": "Community calendar",
+    "host.text": "Grey days are unavailable; the number on a day shows how many meetings are already planned. Pick a day to see free time.",
+    "host.needMembership": "Residents with an active subscription or a trial month can host events.",
+    "host.prevMonth": "Previous month",
+    "host.nextMonth": "Next month",
+    "host.pickDay": "Pick a day on the calendar.",
+    "host.dayFree": "Nothing planned that day, any time is free.",
+    "host.busyCount": "meetings: {n}",
+    "host.busyAnon": "Booked",
+    "host.mine": "mine",
+    "host.formTitle": "Request",
+    "host.formText": "After review the event appears on the community calendar and residents can sign up.",
+    "host.fTitle": "Event title",
+    "host.fTopic": "Topic",
+    "host.fDesc": "What you will cover and who it helps",
+    "host.fFormat": "Format",
+    "host.format.online": "Online",
+    "host.format.offline": "In person",
+    "host.fLocation": "Venue",
+    "host.fAddress": "Address",
+    "host.fDate": "Date",
+    "host.fTime": "Start",
+    "host.fDuration": "Duration",
+    "host.minutes": "{n} min",
+    "host.fCapacity": "Seats (if limited)",
+    "host.fPrice": "Price for attendees",
+    "host.free": "Free",
+    "host.paid": "Paid",
+    "host.fPriceKzt": "Price, ₸",
+    "host.fSpeaker": "Speaker (if you invite a guest)",
+    "host.fSpeakerBio": "A line about the speaker",
+    "host.rules": "Rules: submit at least {days} days ahead. No more than {max} active requests at a time. One event per time slot.",
+    "host.submit": "Send for review",
+    "host.sent": "Request sent. We will reply after review.",
+    "host.myTitle": "My events",
+    "host.myText": "Request status, stream link and the recording after the event.",
+    "host.myEmpty": "You have not sent any requests yet.",
+    "host.status.pending": "In review",
+    "host.status.approved": "Approved",
+    "host.status.rejected": "Rejected",
+    "host.status.cancelled": "Cancelled",
+    "host.link": "Stream link",
+    "host.linkSave": "Save link",
+    "host.linkSaved": "Link saved",
+    "host.cancel": "Cancel event",
+    "host.cancelConfirm": "Cancel the event? The time slot will be freed.",
+    "host.cancelled": "Event cancelled",
+    "host.recTitle": "Recording and portfolio",
+    "host.recUrl": "Recording link (https)",
+    "host.recWhere": "Where to place the recording",
+    "host.rec.none": "Nowhere, only for me",
+    "host.rec.portfolio": "In my portfolio",
+    "host.rec.library": "In my portfolio and the recordings library (after review)",
+    "host.lib.requested": "The recording is in review for the library.",
+    "host.lib.approved": "The recording is published in the library.",
+    "host.lib.rejected": "Not taken into the library; it stays in your portfolio.",
+    "host.recSave": "Save",
+    "host.recSaved": "Recording saved",
+    "recordings.title": "Recordings library",
+    "recordings.text": "Meetups hosted by residents. The Friends team picks the best recordings.",
+    "recordings.empty": "No recordings yet.",
+    "recordings.by": "Hosted by {name}",
+    "recordings.watch": "Watch recording",
+    "recordings.defaultTopic": "Meetup",
+    "adminProp.title": "Event requests",
+    "adminProp.text": "Residents propose meetups. After approval the event appears on the community calendar.",
+    "adminProp.noAccess": "Available to admins and moderators.",
+    "adminProp.noPending": "No new requests.",
+    "adminProp.speaker": "Speaker: {name}",
+    "adminProp.approve": "Approve and publish",
+    "adminProp.reject": "Reject",
+    "adminProp.rejectPrompt": "Reason for rejection (the resident will see it)",
+    "adminProp.approved": "Event published",
+    "adminProp.rejected": "Request rejected",
+    "adminProp.libTitle": "Recordings for the library",
+    "adminProp.libText": "Residents offer their recordings. Take only good ones.",
+    "adminProp.noLib": "No recordings in review.",
+    "adminProp.libApprove": "Add to library",
+    "adminProp.libReject": "Do not add",
+    "adminProp.libDone": "Done",
+    "adminProp.upTitle": "Upcoming resident events",
+    "adminProp.upText": "Approved and not held yet.",
+    "adminProp.noUp": "No upcoming events.",
+    "error.slot_taken": "This time is already taken. Choose another.",
+    "error.too_soon": "Submit at least 2 days before the event.",
+    "error.too_far": "You can plan up to 4 months ahead.",
+    "error.duration_invalid": "Duration from 30 minutes to 8 hours.",
+    "error.location_required": "Add a venue for an in-person event.",
+    "error.price_required": "Enter a price or choose Free.",
+    "error.url_invalid": "The link must start with https://",
+    "error.too_many_active": "You already have two active requests. Wait for an event or cancel one.",
+    "error.membership_required": "An active subscription or trial month is required.",
+    "error.event_not_finished": "You can add a recording after the event ends.",
+    "error.title_required": "Enter an event title.",
+    "error.starts_at_invalid": "Check the date and time.",
+    "error.capacity_invalid": "Seats from 2 to 1000.",
+    "error.event_in_past": "The event has already passed.",
+    "error.format_invalid": "Choose a format.",
     "view.adminPartners.title": "Bloggers",
     "view.adminPartners.subtitle": "Free-month links, who came, who paid and how much bonus is due.",
     "adminPartners.title": "Bloggers and partners",
@@ -10366,8 +10765,8 @@ var qrcode = function() {
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners"];
-  const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals"];
+  const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
   let supabaseClient = null;
   function authClient() {
     if (!supabaseUrl || !supabaseKey) return Promise.reject(new Error(t("auth.notConfigured")));
@@ -10386,7 +10785,7 @@ var qrcode = function() {
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -10675,13 +11074,13 @@ var qrcode = function() {
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", companies: "business", partner: "card", discounts: "card",
-    notifications: "messages", chat: "messages", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "tests"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+    notifications: "messages", chat: "messages", host: "overview", recordings: "learn", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "tests", "recordings"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
   // ---------- «Назад» как в Kaspi: всегда в одном месте — слева вверху, на всех внутренних экранах ----------
-  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages" };
+  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events" };
   const ROOT_ADMIN = "admin-stats";
   const isRoot = v => isPrimary(v) || v === ROOT_ADMIN || (APP === "admin" && v !== "chat");
   const parentOf = v => PARENT[v] || (BLOCK_OF[v] && BLOCK_OF[v] !== v ? BLOCK_OF[v] : (APP === "admin" || (APP === "pilot" && pilotMode() === "admin") ? ROOT_ADMIN : "overview"));
@@ -11015,7 +11414,8 @@ var qrcode = function() {
           (x.registration_status === "declined" ? "" : '<button class="outline-button" data-decline-event="' + esc(x.id) + '">' + esc(t("events.decline")) + "</button>")) + "</div>" +
         "</article>";
     }).join("");
-    content.innerHTML = panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
+    const hostCta = APP === "admin" ? "" : '<div class="card-cta"><div><strong>' + esc(t("host.ctaTitle")) + "</strong><p>" + esc(t("host.ctaText")) + '</p></div><button type="button" class="primary-button" data-view="host">' + esc(t("host.ctaBtn")) + '</button></div><p class="center-link"><button type="button" class="text-button" data-view="recordings">' + esc(t("recordings.link")) + "</button></p>";
+    content.innerHTML = hostCta + panel(t("events.section"), t("events.sectionText"), cards || '<p class="muted">' + esc(t("events.empty")) + "</p>");
     content.querySelectorAll("[data-register-event]").forEach(b => b.addEventListener("click", async () => {
       b.disabled = true;
       try {
@@ -11039,6 +11439,134 @@ var qrcode = function() {
       } catch (e) {
         status(e.message, true);
       }
+    }));
+  }
+
+  // ---------- Residents host events: calendar of free dates, request, my events, recordings ----------
+  const pad2h = n => String(n).padStart(2, "0");
+  const HOST_DURATIONS = [30, 45, 60, 90, 120, 180, 240];
+  const localKey = d => d.getFullYear() + "-" + pad2h(d.getMonth() + 1) + "-" + pad2h(d.getDate());
+  const hhmm = d => pad2h(d.getHours()) + ":" + pad2h(d.getMinutes());
+  let hostMonth = null, hostPick = null;
+  async function host() {
+    let slots, mine;
+    try { [slots, mine] = await Promise.all([api("/v1/me/event-slots"), api("/v1/me/event-proposals")]); } catch (e) {
+      if (e.status === 403) { content.innerHTML = panel(t("host.title"), t("host.needMembership"), ""); return; }
+      throw e;
+    }
+    const rules = slots.rules, loc = I18N.getLocale() === "en" ? "en-GB" : I18N.getLocale() === "kk" ? "kk-KZ" : "ru-RU";
+    const busy = {};
+    slots.items.forEach(x => { const k = localKey(new Date(x.starts_at)); (busy[k] = busy[k] || []).push(x); });
+    const now = Date.now(), minAt = now + rules.min_lead_hours * 3600e3, maxAt = now + rules.max_ahead_days * 86400e3;
+    if (!hostMonth) hostMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const monthName = () => hostMonth.toLocaleDateString(loc, { month: "long", year: "numeric" });
+    const dow = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(loc, { weekday: "short" }));
+    const dayOff = d => d.getTime() + 86399e3 < minAt || d.getTime() > maxAt;
+    function calendar() {
+      const first = new Date(hostMonth), lead = (first.getDay() + 6) % 7, cells = [];
+      for (let i = 0; i < lead; i++) cells.push('<span class="cal-cell empty"></span>');
+      const days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+      for (let n = 1; n <= days; n++) {
+        const d = new Date(first.getFullYear(), first.getMonth(), n), k = localKey(d), b = busy[k] || [], off = dayOff(d);
+        cells.push('<button type="button" class="cal-cell ' + (off ? "off" : b.length ? "busy" : "free") + (k === hostPick ? " sel" : "") + '" data-day="' + k + '"' + (off ? " disabled" : "") + ' aria-label="' + esc(d.toLocaleDateString(loc, { day: "numeric", month: "long" }) + (b.length ? ", " + t("host.busyCount", { n: b.length }) : "")) + '"><span>' + n + "</span>" + (b.length ? "<i>" + b.length + "</i>" : "") + "</button>");
+      }
+      return '<div class="cal-head"><button type="button" class="outline-button" data-cal="-1" aria-label="' + esc(t("host.prevMonth")) + '">&lsaquo;</button><strong>' + esc(monthName()) + '</strong><button type="button" class="outline-button" data-cal="1" aria-label="' + esc(t("host.nextMonth")) + '">&rsaquo;</button></div>' +
+        '<div class="cal-grid">' + dow.map(x => '<span class="cal-dow">' + esc(x) + "</span>").join("") + cells.join("") + "</div>";
+    }
+    function dayInfo() {
+      if (!hostPick) return '<p class="muted">' + esc(t("host.pickDay")) + "</p>";
+      const b = busy[hostPick] || [];
+      return "<strong>" + esc(new Date(hostPick + "T12:00").toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long" })) + "</strong>" + (b.length ? '<ul class="plain-list">' + b.map(x => "<li>" + esc(hhmm(new Date(x.starts_at)) + "–" + hhmm(new Date(x.ends_at))) + " · " + esc(x.title || t("host.busyAnon")) + (x.mine ? ' <span class="pill">' + esc(t("host.mine")) + "</span>" : "") + "</li>").join("") + "</ul>" : '<p class="muted">' + esc(t("host.dayFree")) + "</p>");
+    }
+    const statusPill = x => '<span class="pill' + (x.status === "rejected" || x.status === "cancelled" ? " warn-pill" : "") + '">' + esc(t("host.status." + x.status)) + "</span>";
+    const mineCard = x => {
+      const ended = new Date(x.ends_at) < new Date(), live = (x.status === "pending" || x.status === "approved") && !ended;
+      return '<article class="invoice-card"><div class="invoice-top"><div><span class="pill">' + esc(t("host.format." + x.format)) + "</span><h3>" + esc(x.title) + "</h3><small>" + esc(date(x.starts_at)) + " · " + esc(x.is_free ? t("host.free") : money(x.price_kzt)) + "</small></div>" + statusPill(x) + "</div>" +
+        (x.review_note ? '<p class="muted">' + esc(x.review_note) + "</p>" : "") +
+        (live && x.format === "online" ? '<form class="search-form" data-link-form="' + esc(x.id) + '"><input name="online_url" type="url" inputmode="url" value="' + esc(x.online_url || "") + '" placeholder="https://" aria-label="' + esc(t("host.link")) + '"><button class="outline-button">' + esc(t("host.linkSave")) + "</button></form>" : "") +
+        (live ? '<div class="receipt-actions"><button type="button" class="outline-button" data-prop-cancel="' + esc(x.id) + '">' + esc(t("host.cancel")) + "</button></div>" : "") +
+        (x.status === "approved" && ended ? '<form class="app-form" data-rec-form="' + esc(x.id) + '"><h4>' + esc(t("host.recTitle")) + '</h4><label class="field"><span>' + esc(t("host.recUrl")) + '</span><input name="recording_url" type="url" inputmode="url" required placeholder="https://" value="' + esc(x.recording_url || "") + '"></label>' +
+          '<label class="field"><span>' + esc(t("host.recWhere")) + '</span><select name="publish_to">' + ["none", "portfolio", "library"].map(v => option(v, t("host.rec." + v), v === x.publish_to)).join("") + "</select></label>" +
+          (x.library_status !== "none" ? '<p class="muted">' + esc(t("host.lib." + x.library_status)) + "</p>" : "") + '<button class="primary-button">' + esc(t("host.recSave")) + "</button></form>" : "") + "</article>";
+    };
+    const form = '<form id="host-form" class="app-form">' + field(t("host.fTitle"), "title", "", "text", 'required minlength="3" maxlength="180"') + field(t("host.fTopic"), "topic", "", "text", 'maxlength="120"') + area(t("host.fDesc"), "description", "") +
+      '<fieldset class="rating-pick"><legend>' + esc(t("host.fFormat")) + '</legend><label><input type="radio" name="format" value="online" checked> <span>' + esc(t("host.format.online")) + '</span></label><label><input type="radio" name="format" value="offline"> <span>' + esc(t("host.format.offline")) + "</span></label></fieldset>" +
+      '<div id="host-offline" hidden>' + field(t("host.fLocation"), "location_name", "", "text", 'maxlength="200"') + field(t("host.fAddress"), "address", "", "text", 'maxlength="300"') + "</div>" +
+      '<div class="form-grid">' + field(t("host.fDate"), "date", hostPick || "", "date", "required") + field(t("host.fTime"), "time", "10:00", "time", "required") +
+      '<label class="field"><span>' + esc(t("host.fDuration")) + '</span><select name="duration_min">' + HOST_DURATIONS.map(v => option(v, t("host.minutes", { n: v }), v === 90)).join("") + "</select></label>" + field(t("host.fCapacity"), "capacity", "", "number", 'min="2" max="1000"') + "</div>" +
+      '<fieldset class="rating-pick"><legend>' + esc(t("host.fPrice")) + '</legend><label><input type="radio" name="paid" value="0" checked> <span>' + esc(t("host.free")) + '</span></label><label><input type="radio" name="paid" value="1"> <span>' + esc(t("host.paid")) + "</span></label></fieldset>" +
+      '<div id="host-price" hidden>' + field(t("host.fPriceKzt"), "price_kzt", "", "number", 'min="1" step="500"') + "</div>" +
+      field(t("host.fSpeaker"), "speaker_name", "", "text", 'maxlength="160"') + field(t("host.fSpeakerBio"), "speaker_bio", "", "text", 'maxlength="600"') +
+      '<p class="muted">' + esc(t("host.rules", { days: Math.round(rules.min_lead_hours / 24), max: rules.max_active })) + '</p><button class="primary-button">' + esc(t("host.submit")) + "</button></form>";
+    content.innerHTML = panel(t("host.title"), t("host.text"), '<div id="host-cal"></div><div id="host-day" class="day-info"></div>') + panel(t("host.formTitle"), t("host.formText"), form) +
+      panel(t("host.myTitle"), t("host.myText"), mine.items.length ? mine.items.map(mineCard).join("") : '<p class="muted">' + esc(t("host.myEmpty")) + "</p>");
+    const draw = () => { content.querySelector("#host-cal").innerHTML = calendar(); content.querySelector("#host-day").innerHTML = dayInfo(); };
+    draw();
+    content.querySelector("#host-cal").addEventListener("click", e => {
+      const nav = e.target.closest("[data-cal]"), dayBtn = e.target.closest("[data-day]");
+      if (nav) { hostMonth = new Date(hostMonth.getFullYear(), hostMonth.getMonth() + Number(nav.dataset.cal), 1); draw(); }
+      if (dayBtn) { hostPick = dayBtn.dataset.day; content.querySelector('#host-form [name="date"]').value = hostPick; draw(); }
+    });
+    const f = content.querySelector("#host-form");
+    f.date.addEventListener("change", () => { hostPick = f.date.value || null; draw(); });
+    f.querySelectorAll('[name="format"]').forEach(r => r.addEventListener("change", () => { content.querySelector("#host-offline").hidden = f.format.value !== "offline"; }));
+    f.querySelectorAll('[name="paid"]').forEach(r => r.addEventListener("change", () => { content.querySelector("#host-price").hidden = f.paid.value !== "1"; }));
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const v = new FormData(f), starts = new Date(String(v.get("date")) + "T" + String(v.get("time"))), mins = Number(v.get("duration_min")), ends = new Date(starts.getTime() + mins * 60000);
+      if ((busy[localKey(starts)] || []).some(x => starts < new Date(x.ends_at) && new Date(x.starts_at) < ends)) { status(I18N.apiError("slot_taken", 409), true); return; }
+      const paid = v.get("paid") === "1", num = k => (v.get(k) ? Number(v.get(k)) : null), str = k => String(v.get(k) || "").trim() || null;
+      try {
+        await api("/v1/me/event-proposals", { method: "POST", body: JSON.stringify({ title: String(v.get("title")).trim(), topic: str("topic"), description: str("description"), format: String(v.get("format")), location_name: str("location_name"), address: str("address"),
+          starts_at: starts.toISOString(), duration_min: mins, is_free: !paid, price_kzt: paid ? num("price_kzt") : null, capacity: num("capacity"), speaker_name: str("speaker_name"), speaker_bio: str("speaker_bio") }) });
+        hostPick = null; status(t("host.sent")); await host();
+      } catch (x) { status(x.message, true); }
+    });
+    content.querySelectorAll("[data-prop-cancel]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm(t("host.cancelConfirm"))) return;
+      try { await api("/v1/me/event-proposals/" + encodeURIComponent(b.dataset.propCancel) + "/cancel", { method: "POST", body: "{}" }); status(t("host.cancelled")); await host(); } catch (x) { status(x.message, true); }
+    }));
+    content.querySelectorAll("[data-link-form]").forEach(fm => fm.addEventListener("submit", async e => {
+      e.preventDefault();
+      try { await api("/v1/me/event-proposals/" + encodeURIComponent(fm.dataset.linkForm) + "/link", { method: "POST", body: JSON.stringify({ online_url: fm.online_url.value.trim() }) }); status(t("host.linkSaved")); } catch (x) { status(x.message, true); }
+    }));
+    content.querySelectorAll("[data-rec-form]").forEach(fm => fm.addEventListener("submit", async e => {
+      e.preventDefault();
+      try { await api("/v1/me/event-proposals/" + encodeURIComponent(fm.dataset.recForm) + "/recording", { method: "POST", body: JSON.stringify({ recording_url: fm.recording_url.value.trim(), publish_to: fm.publish_to.value }) }); status(t("host.recSaved")); await host(); } catch (x) { status(x.message, true); }
+    }));
+  }
+
+  async function recordings() {
+    const d = await api("/v1/library/recordings");
+    const card = x => '<article class="invoice-card"><div class="invoice-top"><div><span class="pill">' + esc(x.topic || t("recordings.defaultTopic")) + "</span><h3>" + esc(x.title) + "</h3><small>" + esc(t("recordings.by", { name: x.host_name })) + " · " + esc(day(x.starts_at)) + "</small></div></div>" +
+      (x.description ? '<p class="muted">' + esc(x.description) + "</p>" : "") + '<div class="receipt-actions"><a class="primary-button" href="' + esc(safeUrl(x.recording_url)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("recordings.watch")) + "</a></div></article>";
+    content.innerHTML = '<div class="card-cta"><div><strong>' + esc(t("host.ctaTitle")) + "</strong><p>" + esc(t("host.ctaText")) + '</p></div><button type="button" class="primary-button" data-view="host">' + esc(t("host.ctaBtn")) + "</button></div>" +
+      panel(t("recordings.title"), t("recordings.text"), d.items.length ? d.items.map(card).join("") : '<p class="muted">' + esc(t("recordings.empty")) + "</p>");
+  }
+
+  async function adminProposals() {
+    let d;
+    try { d = await api("/v1/admin/event-proposals"); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("adminProp.title"), t("adminProp.noAccess"), ""); return; } throw e; }
+    const nowMs = Date.now(), pending = d.items.filter(x => x.status === "pending"), libs = d.items.filter(x => x.library_status === "requested"), upcoming = d.items.filter(x => x.status === "approved" && new Date(x.ends_at).getTime() > nowMs);
+    const head = x => '<div class="invoice-top"><div><span class="pill">' + esc(t("host.format." + x.format)) + "</span><h3>" + esc(x.title) + "</h3><small>" + esc(x.host_name) + " · " + esc(date(x.starts_at)) + " · " + esc(x.is_free ? t("host.free") : money(x.price_kzt)) + "</small></div></div>";
+    const pendCard = x => '<article class="invoice-card">' + head(x) + (x.topic ? "<p><strong>" + esc(x.topic) + "</strong></p>" : "") + (x.description ? "<p>" + esc(x.description) + "</p>" : "") +
+      (x.speaker_name ? '<p class="muted">' + esc(t("adminProp.speaker", { name: x.speaker_name })) + "</p>" : "") + (x.format === "offline" ? '<p class="muted">' + esc((x.location_name || "") + (x.address ? ", " + x.address : "")) + "</p>" : "") +
+      '<div class="receipt-actions"><button type="button" class="primary-button" data-prop-approve="' + esc(x.id) + '">' + esc(t("adminProp.approve")) + '</button><button type="button" class="outline-button" data-prop-reject="' + esc(x.id) + '">' + esc(t("adminProp.reject")) + "</button></div></article>";
+    const libCard = x => '<article class="invoice-card">' + head(x) + '<p><a href="' + esc(safeUrl(x.recording_url)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("recordings.watch")) + '</a></p><div class="receipt-actions"><button type="button" class="primary-button" data-lib="' + esc(x.id) + '" data-ok="1">' + esc(t("adminProp.libApprove")) + '</button><button type="button" class="outline-button" data-lib="' + esc(x.id) + '" data-ok="0">' + esc(t("adminProp.libReject")) + "</button></div></article>";
+    const upCard = x => '<div class="list-row"><div><strong>' + esc(x.title) + "</strong><p>" + esc(x.host_name) + " · " + esc(date(x.starts_at)) + "</p></div></div>";
+    content.innerHTML = panel(t("adminProp.title"), t("adminProp.text"), pending.length ? pending.map(pendCard).join("") : '<p class="muted">' + esc(t("adminProp.noPending")) + "</p>") +
+      panel(t("adminProp.libTitle"), t("adminProp.libText"), libs.length ? libs.map(libCard).join("") : '<p class="muted">' + esc(t("adminProp.noLib")) + "</p>") +
+      panel(t("adminProp.upTitle"), t("adminProp.upText"), upcoming.length ? upcoming.map(upCard).join("") : '<p class="muted">' + esc(t("adminProp.noUp")) + "</p>");
+    content.querySelectorAll("[data-prop-approve]").forEach(b => b.addEventListener("click", async () => {
+      try { await api("/v1/admin/event-proposals/" + encodeURIComponent(b.dataset.propApprove) + "/approve", { method: "POST", body: "{}" }); status(t("adminProp.approved")); await adminProposals(); } catch (x) { status(x.message, true); }
+    }));
+    content.querySelectorAll("[data-prop-reject]").forEach(b => b.addEventListener("click", async () => {
+      const note = prompt(t("adminProp.rejectPrompt"));
+      if (!note || !note.trim()) return;
+      try { await api("/v1/admin/event-proposals/" + encodeURIComponent(b.dataset.propReject) + "/reject", { method: "POST", body: JSON.stringify({ note: note.trim() }) }); status(t("adminProp.rejected")); await adminProposals(); } catch (x) { status(x.message, true); }
+    }));
+    content.querySelectorAll("[data-lib]").forEach(b => b.addEventListener("click", async () => {
+      try { await api("/v1/admin/event-proposals/" + encodeURIComponent(b.dataset.lib) + "/library", { method: "POST", body: JSON.stringify({ approved: b.dataset.ok === "1" }) }); status(t("adminProp.libDone")); await adminProposals(); } catch (x) { status(x.message, true); }
     }));
   }
 
@@ -13440,7 +13968,7 @@ var qrcode = function() {
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners() };
+  const RENDERERS = { overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

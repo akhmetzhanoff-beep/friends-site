@@ -707,6 +707,19 @@ document.getElementById("dw-enter").addEventListener("click", function () {
   setTimeout(function () { w.remove(); var h = document.querySelector("h1#page-title"); if (h) { h.setAttribute("tabindex", "-1"); h.focus(); } }, 350);
 });
 </script>
+<script>
+(function () {
+  var T = {"kk": ["Қазақстандағы №1 бизнес-қауымдастық", "Friends қосымшасын іште көріңіз", ["<b>Іс-шаралар:</b> таңғы астар, мастермайндтар, бизнес-турлар", "<b>Білім:</b> 100 курс, кітаптардың қысқаша мазмұны, тұлға және жұмысқа алу тесттері, сертификаты бар ЖИ-академия", "<b>Бизнестің барлық кезеңіндегі CRM:</b> сатылым, маркетинг, қаржы, HR", "<b>Сарапшылар мен хабарландырулар:</b> маман табу, ұсыныс орналастыру", "<b>Жеңілдіктер мен акциялар:</b> резиденттер бизнесіндегі Friends картасы"], "Кіру", "Тіркелусіз және SMS-сіз. Бұл тест деректері бар демо: кез келген батырманы басыңыз, ештеңе сақталмайды."], "en": ["The #1 business community in Kazakhstan", "See the Friends app from the inside", ["<b>Events:</b> breakfasts, masterminds, business tours", "<b>Learning:</b> 100 courses, book summaries, personality and hiring tests, AI academy with certificates", "<b>CRM for every stage of business:</b> sales, marketing, finance, HR", "<b>Experts and listings:</b> find a specialist, post an offer", "<b>Discounts and offers:</b> the Friends card at residents' businesses"], "Sign in", "No registration and no SMS. This is a demo with test data: tap anything, nothing is saved."]}, L = "ru";
+  try { var q = new URLSearchParams(location.search).get("lang"); var sv = localStorage.getItem("friends.locale");
+    var nav = ((navigator.languages && navigator.languages[0]) || navigator.language || "").toLowerCase().slice(0, 2);
+    L = (q && T[q]) ? q : (T[sv] ? sv : (nav === "kk" ? "kk" : nav === "en" ? "en" : "ru")); } catch (e) {}
+  var d = T[L]; if (!d) return;
+  var w = document.getElementById("demo-welcome"); if (!w) return;
+  w.querySelector(".dw-eyebrow").textContent = d[0]; w.querySelector("#dw-title").textContent = d[1];
+  w.querySelectorAll(".dw-list li").forEach(function (li, i) { if (d[2][i]) li.innerHTML = d[2][i]; });
+  w.querySelector("#dw-enter").textContent = d[3]; w.querySelector(".dw-note").textContent = d[4];
+})();
+</script>
 <div class="pilot-banner warn" role="note"><strong>Friends</strong><span>Загружаем…</span><button type="button" class="outline-button" onclick="friendsDemoSignIn()">Войти в демо</button></div>
 
   <div class="app-shell">
@@ -10601,6 +10614,11 @@ var qrcode = function() {
 
   function detectLocale() {
     const store = storage();
+    // A link from the website may carry ?lang=kk|ru|en: it wins and is remembered on this device.
+    try {
+      const q = new URLSearchParams((root.location && root.location.search) || "").get("lang");
+      if (LOCALES.includes(q)) { try { if (store) store.setItem(STORAGE_KEY, q); } catch { /* not remembered */ } return q; }
+    } catch { /* no URL parameters */ }
     let saved = null;
     try { saved = store && store.getItem(STORAGE_KEY); } catch { saved = null; }
     if (LOCALES.includes(saved)) return saved;

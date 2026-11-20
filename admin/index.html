@@ -5894,6 +5894,16 @@ var qrcode = function() {
     "profile.kindsHint": "Можно выбрать несколько. От этого зависит, что приложение покажет вам первым.",
     "bookAudio.title": "Слушать главную мысль",
     "bookAudio.text": "Короткая озвучка книги, около {min} мин. Полный пересказ ниже.",
+    "bookAudio.voice": "Понравился голос?",
+    "bookRate.title": "Оцените книгу от 1 до 10",
+    "bookRate.avg": "Средняя оценка {avg} ({n})",
+    "bookRate.none": "Пока нет оценок. Будьте первым.",
+    "bookRate.thanks": "Спасибо, оценка сохранена.",
+    "bookRate.admin": "Оценки книг",
+    "bookRate.book": "Книга",
+    "bookRate.score": "Средняя",
+    "bookRate.votes": "Оценок",
+    "bookRate.voiceCol": "Голос",
     "act.persons": "Люди",
     "act.last": "Последний визит",
     "act.days": "Дней активности",
@@ -8182,6 +8192,16 @@ var qrcode = function() {
     "profile.kindsHint": "Бірнешеуін таңдауға болады. Қолданба алдымен соны көрсетеді.",
     "bookAudio.title": "Негізгі ойды тыңдау",
     "bookAudio.text": "Кітаптың қысқаша дыбысталуы, шамамен {min} мин. Толық мазмұны төменде.",
+    "bookAudio.voice": "Дауыс ұнады ма?",
+    "bookRate.title": "Кітапты 1-ден 10-ға дейін бағалаңыз",
+    "bookRate.avg": "Орташа баға {avg} ({n})",
+    "bookRate.none": "Әзірге баға жоқ. Бірінші болыңыз.",
+    "bookRate.thanks": "Рақмет, баға сақталды.",
+    "bookRate.admin": "Кітап бағалары",
+    "bookRate.book": "Кітап",
+    "bookRate.score": "Орташа",
+    "bookRate.votes": "Баға саны",
+    "bookRate.voiceCol": "Дауыс",
     "act.persons": "Адамдар",
     "act.last": "Соңғы кіру",
     "act.days": "Белсенді күн",
@@ -10470,6 +10490,16 @@ var qrcode = function() {
     "profile.kindsHint": "You can pick several. It decides what the app shows you first.",
     "bookAudio.title": "Listen to the main idea",
     "bookAudio.text": "A short voiced version of the book, about {min} min. The full summary is below.",
+    "bookAudio.voice": "Did you like the voice?",
+    "bookRate.title": "Rate the book from 1 to 10",
+    "bookRate.avg": "Average {avg} ({n})",
+    "bookRate.none": "No ratings yet. Be the first.",
+    "bookRate.thanks": "Thanks, your rating is saved.",
+    "bookRate.admin": "Book ratings",
+    "bookRate.book": "Book",
+    "bookRate.score": "Average",
+    "bookRate.votes": "Ratings",
+    "bookRate.voiceCol": "Voice",
     "act.persons": "People",
     "act.last": "Last visit",
     "act.days": "Active days",
@@ -12788,11 +12818,19 @@ var qrcode = function() {
     if (!/^book-/.test(String(slug))) return;
     if (!audioManifest) { try { audioManifest = await (await fetch("audio/manifest.json", { cache: "no-cache" })).json(); } catch { audioManifest = {}; } }
     const a = audioManifest[slug];
-    if (!a) return;
+    let r = {};
+    try { r = await api("/v1/learn/courses/" + encodeURIComponent(c.id) + "/rating"); } catch { /* rating is optional */ }
     const box = document.createElement("div");
     box.className = "card-cta book-audio";
-    box.innerHTML = "<div><strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><audio controls preload="none" src="' + esc(a.file) + '"></audio></div>';
+    const nums = Array.from({ length: 10 }, (_, i) => '<button type="button" class="chip-tab' + (r.mine === i + 1 ? " active" : "") + '" data-score="' + (i + 1) + '" aria-pressed="' + (r.mine === i + 1) + '">' + (i + 1) + "</button>").join("");
+    box.innerHTML = "<div>" +
+      (a ? "<strong>" + esc(t("bookAudio.title")) + "</strong><p>" + esc(t("bookAudio.text", { min: Math.max(1, Math.round((a.seconds || 70) / 60)) })) + '</p><audio controls preload="none" src="' + esc(a.file) + '"></audio>' +
+        '<p class="muted">' + esc(t("bookAudio.voice")) + ' <button type="button" class="text-button" data-voice="1"' + (r.mine_voice === true ? ' aria-pressed="true"' : "") + ">" + (r.mine_voice === true ? "👍 ✓" : "👍") + '</button> <button type="button" class="text-button" data-voice="0"' + (r.mine_voice === false ? ' aria-pressed="true"' : "") + ">" + (r.mine_voice === false ? "👎 ✓" : "👎") + "</button></p>" : "") +
+      "<strong>" + esc(t("bookRate.title")) + "</strong><p class=\"muted\">" + esc(r.count ? t("bookRate.avg", { avg: r.avg, n: r.count }) : t("bookRate.none")) + '</p><div class="chip-tabs book-rate">' + nums + "</div></div>";
     content.insertBefore(box, content.children[1] || null);
+    const send = async body => { try { await api("/v1/learn/courses/" + encodeURIComponent(c.id) + "/rating", { method: "PUT", body: JSON.stringify(body) }); status(t("bookRate.thanks")); box.remove(); await addBookAudio(c); } catch (x) { status(x.message, true); } };
+    box.querySelectorAll("[data-score]").forEach(b => b.addEventListener("click", () => send({ score: Number(b.dataset.score) })));
+    box.querySelectorAll("[data-voice]").forEach(b => b.addEventListener("click", () => send({ voice_like: b.dataset.voice === "1" })));
   }
 
   // ---------- «Слушать»: reads the lesson aloud with the phone's built-in voice ----------
@@ -13332,6 +13370,7 @@ var qrcode = function() {
     const inactive = Number((content.querySelector("#act-inactive") || {}).value || 0);
     let d;
     try { d = await api("/v1/admin/activity?days=" + days + (inactive ? "&inactive=" + inactive : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("act.title"), t("act.noAccess"), ""); return; } throw e; }
+    const books = await api("/v1/admin/book-ratings").then(x => x.items).catch(() => []);
     const k = d.kpi;
     const kpi = [["act.dau", k.dau], ["act.wau", k.wau], ["act.mau", k.mau], ["act.total", k.total]].map(([l, v]) => '<div class="kpi"><strong>' + esc(String(v)) + "</strong><span>" + esc(t(l)) + "</span></div>").join("");
     const vrows = d.views.map(v => "<tr><td>" + esc(v.view) + "</td><td>" + v.people + "</td><td>" + v.hits + "</td><td>" + v.minutes + "</td></tr>").join("");
@@ -13341,6 +13380,7 @@ var qrcode = function() {
       '<div class="kpi-row">' + kpi + "</div>" +
       '<div class="app-form"><label>' + esc(t("act.period")) + sel("act-days", [[7, "7"], [30, "30"], [90, "90"]], days) + "</label><label>" + esc(t("act.filter")) + sel("act-inactive", [[0, t("act.all")], [7, t("act.inactive", { n: 7 })], [14, t("act.inactive", { n: 14 })], [30, t("act.inactive", { n: 30 })]], inactive) + "</label></div>" +
       "<h3>" + esc(t("act.sections")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.view")) + "</th><th>" + esc(t("act.people")) + "</th><th>" + esc(t("act.opens")) + "</th><th>" + esc(t("act.minutes")) + "</th></tr></thead><tbody>" + (vrows || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
+      "<h3>" + esc(t("bookRate.admin")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("bookRate.book")) + "</th><th>" + esc(t("bookRate.score")) + "</th><th>" + esc(t("bookRate.votes")) + "</th><th>" + esc(t("bookRate.voiceCol")) + "</th></tr></thead><tbody>" + (books.filter(b => b.count || b.voice_up || b.voice_down).map(b => "<tr><td>" + esc(b.title) + "</td><td>" + (b.avg == null ? "—" : b.avg) + "</td><td>" + b.count + "</td><td>👍 " + b.voice_up + " · 👎 " + b.voice_down + "</td></tr>").join("") || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
       "<h3>" + esc(t("act.persons")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("act.city")) + "</th><th>" + esc(t("signups.phone")) + "</th><th>" + esc(t("act.last")) + "</th><th>" + esc(t("act.days")) + "</th><th>" + esc(t("act.minutes")) + "</th><th>" + esc(t("act.top")) + "</th><th>" + esc(t("profile.kinds")) + "</th><th>" + esc(t("act.member")) + "</th></tr></thead><tbody>" + (prows || '<tr><td colspan="9">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>");
     content.querySelectorAll("#act-days, #act-inactive").forEach(el => el.addEventListener("change", () => adminActivity()));
   }

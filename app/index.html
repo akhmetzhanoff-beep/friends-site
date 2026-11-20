@@ -5790,6 +5790,7 @@ var qrcode = function() {
     "signups.trial": "Пробный месяц до {until}",
     "signups.member": "Резидент",
     "signups.none": "Нет подписки",
+    "blogger.termsTiers": "Условия: {days} дней бесплатно подписчику; вам {first}% с первой оплаты, затем с продлений по порядку: {tiers}. Выплата раз в месяц.",
     "blogger.title": "Кабинет блогера",
     "blogger.text": "{name}: кто пришёл по вашей ссылке и что вам начислено.",
     "blogger.none": "Кабинет блогера для вашего аккаунта не подключён. Напишите в Friends.",
@@ -7945,6 +7946,7 @@ var qrcode = function() {
     "signups.trial": "Сынақ айы {until} дейін",
     "signups.member": "Резидент",
     "signups.none": "Жазылым жоқ",
+    "blogger.termsTiers": "Шарттар: жазылушыға {days} күн тегін; сізге бірінші төлемнен {first}%, содан кейін ұзартулардан ретімен: {tiers}. Төлем айына бір рет.",
     "blogger.title": "Блогер кабинеті",
     "blogger.text": "{name}: сіздің сілтемеңіз бойынша кім келді және сізге не есептелді.",
     "blogger.none": "Блогер кабинеті аккаунтыңызға қосылмаған. Friends-ке жазыңыз.",
@@ -10100,6 +10102,7 @@ var qrcode = function() {
     "signups.trial": "Trial until {until}",
     "signups.member": "Resident",
     "signups.none": "No subscription",
+    "blogger.termsTiers": "Terms: {days} free days for the subscriber; you get {first}% of the first payment, then for renewals in order: {tiers}. Paid monthly.",
     "blogger.title": "Blogger cabinet",
     "blogger.text": "{name}: who came through your link and what you have earned.",
     "blogger.none": "The blogger cabinet is not linked to your account. Contact Friends.",
@@ -13688,7 +13691,7 @@ var qrcode = function() {
     content.innerHTML = panel(t("blogger.title"), t("blogger.text", { name: p.name }),
       '<div class="stats-grid">' + kpi(t("blogger.visits"), p.visits_30d) + kpi(t("blogger.signups"), p.signups) + kpi(t("blogger.trials"), p.trials_active) + kpi(t("blogger.paid"), p.paid_users) + "</div>" +
       '<div class="stats-grid">' + kpi(t("blogger.due"), money(p.bonus_due_kzt)) + kpi(t("blogger.paidOut"), money(p.bonus_paid_kzt)) + "</div>" +
-      '<p class="muted">' + esc(t("blogger.terms", { days: p.trial_days, first: Number(p.first_bonus_pct), renewal: Number(p.renewal_bonus_pct), months: p.renewal_months })) + "</p>" +
+      '<p class="muted">' + esc(Array.isArray(p.renewal_tiers) && p.renewal_tiers.length ? t("blogger.termsTiers", { days: p.trial_days, first: Number(p.first_bonus_pct), tiers: p.renewal_tiers.map(Number).join("% → ") + "%" }) : t("blogger.terms", { days: p.trial_days, first: Number(p.first_bonus_pct), renewal: Number(p.renewal_bonus_pct), months: p.renewal_months })) + "</p>" +
       '<div class="copy-row"><input readonly value="' + esc(link) + '" aria-label="' + esc(t("blogger.linkRu")) + '"><button type="button" class="outline-button" data-copy-link="' + esc(link) + '">' + esc(t("adminPartners.copy")) + "</button></div>" +
       '<div class="copy-row"><input readonly value="' + esc(linkKk) + '" aria-label="' + esc(t("blogger.linkKk")) + '"><button type="button" class="outline-button" data-copy-link="' + esc(linkKk) + '">' + esc(t("adminPartners.copy")) + "</button></div>" +
       '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("blogger.name")) + "</th><th>" + esc(t("blogger.phone")) + "</th><th>" + esc(t("blogger.state")) + "</th><th>" + esc(t("blogger.date")) + '</th><th class="num">' + esc(t("blogger.bonus")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="5">' + esc(t("blogger.empty")) + "</td></tr>") + "</tbody></table></div>");

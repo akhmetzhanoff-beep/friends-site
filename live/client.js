@@ -681,6 +681,7 @@
       '<label class="field"><span>' + esc(t("profile.visibility")) + '</span><select name="visibility">' +
       ["members", "public", "private"].map(v => option(v, t("visibility." + v), p.visibility === v)).join("") +
       '</select></label>' +
+      '<label class="field"><span>' + esc(t("profile.gender")) + '</span><select name="gender">' + option("", t("gender.none"), !p.gender) + option("male", t("gender.male"), p.gender === "male") + option("female", t("gender.female"), p.gender === "female") + "</select></label>" +
       '<label class="field"><span>' + esc(t("profile.city")) + '</span><select name="city_id"' + (cities.length ? " required" : "") + '><option value="">' + esc(t("profile.cityPick")) + "</option>" + cities.map(c => option(c.id, cityName(c), p.city_id === c.id)).join("") + "</select></label>" +
       field(t("profile.birthDate"), "birth_date", p.birth_date || "", "date", 'max="2019-12-31"') +
       '<label class="consent-field"><input type="checkbox" name="birthday_visible" value="yes"' + (p.birthday_visible ? " checked" : "") + "> <span>" + esc(t("profile.birthdayVisible")) + "</span></label>" +
@@ -713,6 +714,7 @@
             avatar_url: String(f.get("avatar_url") || "").trim() || null,
             city_id: String(f.get("city_id") || "") || p.city_id || null,
             visibility: String(f.get("visibility")),
+            gender: String(f.get("gender") || "") || null,
             birth_date: String(f.get("birth_date") || "") || null,
             birthday_visible: f.get("birthday_visible") === "yes" && !!f.get("birth_date"),
             ...(needsConsent ? { consent_accepted: true } : {}),

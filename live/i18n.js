@@ -151,6 +151,10 @@
     "notifications.section": "Уведомления",
     "notifications.sectionText": "Напоминания о подписке и важные сообщения.",
 
+    "profile.gender": "Пол (не виден другим)",
+    "gender.none": "Не указывать",
+    "gender.male": "Мужской",
+    "gender.female": "Женский",
     "profile.city": "Город",
     "profile.cityPick": "Выберите город",
     "profile.welcome": "Добро пожаловать! Укажите имя и город, чтобы вас находили люди из вашего региона.",
@@ -2324,6 +2328,10 @@
     "notifications.section": "Хабарламалар",
     "notifications.sectionText": "Жазылым туралы еске салғыштар және маңызды хабарлар.",
 
+    "profile.gender": "Жынысы (басқаларға көрінбейді)",
+    "gender.none": "Көрсетпеу",
+    "gender.male": "Ер",
+    "gender.female": "Әйел",
     "profile.city": "Қала",
     "profile.cityPick": "Қаланы таңдаңыз",
     "profile.welcome": "Қош келдіңіз! Аймағыңыздағы адамдар сізді таппас үшін атыңыз бен қалаңызды көрсетіңіз.",
@@ -4497,6 +4505,10 @@
     "notifications.section": "Notifications",
     "notifications.sectionText": "Membership reminders and important messages.",
 
+    "profile.gender": "Gender (not shown to others)",
+    "gender.none": "Prefer not to say",
+    "gender.male": "Male",
+    "gender.female": "Female",
     "profile.city": "City",
     "profile.cityPick": "Choose your city",
     "profile.welcome": "Welcome! Add your name and city so people from your region can find you.",

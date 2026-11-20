@@ -4432,6 +4432,10 @@ var qrcode = function() {
     "notifications.section": "Уведомления",
     "notifications.sectionText": "Напоминания о подписке и важные сообщения.",
 
+    "profile.gender": "Пол (не виден другим)",
+    "gender.none": "Не указывать",
+    "gender.male": "Мужской",
+    "gender.female": "Женский",
     "profile.city": "Город",
     "profile.cityPick": "Выберите город",
     "profile.welcome": "Добро пожаловать! Укажите имя и город, чтобы вас находили люди из вашего региона.",
@@ -6605,6 +6609,10 @@ var qrcode = function() {
     "notifications.section": "Хабарламалар",
     "notifications.sectionText": "Жазылым туралы еске салғыштар және маңызды хабарлар.",
 
+    "profile.gender": "Жынысы (басқаларға көрінбейді)",
+    "gender.none": "Көрсетпеу",
+    "gender.male": "Ер",
+    "gender.female": "Әйел",
     "profile.city": "Қала",
     "profile.cityPick": "Қаланы таңдаңыз",
     "profile.welcome": "Қош келдіңіз! Аймағыңыздағы адамдар сізді таппас үшін атыңыз бен қалаңызды көрсетіңіз.",
@@ -8778,6 +8786,10 @@ var qrcode = function() {
     "notifications.section": "Notifications",
     "notifications.sectionText": "Membership reminders and important messages.",
 
+    "profile.gender": "Gender (not shown to others)",
+    "gender.none": "Prefer not to say",
+    "gender.male": "Male",
+    "gender.female": "Female",
     "profile.city": "City",
     "profile.cityPick": "Choose your city",
     "profile.welcome": "Welcome! Add your name and city so people from your region can find you.",
@@ -11662,6 +11674,7 @@ var qrcode = function() {
       '<label class="field"><span>' + esc(t("profile.visibility")) + '</span><select name="visibility">' +
       ["members", "public", "private"].map(v => option(v, t("visibility." + v), p.visibility === v)).join("") +
       '</select></label>' +
+      '<label class="field"><span>' + esc(t("profile.gender")) + '</span><select name="gender">' + option("", t("gender.none"), !p.gender) + option("male", t("gender.male"), p.gender === "male") + option("female", t("gender.female"), p.gender === "female") + "</select></label>" +
       '<label class="field"><span>' + esc(t("profile.city")) + '</span><select name="city_id"' + (cities.length ? " required" : "") + '><option value="">' + esc(t("profile.cityPick")) + "</option>" + cities.map(c => option(c.id, cityName(c), p.city_id === c.id)).join("") + "</select></label>" +
       field(t("profile.birthDate"), "birth_date", p.birth_date || "", "date", 'max="2019-12-31"') +
       '<label class="consent-field"><input type="checkbox" name="birthday_visible" value="yes"' + (p.birthday_visible ? " checked" : "") + "> <span>" + esc(t("profile.birthdayVisible")) + "</span></label>" +
@@ -11694,6 +11707,7 @@ var qrcode = function() {
             avatar_url: String(f.get("avatar_url") || "").trim() || null,
             city_id: String(f.get("city_id") || "") || p.city_id || null,
             visibility: String(f.get("visibility")),
+            gender: String(f.get("gender") || "") || null,
             birth_date: String(f.get("birth_date") || "") || null,
             birthday_visible: f.get("birthday_visible") === "yes" && !!f.get("birth_date"),
             ...(needsConsent ? { consent_accepted: true } : {}),

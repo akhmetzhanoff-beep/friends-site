@@ -11930,6 +11930,14 @@ var qrcode = function() {
     const kindInfo = () => kinds.find(k => k.kind === hostKind) || null;
     const kindDow = () => { const k = kindInfo(); return k ? (k.weekday % 7) : null; };
     const dayOff = d => d.getTime() + 86399e3 < minAt || d.getTime() > maxAt || (kindDow() != null && d.getDay() !== kindDow());
+    const kindFormats = () => { const k = kindInfo(); return k && k.formats ? k.formats : ["online", "offline"]; };
+    const syncFormat = () => {
+      const f = content.querySelector("#host-form"); if (!f) return;
+      const allowed = kindFormats();
+      f.querySelectorAll('[name="format"]').forEach(r => { r.disabled = !allowed.includes(r.value); r.closest("label").hidden = !allowed.includes(r.value); });
+      if (!allowed.includes(f.format.value)) { const r = f.querySelector('[name="format"][value="' + allowed[0] + '"]'); r.checked = true; }
+      content.querySelector("#host-offline").hidden = f.format.value !== "offline";
+    };
     const kindBar = () => kinds.length ? '<fieldset class="kind-pick"><legend>' + esc(t("host.kindTitle")) + '</legend><div class="chip-row" role="group">' + kinds.map(k => '<button type="button" class="chip' + (k.kind === hostKind ? " active" : "") + '" aria-pressed="' + (k.kind === hostKind) + '" data-kind="' + esc(k.kind) + '">' + esc(t("host.kind." + k.kind)) + "</button>").join("") + '</div><p class="muted">' + esc(t("host.kindHint", { day: t("week.d." + WEEKDAY_KEY[(kindInfo() || { weekday: 3 }).weekday]) })) + "</p></fieldset>" : "";
     function calendar() {
       const first = new Date(hostMonth), lead = (first.getDay() + 6) % 7, cells = [];
@@ -11969,7 +11977,7 @@ var qrcode = function() {
       '<p class="muted">' + esc(t("host.rules", { days: Math.round(rules.min_lead_hours / 24), max: rules.max_active })) + '</p><button class="primary-button">' + esc(t("host.submit")) + "</button></form>";
     content.innerHTML = panel(t("host.title"), t("host.text"), '<div id="host-cal"></div><div id="host-day" class="day-info"></div>') + panel(t("host.formTitle"), t("host.formText"), form) +
       panel(t("host.myTitle"), t("host.myText"), mine.items.length ? mine.items.map(mineCard).join("") : '<p class="muted">' + esc(t("host.myEmpty")) + "</p>");
-    const draw = () => { content.querySelector("#host-cal").innerHTML = calendar(); content.querySelector("#host-day").innerHTML = dayInfo(); };
+    const draw = () => { content.querySelector("#host-cal").innerHTML = calendar(); content.querySelector("#host-day").innerHTML = dayInfo(); syncFormat(); };
     draw();
     content.querySelector("#host-cal").addEventListener("click", e => {
       const nav = e.target.closest("[data-cal]"), dayBtn = e.target.closest("[data-day]"), kindBtn = e.target.closest("[data-kind]");

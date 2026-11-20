@@ -680,3 +680,5 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 @media (min-width:900px){.me-list{grid-template-columns:repeat(3,minmax(0,1fr))}.me-list .me-row:last-child:nth-child(odd){grid-column:auto;min-height:104px;flex-direction:column;align-items:flex-start}}
 .me-list .me-row:last-child:nth-child(odd)>span:nth-child(2){flex:1}
 @media (min-width:900px){.me-list .me-row:last-child:nth-child(odd)>span:nth-child(2){flex:0}}
+.chat-pinned{margin-bottom:12px;border:1px solid var(--fb-blue,#1468d8);border-radius:14px;overflow:hidden}
+.chat-pinned .chat-avatar{background:var(--fb-blue,#1468d8);color:#fff}

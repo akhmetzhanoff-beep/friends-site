@@ -703,6 +703,8 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 @media (min-width:900px){.me-list{grid-template-columns:repeat(3,minmax(0,1fr))}.me-list .me-row:last-child:nth-child(odd){grid-column:auto;min-height:104px;flex-direction:column;align-items:flex-start}}
 .me-list .me-row:last-child:nth-child(odd)>span:nth-child(2){flex:1}
 @media (min-width:900px){.me-list .me-row:last-child:nth-child(odd)>span:nth-child(2){flex:0}}
+.chat-pinned{margin-bottom:12px;border:1px solid var(--fb-blue,#1468d8);border-radius:14px;overflow:hidden}
+.chat-pinned .chat-avatar{background:var(--fb-blue,#1468d8);color:#fff}
 
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
@@ -868,10 +870,10 @@ document.getElementById("dw-enter").addEventListener("click", function () {
 
   window.FRIENDS_DEMO_SEED = {
     prefs: { locale: "ru" },
-    profile: { display_name: "Демо Пользователь", headline: "Владелец кофейни «Мята»", bio: "Это демо-профиль.", avatar_url: "", visibility: "members", city_id: null,
+    profile: { display_name: "Демо Пользователь", headline: "Владелец кофейни «Аромат»", bio: "Это демо-профиль.", avatar_url: "", visibility: "members", city_id: null,
       consent_accepted_at: iso(-30), offer_accepted_at: iso(-30), offer_version: "2026-11-14", offer_acceptance_required: false, birth_date: null, birthday_visible: false },
     members: members,
-    companies: [{ id: "c1", name: "Кофейня «Мята»", description: "Кофе и завтраки, 2 точки в Астане", website_url: "https://example.kz", role: "owner", created_at: iso(-60) }],
+    companies: [{ id: "c1", name: "Кофейня «Аромат»", description: "Кофе и завтраки, 2 точки в Астане", website_url: "https://example.kz", role: "owner", created_at: iso(-60) }],
     events: [
       { id: "e0", title: "Мастермайнд: команда и найм", description: "Прошедшая встреча — оцените её на главной.", event_type: "mastermind", starts_at: iso(-1, 10), location_name: "Friends Lounge", address: "Астана", capacity: 15, registered_count: 14, registration_status: "registered", status: "published" },
       { id: "e1", title: "Бизнес-завтрак: продажи в 2027 году", description: "Разбираем, как перестроить отдел продаж под новый год. Кофе, нетворкинг, 3 кейса участников.", event_type: "breakfast", starts_at: iso(3, 9), location_name: "Конференц-зал Friends", address: "пр. Мангилик Ел, 20", capacity: 40, registered_count: 27, registration_status: null, status: "published" },
@@ -914,15 +916,15 @@ document.getElementById("dw-enter").addEventListener("click", function () {
       { id: "a3", kind: "request", category: "realty", title: "Ищу помещение 80–120 м² на Левом берегу", body: "Под кофейню, первая линия.", contact: "+7 700 000 00 04", status: "published", pinned: false, author_name: "Айгерим Сапарова", created_at: iso(-3, 11) }
     ],
     offers: [
-      { id: "d1", business_name: "Кофейня «Мята»", title: "15% на всё меню", description: "Кроме алкоголя.", discount_percent: 15, category: "food", city: "Астана", address: "пр. Мангилик Ел, 20", contact: null, status: "published", created_at: iso(-10) },
+      { id: "d1", business_name: "Кофейня «Аромат»", title: "15% на всё меню", description: "Кроме алкоголя.", discount_percent: 15, category: "food", city: "Астана", address: "пр. Мангилик Ел, 20", contact: null, status: "published", created_at: iso(-10) },
       { id: "d2", business_name: "Автосервис Friends", title: "10% на ремонт и ТО", description: null, discount_percent: 10, category: "auto", city: "Астана", address: "ул. Кенесары, 40", contact: "+7 700 000 00 05", status: "published", created_at: iso(-8) },
       { id: "d3", business_name: "Студия красоты «Ару»", title: "20% на первый визит", description: null, discount_percent: 20, category: "beauty", city: "Астана", address: "ул. Сыганак, 10", contact: null, status: "published", created_at: iso(-6) }
     ],
     redemptions: [
-      { id: "rd1", offer_id: "d1", business_name: "Кофейня «Мята»", amount_kzt: 18500, discount_percent: 15, commission_rate: 0.02, commission_kzt: 370, created_at: iso(-1, 13), customer_name: "Ержан Мукашев" }
+      { id: "rd1", offer_id: "d1", business_name: "Кофейня «Аромат»", amount_kzt: 18500, discount_percent: 15, commission_rate: 0.02, commission_kzt: 370, created_at: iso(-1, 13), customer_name: "Ержан Мукашев" }
     ],
     referrals: [{ id: "l1", name: "Асель Б.", phone: "+77015550101", note: "Сеть салонов красоты", status: "new", event_title: "Мастермайнд", referrer_name: "Айгерим Сапарова", created_at: iso(-1, 18) }],
-    biz: [{ id: "ws-demo", name: "Кофейня «Мята»", members: team, sales: sales, expenses: expenses,
+    biz: [{ id: "ws-demo", name: "Кофейня «Аромат»", members: team, sales: sales, expenses: expenses,
       tasks: [
         { id: "t1", title: "Сверить кассу за неделю", description: "Kaspi и наличные по сменам.", assignee_member_id: "bm-3", due_at: iso(-1, 18), status: "in_progress", report: null, done_at: null, created_at: iso(-3) },
         { id: "t2", title: "Обновить меню завтраков", description: null, assignee_member_id: "bm-4", due_at: iso(3, 18), status: "todo", report: null, done_at: null, created_at: iso(-1) },
@@ -4334,7 +4336,7 @@ var qrcode = function() {
   const LANGUAGE_SHORT = { ru: "РУС", kk: "ҚАЗ", en: "ENG" };
 
   const ru = {
-    "meta.title": "Friends — кабинет участника",
+    "meta.title": "Friends — кабинет резидента",
     "meta.description": "Friends — цифровая платформа бизнес-сообщества предпринимателей.",
     "brand.home": "Friends — главная",
     "nav.label": "МЕНЮ",
@@ -4342,7 +4344,7 @@ var qrcode = function() {
     "nav.overview": "Обзор",
     "nav.events": "Мероприятия",
     "nav.eventsAdmin": "Управление событиями",
-    "nav.members": "Участники",
+    "nav.members": "Резиденты",
     "nav.membership": "Моя подписка",
     "nav.companies": "Мои компании",
     "nav.notifications": "Уведомления",
@@ -4351,7 +4353,7 @@ var qrcode = function() {
     "help.title": "Нужна помощь?",
     "help.text": "Свяжитесь с командой Friends",
     "welcome.eyebrow": "БИЗНЕС-СООБЩЕСТВО",
-    "footer": "Friends · Кабинет участника. Доступ зависит от настроек авторизации и прав аккаунта.",
+    "footer": "Friends · Кабинет резидента. Доступ зависит от настроек авторизации и прав аккаунта.",
     "lang.label": "Язык интерфейса",
     "common.loading": "Загружаем…",
     "common.loadingShort": "Загрузка…",
@@ -4364,7 +4366,7 @@ var qrcode = function() {
     "view.events.subtitle": "Встречи, которые помогают предпринимателям расти.",
     "view.eventsAdmin.title": "Управление событиями",
     "view.eventsAdmin.subtitle": "Создавайте мероприятия и публикуйте календарь.",
-    "view.members.title": "Участники сообщества",
+    "view.members.title": "Резиденты сообщества",
     "view.members.subtitle": "Ищите предпринимателей, клиентов и партнёров.",
     "view.companies.title": "Мои компании",
     "view.companies.subtitle": "Карточки ваших компаний и бизнесов.",
@@ -4372,7 +4374,7 @@ var qrcode = function() {
     "view.membership.subtitle": "Счета, продление и подтверждение оплаты.",
     "view.notifications.title": "Уведомления",
     "view.notifications.subtitle": "Напоминания о подписке и важные сообщения.",
-    "view.profile.title": "Профиль участника",
+    "view.profile.title": "Профиль резидента",
     "view.profile.subtitle": "Расскажите сообществу, чем занимаетесь.",
     "view.admin.title": "Проверка чеков",
     "view.admin.subtitle": "Раздел доступен только уполномоченным сотрудникам.",
@@ -4419,7 +4421,7 @@ var qrcode = function() {
     "error.forbidden": "Недостаточно прав для этого действия.",
     "error.account_not_active": "Аккаунт неактивен. Обратитесь к команде Friends.",
     "error.active_account_required": "Нужен активный аккаунт.",
-    "error.active_membership_required": "Раздел доступен участникам с активной подпиской.",
+    "error.active_membership_required": "Раздел доступен резидентам с активной подпиской.",
     "error.company_forbidden": "Нет прав на изменение этой компании.",
     "error.company_name_required": "Укажите название компании.",
     "error.display_name_required": "Укажите имя.",
@@ -4452,7 +4454,7 @@ var qrcode = function() {
     "overview.invoicesDue": "Счета к оплате",
     "overview.noUnpaid": "Нет неоплаченных счетов",
     "overview.hello": "Здравствуйте, {name}!",
-    "overview.participant": "участник",
+    "overview.participant": "резидент",
     "overview.helloText": "Ваше сообщество, бизнес и важные задачи — в одном месте.",
     "overview.myProfile": "Мой профиль →",
     "overview.recent": "Последние уведомления",
@@ -4483,17 +4485,17 @@ var qrcode = function() {
     "profile.cityNote": "Город выбирается после подключения справочника городов.",
     "profile.save": "Сохранить профиль",
     "profile.saved": "Профиль сохранён.",
-    "visibility.members": "Участники Friends",
+    "visibility.members": "Резиденты Friends",
     "visibility.public": "Все",
     "visibility.private": "Только я",
 
-    "members.section": "Каталог участников",
+    "members.section": "Каталог резидентов",
     "members.sectionText": "Поиск по имени, компании или специализации.",
     "members.placeholder": "Имя, компания, специализация",
-    "members.searchLabel": "Поиск участников",
+    "members.searchLabel": "Поиск резидентов",
     "members.search": "Найти",
     "members.defaultHeadline": "Предприниматель",
-    "members.empty": "Участники не найдены или не открыты для просмотра.",
+    "members.empty": "Резиденты не найдены или не открыты для просмотра.",
 
     "companies.section": "Мои компании",
     "companies.sectionText": "Добавьте карточку своего бизнеса.",
@@ -4559,8 +4561,8 @@ var qrcode = function() {
     "eventsAdmin.online": "Ссылка онлайн",
     "eventsAdmin.capacity": "Вместимость (пусто = без лимита)",
     "eventsAdmin.access": "Доступ",
-    "eventsAdmin.accessMembers": "Только участники с активной подпиской",
-    "eventsAdmin.accessPublic": "Все авторизованные участники",
+    "eventsAdmin.accessMembers": "Только резиденты с активной подпиской",
+    "eventsAdmin.accessPublic": "Все авторизованные резиденты",
     "eventsAdmin.statusOnCreate": "Статус при создании",
     "eventsAdmin.publishNow": "Опубликовать",
     "eventsAdmin.create": "Создать мероприятие",
@@ -4605,7 +4607,7 @@ var qrcode = function() {
     "admin.sectionText": "Подтверждайте оплату только после проверки поступления средств в Kaspi.",
     "admin.empty": "Нет чеков на проверке.",
     "admin.pending": "Ожидает проверки",
-    "admin.member": "Участник",
+    "admin.member": "Резидент",
     "admin.invoiceAmount": "Сумма счёта: {amount}",
     "admin.approve": "Подтвердить оплату",
     "admin.reject": "Отклонить",
@@ -5105,7 +5107,7 @@ var qrcode = function() {
     "trust.reply": "Ответ",
     "trust.replyLabel": "Ответить на отзыв",
     "trust.replySend": "Ответить",
-    "trust.back": "Все участники",
+    "trust.back": "Все резиденты",
     "trust.title": "Рейтинг и доверие",
     "trust.text": "Отзывы публикуются после модерации. Знаки проверки ставит команда Friends с согласия резидента; сами документы и цифры никто не видит.",
     "trust.reviews": "Отзывы",
@@ -5151,7 +5153,7 @@ var qrcode = function() {
     "error.review_self": "Нельзя оставить отзыв себе.",
     "error.verification_pending": "Заявка уже на проверке.",
     "error.bin_required": "Укажите БИН или ИИН.",
-    "error.member_not_found": "Участник не найден.",
+    "error.member_not_found": "Резидент не найден.",
     "nudge.crm_start.title": "CRM «Мой бизнес» — бесплатно для резидентов",
     "nudge.crm_start.text": "Вносите выручку и расходы — каждое утро приходит отчёт с анализом выручки и подсказками. Задачи сотрудникам с отчётом об исполнении, финансовая книга и подбор кредитов.",
     "nudge.crm_start.cta": "Подключить CRM",
@@ -5306,7 +5308,7 @@ var qrcode = function() {
     "fig.right": "Как правильно",
     "nav.home": "Friends",
     "nav.qr": "QR",
-    "nav.messages": "Сообщения",
+    "nav.messages": "Чаты",
     "nav.services": "Сервисы",
     "nav.adminChats": "Чаты",
     "view.services.title": "Сервисы",
@@ -5341,16 +5343,16 @@ var qrcode = function() {
     "messages.deleted": "Сообщение удалено",
     "messages.unread": "Непрочитанных: {n}",
     "adminChats.newTitle": "Новый чат",
-    "adminChats.newText": "Открытый — любой резидент может вступить. Закрытый — участников добавляете вы.",
+    "adminChats.newText": "Открытый — любой резидент может вступить. Закрытый — резидентов добавляете вы.",
     "adminChats.name": "Название (например, «Строители»)",
     "adminChats.description": "Описание",
     "adminChats.visibility": "Доступ",
     "adminChats.vis.all_members": "Открытый для резидентов",
     "adminChats.vis.invite_only": "Закрытый, по приглашению",
     "adminChats.vis.city_members": "Для города",
-    "adminChats.vis.selected_members": "Выбранные участники",
+    "adminChats.vis.selected_members": "Выбранные резиденты",
     "adminChats.posting": "Кто пишет",
-    "adminChats.post.members": "Все участники",
+    "adminChats.post.members": "Все резиденты",
     "adminChats.post.moderators_only": "Только модераторы (канал)",
     "adminChats.post.selected_roles": "Выбранные роли",
     "adminChats.create": "Создать чат",
@@ -5362,10 +5364,10 @@ var qrcode = function() {
     "adminChats.status.read_only": "Только чтение",
     "adminChats.status.archived": "В архиве",
     "adminChats.addEmail": "Добавить по почте",
-    "adminChats.role.member": "Участник",
+    "adminChats.role.member": "Резидент",
     "adminChats.role.moderator": "Модератор",
     "adminChats.add": "Добавить",
-    "adminChats.added": "Участник добавлен.",
+    "adminChats.added": "Резидент добавлен.",
     "adminChats.archive": "В архив",
     "adminChats.restore": "Вернуть",
     "error.chat_post_forbidden": "Сначала вступите в чат.",
@@ -5929,6 +5931,15 @@ var qrcode = function() {
     "tpl.download": "Скачать",
     "tpl.legal": "Договоры и должностные инструкции здесь только образцы. Перед использованием адаптируйте их под себя и проверьте у юриста.",
     "bookRate.voiceTitle": "Оцените голос озвучки",
+    "messages.group.news": "Новости и объявления",
+    "messages.group.city": "Города",
+    "messages.group.sports": "Спорт",
+    "messages.group.topic": "Темы и сообщества",
+    "messages.quota": "Ваши чаты: {used} из {limit}. Главный чат Friends и события не считаются.",
+    "messages.quotaUpgradeTrial": "В пробном месяце доступен 1 чат. Оформите подписку резидента, чтобы участвовать в 3 чатах.",
+    "messages.quotaUpgrade": "Чтобы состоять в большем числе чатов, нужна подписка Premium.",
+    "messages.quotaPremium": "Premium: чатов без ограничений.",
+    "error.chat_limit_reached": "Достигнут лимит чатов. Выйдите из одного чата или оформите подписку с большим лимитом.",
     "act.persons": "Люди",
     "act.last": "Последний визит",
     "act.days": "Дней активности",
@@ -6266,7 +6277,7 @@ var qrcode = function() {
     "adminFb.responses": "Отзывов",
     "adminFb.noEvents": "Прошедших встреч пока нет.",
     "adminFb.back": "Все встречи",
-    "adminFb.comments": "Отзывы участников",
+    "adminFb.comments": "Отзывы резидентов",
     "adminFb.empty": "Отзывов пока нет.",
     "adminRef.title": "Рекомендации резидентов",
     "adminRef.text": "Позвоните или напишите в WhatsApp и отметьте результат.",
@@ -6496,7 +6507,7 @@ var qrcode = function() {
     "learn.complete": "Отметить как пройденный",
     "learn.completed": "Урок пройден.",
     "learn.noAccessTitle": "Обучение для резидентов и их сотрудников",
-    "learn.noAccessText": "Курсы доступны участникам Friends с активной подпиской. Если вам дал доступ работодатель, введите код приглашения.",
+    "learn.noAccessText": "Курсы доступны резидентам Friends с активной подпиской. Если вам дал доступ работодатель, введите код приглашения.",
     "learn.codePlaceholder": "Код приглашения, например ABCD-EF2345",
     "learn.codeLabel": "Код приглашения",
     "learn.join": "Получить доступ",
@@ -7615,7 +7626,7 @@ var qrcode = function() {
     "fig.right": "Қалай дұрыс",
     "nav.home": "Friends",
     "nav.qr": "QR",
-    "nav.messages": "Хабарламалар",
+    "nav.messages": "Чаттар",
     "nav.services": "Сервистер",
     "nav.adminChats": "Чаттар",
     "view.services.title": "Сервистер",
@@ -8238,6 +8249,15 @@ var qrcode = function() {
     "tpl.download": "Жүктеу",
     "tpl.legal": "Шарттар мен лауазымдық нұсқаулықтар мұнда тек үлгі. Қолданар алдында өзіңізге бейімдеп, заңгермен тексеріңіз.",
     "bookRate.voiceTitle": "Дыбыстау дауысын бағалаңыз",
+    "messages.group.news": "Жаңалықтар мен хабарландырулар",
+    "messages.group.city": "Қалалар",
+    "messages.group.sports": "Спорт",
+    "messages.group.topic": "Тақырыптар мен қауымдастықтар",
+    "messages.quota": "Сіздің чаттарыңыз: {used} / {limit}. Friends басты чаты мен оқиғалар есепке кірмейді.",
+    "messages.quotaUpgradeTrial": "Сынақ айында 1 чат қолжетімді. 3 чатқа қатысу үшін резидент жазылымын рәсімдеңіз.",
+    "messages.quotaUpgrade": "Көбірек чатта болу үшін Premium жазылымы керек.",
+    "messages.quotaPremium": "Premium: чаттар саны шектелмеген.",
+    "error.chat_limit_reached": "Чат лимиті таусылды. Бір чаттан шығыңыз немесе лимиті жоғары жазылым рәсімдеңіз.",
     "act.persons": "Адамдар",
     "act.last": "Соңғы кіру",
     "act.days": "Белсенді күн",
@@ -9924,7 +9944,7 @@ var qrcode = function() {
     "fig.right": "Do instead",
     "nav.home": "Friends",
     "nav.qr": "QR",
-    "nav.messages": "Messages",
+    "nav.messages": "Chats",
     "nav.services": "Services",
     "nav.adminChats": "Chats",
     "view.services.title": "Services",
@@ -10547,6 +10567,15 @@ var qrcode = function() {
     "tpl.download": "Download",
     "tpl.legal": "Contracts and job descriptions here are samples only. Adapt them and have a lawyer check them before use.",
     "bookRate.voiceTitle": "Rate the narrator's voice",
+    "messages.group.news": "News and announcements",
+    "messages.group.city": "Cities",
+    "messages.group.sports": "Sport",
+    "messages.group.topic": "Topics and communities",
+    "messages.quota": "Your chats: {used} of {limit}. The main Friends chat and events do not count.",
+    "messages.quotaUpgradeTrial": "The free month includes 1 chat. Get a resident subscription to join 3 chats.",
+    "messages.quotaUpgrade": "To be in more chats you need a Premium subscription.",
+    "messages.quotaPremium": "Premium: unlimited chats.",
+    "error.chat_limit_reached": "Chat limit reached. Leave a chat or get a subscription with a higher limit.",
     "act.persons": "People",
     "act.last": "Last visit",
     "act.days": "Active days",
@@ -14488,8 +14517,8 @@ var qrcode = function() {
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
   // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
   const ME_GROUPS = [
-    ["me.groupAccount", [["profile", "user"], ["companies", "building"], ["trust", "shield"], ["membership", "card"], ["team", "users"]]],
-    ["me.groupCommunity", [["messages", "chat"], ["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
+    ["me.groupAccount", [["profile", "user"], ["business", "business"], ["companies", "building"], ["trust", "shield"], ["membership", "card"], ["team", "users"]]],
+    ["me.groupCommunity", [["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
     ["me.groupApp", [["settings", "gear"]]]
   ];
   // Blogger cabinet: own funnel and bonus. Opens from the "me" page when a partner is linked to this account.
@@ -14590,12 +14619,18 @@ var qrcode = function() {
   }
   async function messages() {
     const d = await api("/v1/chats");
+    const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
       esc(r.last_message && r.last_message.body ? (r.last_message.author ? r.last_message.author + ": " : "") + r.last_message.body : (r.description || t("messages.noMessages"))) + "</small></span>" +
       (r.unread ? '<span class="chat-unread">' + r.unread + "</span>" : !r.joined && r.can_join ? '<span class="pill">' + esc(t("messages.open")) + "</span>" : "") + "</button>";
-    const mine = d.items.filter(r => r.joined), open = d.items.filter(r => !r.joined);
-    content.innerHTML = (mine.length ? panel(t("messages.myChats"), "", '<div class="chat-list">' + mine.map(row).join("") + "</div>") : "") +
-      (open.length ? panel(t("messages.joinTitle"), t("messages.joinText"), '<div class="chat-list">' + open.map(row).join("") + "</div>") : "") +
+    const pinned = d.items.filter(r => r.room_type === "main");
+    const rest = d.items.filter(r => r.room_type !== "main");
+    const groups = [["news", r => r.room_type === "advertising"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports"].includes(r.room_type)]];
+    const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
+      : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
+    content.innerHTML = quota + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+      groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
+        return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
   }

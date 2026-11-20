@@ -3065,8 +3065,8 @@
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
   // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
   const ME_GROUPS = [
-    ["me.groupAccount", [["profile", "user"], ["companies", "building"], ["trust", "shield"], ["membership", "card"], ["team", "users"]]],
-    ["me.groupCommunity", [["messages", "chat"], ["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
+    ["me.groupAccount", [["profile", "user"], ["business", "business"], ["companies", "building"], ["trust", "shield"], ["membership", "card"], ["team", "users"]]],
+    ["me.groupCommunity", [["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
     ["me.groupApp", [["settings", "gear"]]]
   ];
   // Blogger cabinet: own funnel and bonus. Opens from the "me" page when a partner is linked to this account.
@@ -3167,12 +3167,18 @@
   }
   async function messages() {
     const d = await api("/v1/chats");
+    const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
       esc(r.last_message && r.last_message.body ? (r.last_message.author ? r.last_message.author + ": " : "") + r.last_message.body : (r.description || t("messages.noMessages"))) + "</small></span>" +
       (r.unread ? '<span class="chat-unread">' + r.unread + "</span>" : !r.joined && r.can_join ? '<span class="pill">' + esc(t("messages.open")) + "</span>" : "") + "</button>";
-    const mine = d.items.filter(r => r.joined), open = d.items.filter(r => !r.joined);
-    content.innerHTML = (mine.length ? panel(t("messages.myChats"), "", '<div class="chat-list">' + mine.map(row).join("") + "</div>") : "") +
-      (open.length ? panel(t("messages.joinTitle"), t("messages.joinText"), '<div class="chat-list">' + open.map(row).join("") + "</div>") : "") +
+    const pinned = d.items.filter(r => r.room_type === "main");
+    const rest = d.items.filter(r => r.room_type !== "main");
+    const groups = [["news", r => r.room_type === "advertising"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports"].includes(r.room_type)]];
+    const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
+      : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
+    content.innerHTML = quota + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+      groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
+        return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
   }

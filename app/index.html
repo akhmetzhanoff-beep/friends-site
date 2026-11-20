@@ -5860,6 +5860,10 @@ var qrcode = function() {
     "error.location_required": "Для офлайн-встречи укажите место.",
     "error.price_required": "Укажите цену или выберите «Бесплатно».",
     "error.url_invalid": "Нужна ссылка, которая начинается с https://",
+    "error.invalid_code": "Неверный или просроченный код. Запросите новый.",
+    "error.too_many_requests": "Слишком много попыток. Подождите несколько минут.",
+    "error.sms_failed": "Не удалось отправить SMS. Попробуйте чуть позже.",
+    "error.invalid_phone": "Введите номер в международном формате, например +77011234567.",
     "error.too_many_active": "У вас уже две активные заявки. Дождитесь встречи или отмените одну.",
     "error.membership_required": "Нужна активная подписка или пробный месяц.",
     "error.event_not_finished": "Запись можно добавить после окончания встречи.",
@@ -7966,6 +7970,10 @@ var qrcode = function() {
     "error.location_required": "Офлайн кездесу үшін орынды көрсетіңіз.",
     "error.price_required": "Бағаны көрсетіңіз немесе «Тегін» таңдаңыз.",
     "error.url_invalid": "Сілтеме https:// деп басталуы керек.",
+    "error.invalid_code": "Код дұрыс емес немесе мерзімі өтті. Жаңасын сұратыңыз.",
+    "error.too_many_requests": "Әрекет тым көп. Бірнеше минут күтіңіз.",
+    "error.sms_failed": "SMS жіберілмеді. Сәлден кейін қайталаңыз.",
+    "error.invalid_phone": "Нөмірді халықаралық форматта енгізіңіз, мысалы +77011234567.",
     "error.too_many_active": "Сізде екі белсенді өтінім бар. Кездесуді күтіңіз немесе біреуінен бас тартыңыз.",
     "error.membership_required": "Белсенді жазылым немесе сынақ айы керек.",
     "error.event_not_finished": "Жазбаны кездесу аяқталғаннан кейін қосуға болады.",
@@ -10072,6 +10080,10 @@ var qrcode = function() {
     "error.location_required": "Add a venue for an in-person event.",
     "error.price_required": "Enter a price or choose Free.",
     "error.url_invalid": "The link must start with https://",
+    "error.invalid_code": "The code is wrong or expired. Request a new one.",
+    "error.too_many_requests": "Too many attempts. Wait a few minutes.",
+    "error.sms_failed": "Could not send the SMS. Try again shortly.",
+    "error.invalid_phone": "Enter the number in international format, e.g. +77011234567.",
     "error.too_many_active": "You already have two active requests. Wait for an event or cancel one.",
     "error.membership_required": "An active subscription or trial month is required.",
     "error.event_not_finished": "You can add a recording after the event ends.",
@@ -10785,6 +10797,8 @@ var qrcode = function() {
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals"];
   const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
+  // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
+  const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
   function authClient() {
     if (!supabaseUrl || !supabaseKey) return Promise.reject(new Error(t("auth.notConfigured")));
@@ -10807,6 +10821,18 @@ var qrcode = function() {
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
+  // Own auth: the refresh token lives on the device (localStorage), so the phone stays signed in after one SMS code.
+  const getRefresh = () => { try { return (ownAuth ? localStorage : sessionStorage).getItem(REFRESH); } catch { return null; } };
+  const setRefresh = v => { try { (ownAuth ? localStorage : sessionStorage).setItem(REFRESH, v); } catch { /* private mode */ } };
+  async function ownPost(path, payload) {
+    let r;
+    try { r = await fetch(apiBase + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); }
+    catch { const e = Error(t("error.network")); e.status = 0; throw e; }
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = Error(I18N.apiError(d && d.error, r.status)); e.status = r.status; e.code = d && d.error; throw e; }
+    return d;
+  }
+  function storeSession(d) { sessionStorage.setItem(KEY, d.access_token); if (d.refresh_token) setRefresh(d.refresh_token); }
   // Theme: dark by default (owner request), light on demand; remembered per device.
   const THEME_KEY = "friends.theme";
   const currentTheme = () => document.documentElement.dataset.theme === "light" ? "light" : "dark";
@@ -10896,7 +10922,7 @@ var qrcode = function() {
   // Date without the time (subscriptions, badges).
   const day = v => { const x = date(v); return x.replace(/,?\s*(\u0432\s*)?\d{1,2}:\d{2}(\s*[AP]M)?$/i, "").replace(/\s+at$/, "").trim(); };
   const money = v => I18N.formatMoney(v);
-  const clearTokens = () => [KEY, REFRESH, IDTOKEN].forEach(k => sessionStorage.removeItem(k));
+  const clearTokens = () => { [KEY, REFRESH, IDTOKEN].forEach(k => sessionStorage.removeItem(k)); try { localStorage.removeItem(REFRESH); } catch { /* none */ } };
 
   function status(message, error = false) {
     let el = document.querySelector("#app-status");
@@ -10933,6 +10959,13 @@ var qrcode = function() {
       if (!phone || !phone.trim()) return;
       const normalized = phone.replace(/[\s()-]/g, "");
       if (!/^\+[1-9]\d{7,14}$/.test(normalized)) { status(t("auth.phoneInvalid"), true); return; }
+      if (ownAuth) {
+        await ownPost("/v1/auth/sms/request", { phone: normalized });
+        const ownCode = prompt(t("auth.smsCodePrompt"));
+        if (!ownCode || !ownCode.trim()) return;
+        storeSession(await ownPost("/v1/auth/sms/verify", { phone: normalized, code: ownCode.trim() }));
+        user = await api("/v1/auth/me");
+      } else {
       const client = await authClient();
       const { error } = await client.auth.signInWithOtp({ phone: normalized, options: { shouldCreateUser: true } });
       if (error) throw error;
@@ -10941,6 +10974,7 @@ var qrcode = function() {
       const result = await client.auth.verifyOtp({ phone: normalized, token: code.trim(), type: "sms" });
       if (result.error) throw result.error;
       await callback();
+      }
       await syncLocaleAfterSignIn();
       await render(active);
       status(t("auth.signedIn"));
@@ -10950,6 +10984,7 @@ var qrcode = function() {
   }
 
   async function callback() {
+    if (ownAuth) { if (!token() && getRefresh()) await refresh(); return; }
     if (!supabaseUrl || !supabaseKey) return;
     const client = await authClient();
     const { data, error } = await client.auth.getSession();
@@ -10965,6 +11000,12 @@ var qrcode = function() {
   }
 
   async function refresh() {
+    if (ownAuth) {
+      const rt = getRefresh();
+      if (!rt) return false;
+      try { storeSession(await ownPost("/v1/auth/refresh", { refresh_token: rt })); return true; }
+      catch (e) { if (e.status === 401) clearTokens(); return false; }
+    }
     try {
       const client = await authClient();
       const { data, error } = await client.auth.refreshSession();
@@ -11139,7 +11180,8 @@ var qrcode = function() {
   // The phone stays signed in after the first SMS code (session kept on the device and refreshed automatically).
   // «Выйти на всех устройствах» ends every session of this account, e.g. after a lost phone.
   async function logout(everywhere) {
-    try { const client = await authClient(); await client.auth.signOut(everywhere === true ? { scope: "global" } : undefined); } catch { /* sign-out is best effort */ }
+    if (ownAuth) { try { await ownPost("/v1/auth/logout", { refresh_token: getRefresh() || "", everywhere: everywhere === true }); } catch { /* best effort */ } }
+    else try { const client = await authClient(); await client.auth.signOut(everywhere === true ? { scope: "global" } : undefined); } catch { /* sign-out is best effort */ }
     clearTokens();
     user = null;
     profile = null;
@@ -11238,7 +11280,8 @@ var qrcode = function() {
       '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button><button class="outline-button" id="login-email">' + esc(t("login.email")) +
       '</button></div><div class="demo-note">' + esc(t("login.note")) + "</div></div>" + installCard();
     document.querySelector("#login-main").addEventListener("click", login);
-    document.querySelector("#login-email").addEventListener("click", emailLogin);
+    if (ownAuth) document.querySelector("#login-email").hidden = true;
+    else document.querySelector("#login-email").addEventListener("click", emailLogin);
   }
 
   const field = (label, name, value = "", type = "text", attrs = "") =>
@@ -11303,7 +11346,7 @@ var qrcode = function() {
       status(e.message, true);
       return;
     }
-    try { const client = await authClient(); await client.auth.signOut(); } catch { /* auth user may already be gone */ }
+    if (!ownAuth) try { const client = await authClient(); await client.auth.signOut(); } catch { /* auth user may already be gone */ }
     clearTokens();
     user = null;
     profile = null;

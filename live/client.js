@@ -172,17 +172,88 @@
     }
   }
 
+
+  // ---------- Own sign-in dialogs: phone with a mask, code that fills itself from the SMS ----------
+  function authDialog(html) {
+    const wrap = document.createElement("div");
+    wrap.className = "auth-overlay";
+    wrap.innerHTML = '<div class="auth-card" role="dialog" aria-modal="true">' + html + "</div>";
+    document.body.appendChild(wrap);
+    return { root: wrap, q: sel => wrap.querySelector(sel), close: () => wrap.remove() };
+  }
+  const digitsOf = v => String(v).replace(/\D/g, "");
+  function maskPhone(v) {
+    let d = digitsOf(v);
+    if (!d) return "";
+    if (d[0] === "8") d = "7" + d.slice(1);
+    if (d[0] !== "7") return "+" + d.slice(0, 15);
+    d = d.slice(0, 11);
+    const r = d.slice(1);
+    let out = "+7";
+    if (r.length) out += " " + r.slice(0, 3);
+    if (r.length > 3) out += " " + r.slice(3, 6);
+    if (r.length > 6) out += " " + r.slice(6, 8);
+    if (r.length > 8) out += " " + r.slice(8, 10);
+    return out;
+  }
+  const phoneValue = v => { let d = digitsOf(v); if (d[0] === "8" && d.length === 11) d = "7" + d.slice(1); return "+" + d; };
+  function askPhone() {
+    return new Promise(resolve => {
+      const dlg = authDialog('<h3>' + esc(t("auth.phoneTitle")) + '</h3><p class="muted">' + esc(t("auth.phoneHint")) + '</p>' +
+        '<input class="auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" value="+7 " aria-label="' + esc(t("auth.phoneTitle")) + '">' +
+        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="primary-button" data-ok>' + esc(t("auth.sendCode")) + "</button></div>");
+      const input = dlg.q("input"), err = dlg.q(".auth-error");
+      input.addEventListener("input", () => { input.value = maskPhone(input.value) || "+7 "; err.hidden = true; });
+      const done = v => { dlg.close(); resolve(v); };
+      dlg.q("[data-x]").addEventListener("click", () => done(null));
+      const ok = () => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done(v); };
+      dlg.q("[data-ok]").addEventListener("click", ok);
+      input.addEventListener("keydown", e => { if (e.key === "Enter") ok(); });
+      setTimeout(() => { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
+    });
+  }
+  function askCode(phone, resend) {
+    return new Promise(resolve => {
+      const dlg = authDialog('<h3>' + esc(t("auth.codeTitle")) + '</h3><p class="muted">' + esc(t("auth.codeHint", { phone: maskPhone(phone) })) + '</p>' +
+        '<input class="auth-input auth-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="' + esc(t("auth.codeTitle")) + '">' +
+        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="outline-button" data-again>' + esc(t("auth.resend")) + '</button></div>');
+      const input = dlg.q("input"), err = dlg.q(".auth-error");
+      const ctl = typeof AbortController === "function" ? new AbortController() : null;
+      const done = v => { if (ctl) ctl.abort(); dlg.close(); resolve(v); };
+      input.addEventListener("input", () => { input.value = digitsOf(input.value).slice(0, 6); err.hidden = true; if (input.value.length === 6) done(input.value); });
+      dlg.q("[data-x]").addEventListener("click", () => done(null));
+      dlg.q("[data-again]").addEventListener("click", async () => { try { await resend(); err.hidden = true; } catch (e) { err.textContent = e.message; err.hidden = false; } });
+      // Android Chrome: the code from the SMS is read automatically (WebOTP). iPhone: the code appears above the keyboard, one tap.
+      if (ctl && "OTPCredential" in window && navigator.credentials) {
+        navigator.credentials.get({ otp: { transport: ["sms"] }, signal: ctl.signal }).then(c => { if (c && c.code) { input.value = digitsOf(c.code).slice(0, 6); done(input.value); } }).catch(() => { /* typed by hand */ });
+      }
+      setTimeout(() => input.focus(), 50);
+    });
+  }
+  async function ownLogin() {
+    const phone = await askPhone();
+    if (!phone) return null;
+    await ownPost("/v1/auth/sms/request", { phone });
+    for (;;) {
+      const code = await askCode(phone, () => ownPost("/v1/auth/sms/request", { phone }));
+      if (!code) return null;
+      try { storeSession(await ownPost("/v1/auth/sms/verify", { phone, code })); return phone; }
+      catch (e) { if (e.code !== "invalid_code") throw e; status(e.message, true); }
+    }
+  }
+
   async function login() {
     try {
-      const phone = prompt(t("auth.phonePrompt"));
-      if (!phone || !phone.trim()) return;
-      const normalized = phone.replace(/[\s()-]/g, "");
-      if (!/^\+[1-9]\d{7,14}$/.test(normalized)) { status(t("auth.phoneInvalid"), true); return; }
+      let normalized = "";
+      if (!ownAuth) {
+        const phone = prompt(t("auth.phonePrompt"));
+        if (!phone || !phone.trim()) return;
+        normalized = phone.replace(/[\s()-]/g, "");
+        if (!/^\+[1-9]\d{7,14}$/.test(normalized)) { status(t("auth.phoneInvalid"), true); return; }
+      }
       if (ownAuth) {
-        await ownPost("/v1/auth/sms/request", { phone: normalized });
-        const ownCode = prompt(t("auth.smsCodePrompt"));
-        if (!ownCode || !ownCode.trim()) return;
-        storeSession(await ownPost("/v1/auth/sms/verify", { phone: normalized, code: ownCode.trim() }));
+        const ph = await ownLogin();
+        if (!ph) return;
         user = await api("/v1/auth/me");
       } else {
       const client = await authClient();
@@ -497,7 +568,7 @@
     setTimeout(() => { expertInviteBanner(); inviteBanner(); }, 0);
     content.innerHTML = '<div class="empty-panel login-panel"><div class="brand-mark" aria-hidden="true">f</div><p class="eyebrow">' + esc(t("login.eyebrow")) + "</p><h2>" + esc(t("login.title")) + "</h2><p>" + esc(t("login.text")) +
       '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button><button class="outline-button" id="login-email">' + esc(t("login.email")) +
-      '</button></div><div class="demo-note">' + esc(t("login.note")) + "</div></div>" + installCard();
+      '</button></div>' + (ownAuth ? "" : '<div class="demo-note">' + esc(t("login.note")) + "</div>") + "</div>" + installCard();
     document.querySelector("#login-main").addEventListener("click", login);
     if (ownAuth) document.querySelector("#login-email").hidden = true;
     else document.querySelector("#login-email").addEventListener("click", emailLogin);

@@ -638,3 +638,13 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .cal-cell.off{opacity:.35;cursor:not-allowed}.cal-cell.sel{background:#1877f2;border-color:#1877f2;color:#fff}
 .cal-cell i{position:absolute;right:4px;bottom:2px;font:600 10px inherit;font-family:inherit;font-style:normal;opacity:.85}
 .day-info{margin-top:14px;display:grid;gap:6px}
+
+.auth-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px 16px;padding-top:12vh;background:rgba(0,0,0,.55)}
+.auth-card{width:100%;max-width:380px;background:var(--surface,#1d1f21);color:inherit;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:18px;padding:22px;display:grid;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.auth-card h3{margin:0;font-size:20px}
+.auth-card p{margin:0}
+.auth-input{width:100%;font:inherit;font-size:22px;font-weight:600;padding:14px 16px;border-radius:12px;border:1px solid var(--line,rgba(255,255,255,.2));background:transparent;color:inherit;letter-spacing:.02em}
+.auth-input:focus{outline:2px solid var(--accent,#4a8cf0);outline-offset:1px}
+.auth-code{text-align:center;font-size:30px;letter-spacing:.35em}
+.auth-error{color:#ff7a7a;font-size:14px}
+.auth-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}

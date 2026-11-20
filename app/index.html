@@ -5901,6 +5901,16 @@ var qrcode = function() {
     "bookRate.score": "Средняя",
     "bookRate.votes": "Оценок",
     "bookRate.voiceCol": "Голос",
+    "nav.templates": "Шаблоны",
+    "view.templates.title": "Шаблоны документов",
+    "view.templates.subtitle": "Таблицы и образцы договоров для вашего бизнеса",
+    "tpl.title": "Готовые шаблоны",
+    "tpl.text": "Скачайте таблицу или образец, заполните жёлтые ячейки и работайте. В таблицах всё считается автоматически.",
+    "tpl.cat.finance": "Финансы и управленческий учёт",
+    "tpl.cat.sales": "Продажи и маркетинг",
+    "tpl.cat.legal": "Договоры и документы",
+    "tpl.download": "Скачать",
+    "tpl.legal": "Договоры и должностные инструкции здесь только образцы. Перед использованием адаптируйте их под себя и проверьте у юриста.",
     "act.persons": "Люди",
     "act.last": "Последний визит",
     "act.days": "Дней активности",
@@ -8199,6 +8209,16 @@ var qrcode = function() {
     "bookRate.score": "Орташа",
     "bookRate.votes": "Баға саны",
     "bookRate.voiceCol": "Дауыс",
+    "nav.templates": "Үлгілер",
+    "view.templates.title": "Құжат үлгілері",
+    "view.templates.subtitle": "Бизнесіңізге арналған кестелер мен шарт үлгілері",
+    "tpl.title": "Дайын үлгілер",
+    "tpl.text": "Кестені немесе үлгіні жүктеп алыңыз, сары ұяшықтарды толтырыңыз да жұмыс істеңіз. Кестелерде барлығы автоматты есептеледі.",
+    "tpl.cat.finance": "Қаржы және басқару есебі",
+    "tpl.cat.sales": "Сату және маркетинг",
+    "tpl.cat.legal": "Шарттар мен құжаттар",
+    "tpl.download": "Жүктеу",
+    "tpl.legal": "Шарттар мен лауазымдық нұсқаулықтар мұнда тек үлгі. Қолданар алдында өзіңізге бейімдеп, заңгермен тексеріңіз.",
     "act.persons": "Адамдар",
     "act.last": "Соңғы кіру",
     "act.days": "Белсенді күн",
@@ -10497,6 +10517,16 @@ var qrcode = function() {
     "bookRate.score": "Average",
     "bookRate.votes": "Ratings",
     "bookRate.voiceCol": "Voice",
+    "nav.templates": "Templates",
+    "view.templates.title": "Document templates",
+    "view.templates.subtitle": "Spreadsheets and contract samples for your business",
+    "tpl.title": "Ready-made templates",
+    "tpl.text": "Download a spreadsheet or sample, fill in the yellow cells and go. The tables calculate everything.",
+    "tpl.cat.finance": "Finance and management accounting",
+    "tpl.cat.sales": "Sales and marketing",
+    "tpl.cat.legal": "Contracts and documents",
+    "tpl.download": "Download",
+    "tpl.legal": "Contracts and job descriptions here are samples only. Adapt them and have a lawyer check them before use.",
     "act.persons": "People",
     "act.last": "Last visit",
     "act.days": "Active days",
@@ -11388,7 +11418,7 @@ var qrcode = function() {
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -11409,7 +11439,7 @@ var qrcode = function() {
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -11809,7 +11839,7 @@ var qrcode = function() {
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", companies: "business", partner: "card", discounts: "card",
     notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", recordings: "learn", profile: "me", settings: "me", trust: "me", membership: "me", team: "me", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "books", "tests", "recordings"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "books", "templates", "tests", "recordings"], business: ["business", "deals", "companies"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -12806,6 +12836,21 @@ var qrcode = function() {
     }
     content.querySelectorAll("[data-lesson]").forEach(b => b.addEventListener("click", () => { learnLesson = b.dataset.lesson; render("lesson"); }));
     addBookAudio(c);
+  }
+
+  // ---------- Templates: ready-made tables and contract samples for residents ----------
+  async function templates() {
+    let list = [];
+    try { list = await (await fetch("templates/manifest.json", { cache: "no-cache" })).json(); } catch { list = []; }
+    const kinds = ["finance", "sales", "legal"];
+    const size = b => b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB";
+    const groups = kinds.map(k => {
+      const items = list.filter(x => x.cat === k);
+      if (!items.length) return "";
+      return "<h3>" + esc(t("tpl.cat." + k)) + '</h3><div class="course-grid">' + items.map(x =>
+        '<article class="course-card"><h3>' + esc(x.title) + "</h3><p>" + esc(x.desc) + '</p><p class="muted">' + esc(x.type === "xlsx" ? "Excel" : "Word") + " · " + esc(size(x.bytes || 0)) + '</p><a class="primary-button" href="' + esc(x.file) + '" download>' + esc(t("tpl.download")) + "</a></article>").join("") + "</div>";
+    }).join("");
+    content.innerHTML = panel(t("tpl.title"), t("tpl.text"), (groups || '<p class="muted">' + esc(t("learn.empty")) + "</p>") + '<p class="demo-note">' + esc(t("tpl.legal")) + "</p>");
   }
 
   // Short voiced version of a book ("main idea in two minutes"): mp3 files live next to the app, listed in audio/manifest.json.
@@ -15015,7 +15060,7 @@ var qrcode = function() {
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
+  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings, templates };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

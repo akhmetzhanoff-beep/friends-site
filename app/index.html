@@ -662,6 +662,16 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .cal-cell i{position:absolute;right:4px;bottom:2px;font:600 10px inherit;font-family:inherit;font-style:normal;opacity:.85}
 .day-info{margin-top:14px;display:grid;gap:6px}
 
+.auth-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px 16px;padding-top:12vh;background:rgba(0,0,0,.55)}
+.auth-card{width:100%;max-width:380px;background:var(--surface,#1d1f21);color:inherit;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:18px;padding:22px;display:grid;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.auth-card h3{margin:0;font-size:20px}
+.auth-card p{margin:0}
+.auth-input{width:100%;font:inherit;font-size:22px;font-weight:600;padding:14px 16px;border-radius:12px;border:1px solid var(--line,rgba(255,255,255,.2));background:transparent;color:inherit;letter-spacing:.02em}
+.auth-input:focus{outline:2px solid var(--accent,#4a8cf0);outline-offset:1px}
+.auth-code{text-align:center;font-size:30px;letter-spacing:.35em}
+.auth-error{color:#ff7a7a;font-size:14px}
+.auth-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
 .pilot-banner span{flex:1 1 220px;min-width:0}
@@ -4337,6 +4347,13 @@ var qrcode = function() {
     "auth.emailInvalid": "Введите корректный email.",
     "auth.emailSent": "Письмо для входа отправлено на {email}. Откройте ссылку в письме, чтобы войти.",
     "auth.emailFailed": "Не удалось отправить письмо для входа. Попробуйте позже.",
+    "auth.phoneTitle": "Вход по номеру телефона",
+    "auth.phoneHint": "Пришлём SMS с кодом. Вход запоминается на этом телефоне.",
+    "auth.sendCode": "Получить код",
+    "auth.cancel": "Отмена",
+    "auth.codeTitle": "Код из SMS",
+    "auth.codeHint": "Мы отправили код на {phone}. Он подставится сам; если нет, введите его.",
+    "auth.resend": "Отправить ещё раз",
     "auth.phonePrompt": "Введите номер телефона в международном формате, например +77011234567:",
     "auth.phoneInvalid": "Введите номер в международном формате, например +77011234567.",
     "auth.smsCodePrompt": "Введите код из SMS:",
@@ -5756,6 +5773,23 @@ var qrcode = function() {
     "error.future_day": "Нельзя вносить выручку за будущие дни.",
     "nav.adminStats": "Статистика",
     "nav.adminReferrals": "Рекомендации",
+    "nav.adminSignups": "Регистрации",
+    "signups.title": "Регистрации по телефону",
+    "signups.text": "Все, кто вошёл в приложение по номеру телефона: {n}. Откуда пришли, какой доступ и когда заходили.",
+    "signups.noAccess": "Раздел доступен администраторам, маркетологам и менеджерам по продажам.",
+    "signups.search": "Номер, имя или блогер",
+    "signups.find": "Найти",
+    "signups.csv": "Скачать таблицу",
+    "signups.phone": "Телефон",
+    "signups.name": "Имя",
+    "signups.source": "Откуда",
+    "signups.access": "Доступ",
+    "signups.joined": "Регистрация",
+    "signups.last": "Последний вход",
+    "signups.empty": "Пока никого нет.",
+    "signups.trial": "Пробный месяц до {until}",
+    "signups.member": "Резидент",
+    "signups.none": "Нет подписки",
     "nav.adminPartners": "Блогеры",
     "nav.host": "Провести встречу",
     "nav.recordings": "Записи встреч",
@@ -6447,6 +6481,13 @@ var qrcode = function() {
     "auth.emailInvalid": "Дұрыс email енгізіңіз.",
     "auth.emailSent": "Кіру сілтемесі бар хат {email} мекенжайына жіберілді. Кіру үшін хаттағы сілтемені ашыңыз.",
     "auth.emailFailed": "Кіру хатын жіберу мүмкін болмады. Кейінірек қайталап көріңіз.",
+    "auth.phoneTitle": "Телефон нөмірі арқылы кіру",
+    "auth.phoneHint": "Кодпен SMS жібереміз. Кіру осы телефонда сақталады.",
+    "auth.sendCode": "Кодты алу",
+    "auth.cancel": "Бас тарту",
+    "auth.codeTitle": "SMS-тегі код",
+    "auth.codeHint": "Код {phone} нөміріне жіберілді. Ол өзі шығады; шықпаса, қолмен енгізіңіз.",
+    "auth.resend": "Қайта жіберу",
     "auth.phonePrompt": "Телефон нөмірін халықаралық форматта енгізіңіз, мысалы +77011234567:",
     "auth.phoneInvalid": "Нөмірді халықаралық форматта енгізіңіз, мысалы +77011234567.",
     "auth.smsCodePrompt": "SMS-тегі кодты енгізіңіз:",
@@ -7866,6 +7907,23 @@ var qrcode = function() {
     "error.future_day": "Болашақ күндерге түсім енгізуге болмайды.",
     "nav.adminStats": "Статистика",
     "nav.adminReferrals": "Ұсыныстар",
+    "nav.adminSignups": "Тіркелулер",
+    "signups.title": "Телефон бойынша тіркелулер",
+    "signups.text": "Қосымшаға телефон нөмірі арқылы кіргендердің барлығы: {n}. Қайдан келді, қандай қолжетімділік, қашан кірді.",
+    "signups.noAccess": "Бөлім әкімшілерге, маркетологтарға және сату менеджерлеріне қолжетімді.",
+    "signups.search": "Нөмір, аты немесе блогер",
+    "signups.find": "Іздеу",
+    "signups.csv": "Кестені жүктеу",
+    "signups.phone": "Телефон",
+    "signups.name": "Аты",
+    "signups.source": "Қайдан",
+    "signups.access": "Қолжетімділік",
+    "signups.joined": "Тіркелу",
+    "signups.last": "Соңғы кіру",
+    "signups.empty": "Әзірге ешкім жоқ.",
+    "signups.trial": "Сынақ айы {until} дейін",
+    "signups.member": "Резидент",
+    "signups.none": "Жазылым жоқ",
     "nav.adminPartners": "Блогерлер",
     "nav.host": "Кездесу өткізу",
     "nav.recordings": "Кездесу жазбалары",
@@ -8557,6 +8615,13 @@ var qrcode = function() {
     "auth.emailInvalid": "Enter a valid email.",
     "auth.emailSent": "A sign-in link was sent to {email}. Open the link in the email to sign in.",
     "auth.emailFailed": "Could not send the sign-in email. Please try again later.",
+    "auth.phoneTitle": "Sign in with your phone",
+    "auth.phoneHint": "We will text you a code. You stay signed in on this phone.",
+    "auth.sendCode": "Get the code",
+    "auth.cancel": "Cancel",
+    "auth.codeTitle": "Code from the SMS",
+    "auth.codeHint": "We sent a code to {phone}. It fills in by itself; if not, type it.",
+    "auth.resend": "Send again",
     "auth.phonePrompt": "Enter your phone number in international format, e.g. +77011234567:",
     "auth.phoneInvalid": "Enter the number in international format, e.g. +77011234567.",
     "auth.smsCodePrompt": "Enter the code from the SMS:",
@@ -9976,6 +10041,23 @@ var qrcode = function() {
     "error.future_day": "Revenue can't be entered for future days.",
     "nav.adminStats": "Statistics",
     "nav.adminReferrals": "Referrals",
+    "nav.adminSignups": "Sign-ups",
+    "signups.title": "Phone sign-ups",
+    "signups.text": "Everyone who signed in with a phone number: {n}. Where they came from, their access and last visit.",
+    "signups.noAccess": "Available to admins, marketing and sales staff.",
+    "signups.search": "Phone, name or blogger",
+    "signups.find": "Search",
+    "signups.csv": "Download table",
+    "signups.phone": "Phone",
+    "signups.name": "Name",
+    "signups.source": "Source",
+    "signups.access": "Access",
+    "signups.joined": "Signed up",
+    "signups.last": "Last visit",
+    "signups.empty": "Nobody yet.",
+    "signups.trial": "Trial until {until}",
+    "signups.member": "Resident",
+    "signups.none": "No subscription",
     "nav.adminPartners": "Bloggers",
     "nav.host": "Host a meetup",
     "nav.recordings": "Recordings",
@@ -10795,7 +10877,7 @@ var qrcode = function() {
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups"];
   const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
@@ -10817,7 +10899,7 @@ var qrcode = function() {
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", "admin-signups": "adminSignups", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -10953,17 +11035,88 @@ var qrcode = function() {
     }
   }
 
+
+  // ---------- Own sign-in dialogs: phone with a mask, code that fills itself from the SMS ----------
+  function authDialog(html) {
+    const wrap = document.createElement("div");
+    wrap.className = "auth-overlay";
+    wrap.innerHTML = '<div class="auth-card" role="dialog" aria-modal="true">' + html + "</div>";
+    document.body.appendChild(wrap);
+    return { root: wrap, q: sel => wrap.querySelector(sel), close: () => wrap.remove() };
+  }
+  const digitsOf = v => String(v).replace(/\D/g, "");
+  function maskPhone(v) {
+    let d = digitsOf(v);
+    if (!d) return "";
+    if (d[0] === "8") d = "7" + d.slice(1);
+    if (d[0] !== "7") return "+" + d.slice(0, 15);
+    d = d.slice(0, 11);
+    const r = d.slice(1);
+    let out = "+7";
+    if (r.length) out += " " + r.slice(0, 3);
+    if (r.length > 3) out += " " + r.slice(3, 6);
+    if (r.length > 6) out += " " + r.slice(6, 8);
+    if (r.length > 8) out += " " + r.slice(8, 10);
+    return out;
+  }
+  const phoneValue = v => { let d = digitsOf(v); if (d[0] === "8" && d.length === 11) d = "7" + d.slice(1); return "+" + d; };
+  function askPhone() {
+    return new Promise(resolve => {
+      const dlg = authDialog('<h3>' + esc(t("auth.phoneTitle")) + '</h3><p class="muted">' + esc(t("auth.phoneHint")) + '</p>' +
+        '<input class="auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" value="+7 " aria-label="' + esc(t("auth.phoneTitle")) + '">' +
+        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="primary-button" data-ok>' + esc(t("auth.sendCode")) + "</button></div>");
+      const input = dlg.q("input"), err = dlg.q(".auth-error");
+      input.addEventListener("input", () => { input.value = maskPhone(input.value) || "+7 "; err.hidden = true; });
+      const done = v => { dlg.close(); resolve(v); };
+      dlg.q("[data-x]").addEventListener("click", () => done(null));
+      const ok = () => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done(v); };
+      dlg.q("[data-ok]").addEventListener("click", ok);
+      input.addEventListener("keydown", e => { if (e.key === "Enter") ok(); });
+      setTimeout(() => { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
+    });
+  }
+  function askCode(phone, resend) {
+    return new Promise(resolve => {
+      const dlg = authDialog('<h3>' + esc(t("auth.codeTitle")) + '</h3><p class="muted">' + esc(t("auth.codeHint", { phone: maskPhone(phone) })) + '</p>' +
+        '<input class="auth-input auth-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="' + esc(t("auth.codeTitle")) + '">' +
+        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="outline-button" data-again>' + esc(t("auth.resend")) + '</button></div>');
+      const input = dlg.q("input"), err = dlg.q(".auth-error");
+      const ctl = typeof AbortController === "function" ? new AbortController() : null;
+      const done = v => { if (ctl) ctl.abort(); dlg.close(); resolve(v); };
+      input.addEventListener("input", () => { input.value = digitsOf(input.value).slice(0, 6); err.hidden = true; if (input.value.length === 6) done(input.value); });
+      dlg.q("[data-x]").addEventListener("click", () => done(null));
+      dlg.q("[data-again]").addEventListener("click", async () => { try { await resend(); err.hidden = true; } catch (e) { err.textContent = e.message; err.hidden = false; } });
+      // Android Chrome: the code from the SMS is read automatically (WebOTP). iPhone: the code appears above the keyboard, one tap.
+      if (ctl && "OTPCredential" in window && navigator.credentials) {
+        navigator.credentials.get({ otp: { transport: ["sms"] }, signal: ctl.signal }).then(c => { if (c && c.code) { input.value = digitsOf(c.code).slice(0, 6); done(input.value); } }).catch(() => { /* typed by hand */ });
+      }
+      setTimeout(() => input.focus(), 50);
+    });
+  }
+  async function ownLogin() {
+    const phone = await askPhone();
+    if (!phone) return null;
+    await ownPost("/v1/auth/sms/request", { phone });
+    for (;;) {
+      const code = await askCode(phone, () => ownPost("/v1/auth/sms/request", { phone }));
+      if (!code) return null;
+      try { storeSession(await ownPost("/v1/auth/sms/verify", { phone, code })); return phone; }
+      catch (e) { if (e.code !== "invalid_code") throw e; status(e.message, true); }
+    }
+  }
+
   async function login() {
     try {
-      const phone = prompt(t("auth.phonePrompt"));
-      if (!phone || !phone.trim()) return;
-      const normalized = phone.replace(/[\s()-]/g, "");
-      if (!/^\+[1-9]\d{7,14}$/.test(normalized)) { status(t("auth.phoneInvalid"), true); return; }
+      let normalized = "";
+      if (!ownAuth) {
+        const phone = prompt(t("auth.phonePrompt"));
+        if (!phone || !phone.trim()) return;
+        normalized = phone.replace(/[\s()-]/g, "");
+        if (!/^\+[1-9]\d{7,14}$/.test(normalized)) { status(t("auth.phoneInvalid"), true); return; }
+      }
       if (ownAuth) {
-        await ownPost("/v1/auth/sms/request", { phone: normalized });
-        const ownCode = prompt(t("auth.smsCodePrompt"));
-        if (!ownCode || !ownCode.trim()) return;
-        storeSession(await ownPost("/v1/auth/sms/verify", { phone: normalized, code: ownCode.trim() }));
+        const ph = await ownLogin();
+        if (!ph) return;
         user = await api("/v1/auth/me");
       } else {
       const client = await authClient();
@@ -11278,7 +11431,7 @@ var qrcode = function() {
     setTimeout(() => { expertInviteBanner(); inviteBanner(); }, 0);
     content.innerHTML = '<div class="empty-panel login-panel"><div class="brand-mark" aria-hidden="true">f</div><p class="eyebrow">' + esc(t("login.eyebrow")) + "</p><h2>" + esc(t("login.title")) + "</h2><p>" + esc(t("login.text")) +
       '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button><button class="outline-button" id="login-email">' + esc(t("login.email")) +
-      '</button></div><div class="demo-note">' + esc(t("login.note")) + "</div></div>" + installCard();
+      '</button></div>' + (ownAuth ? "" : '<div class="demo-note">' + esc(t("login.note")) + "</div>") + "</div>" + installCard();
     document.querySelector("#login-main").addEventListener("click", login);
     if (ownAuth) document.querySelector("#login-email").hidden = true;
     else document.querySelector("#login-email").addEventListener("click", emailLogin);
@@ -12563,6 +12716,27 @@ var qrcode = function() {
 
 
   // ---------- Bloggers (promo partners): links, free month, funnel, bonuses ----------
+  // Phone sign-ups: who came, from which blogger, with what access. CSV opens in Excel / Google Sheets.
+  async function adminSignups() {
+    let d;
+    const qv = (content.querySelector("#signups-q") || {}).value || "";
+    try { d = await api("/v1/admin/signups?limit=1000" + (qv ? "&q=" + encodeURIComponent(qv) : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("signups.title"), t("signups.noAccess"), ""); return; } throw e; }
+    const dt = v => v ? date(v) : "";
+    const access = r => r.membership_status === "active" ? (r.plan_code === "trial" ? t("signups.trial", { until: day(r.trial_until) }) : t("signups.member")) : t("signups.none");
+    const rows = d.items.map(r => "<tr><td>" + esc(r.phone) + "</td><td>" + esc(r.display_name || "") + "</td><td>" + esc(r.partner_name || r.utm_source || "") + "</td><td>" + esc(access(r)) + "</td><td>" + esc(dt(r.created_at)) + "</td><td>" + esc(dt(r.last_login_at)) + "</td></tr>").join("");
+    content.innerHTML = panel(t("signups.title"), t("signups.text", { n: d.total }),
+      '<form id="signups-form" class="inline-form"><input id="signups-q" type="search" value="' + esc(qv) + '" placeholder="' + esc(t("signups.search")) + '"><button class="outline-button">' + esc(t("signups.find")) + '</button><button type="button" class="primary-button" id="signups-csv">' + esc(t("signups.csv")) + "</button></form>" +
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("signups.source")) + "</th><th>" + esc(t("signups.access")) + "</th><th>" + esc(t("signups.joined")) + "</th><th>" + esc(t("signups.last")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("signups.empty")) + "</td></tr>") + "</tbody></table></div>");
+    content.querySelector("#signups-form").addEventListener("submit", e => { e.preventDefault(); adminSignups(); });
+    content.querySelector("#signups-csv").addEventListener("click", () => {
+      const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+      const lines = [["phone", "name", "source", "access", "joined", "last_login"].map(q).join(",")].concat(d.items.map(r => [r.phone, r.display_name, r.partner_name || r.utm_source, access(r), r.created_at, r.last_login_at].map(q).join(",")));
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+      a.download = "friends-signups.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    });
+  }
+
   async function adminPartners(openId) {
     let d;
     try { d = await api("/v1/admin/partners"); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.noAccess"), ""); return; } throw e; }

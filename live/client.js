@@ -14,7 +14,7 @@
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups"];
   const RESIDENT_ONLY = ["overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", "admin-signups": "adminSignups", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -1853,6 +1853,27 @@
 
 
   // ---------- Bloggers (promo partners): links, free month, funnel, bonuses ----------
+  // Phone sign-ups: who came, from which blogger, with what access. CSV opens in Excel / Google Sheets.
+  async function adminSignups() {
+    let d;
+    const qv = (content.querySelector("#signups-q") || {}).value || "";
+    try { d = await api("/v1/admin/signups?limit=1000" + (qv ? "&q=" + encodeURIComponent(qv) : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("signups.title"), t("signups.noAccess"), ""); return; } throw e; }
+    const dt = v => v ? date(v) : "";
+    const access = r => r.membership_status === "active" ? (r.plan_code === "trial" ? t("signups.trial", { until: day(r.trial_until) }) : t("signups.member")) : t("signups.none");
+    const rows = d.items.map(r => "<tr><td>" + esc(r.phone) + "</td><td>" + esc(r.display_name || "") + "</td><td>" + esc(r.partner_name || r.utm_source || "") + "</td><td>" + esc(access(r)) + "</td><td>" + esc(dt(r.created_at)) + "</td><td>" + esc(dt(r.last_login_at)) + "</td></tr>").join("");
+    content.innerHTML = panel(t("signups.title"), t("signups.text", { n: d.total }),
+      '<form id="signups-form" class="inline-form"><input id="signups-q" type="search" value="' + esc(qv) + '" placeholder="' + esc(t("signups.search")) + '"><button class="outline-button">' + esc(t("signups.find")) + '</button><button type="button" class="primary-button" id="signups-csv">' + esc(t("signups.csv")) + "</button></form>" +
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("signups.source")) + "</th><th>" + esc(t("signups.access")) + "</th><th>" + esc(t("signups.joined")) + "</th><th>" + esc(t("signups.last")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("signups.empty")) + "</td></tr>") + "</tbody></table></div>");
+    content.querySelector("#signups-form").addEventListener("submit", e => { e.preventDefault(); adminSignups(); });
+    content.querySelector("#signups-csv").addEventListener("click", () => {
+      const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+      const lines = [["phone", "name", "source", "access", "joined", "last_login"].map(q).join(",")].concat(d.items.map(r => [r.phone, r.display_name, r.partner_name || r.utm_source, access(r), r.created_at, r.last_login_at].map(q).join(",")));
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+      a.download = "friends-signups.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    });
+  }
+
   async function adminPartners(openId) {
     let d;
     try { d = await api("/v1/admin/partners"); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.noAccess"), ""); return; } throw e; }

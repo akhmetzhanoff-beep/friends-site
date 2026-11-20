@@ -681,6 +681,9 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 
 .kind-pick{border:0;margin:0 0 12px;padding:0}.kind-pick legend{font-weight:600;margin-bottom:8px;padding:0}
 
+.offer-card{max-width:560px}.offer-scroll{max-height:56vh;overflow:auto;border:1px solid var(--line,rgba(255,255,255,.15));border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55}
+.offer-scroll h1{font-size:19px}.offer-scroll h2{font-size:16px;margin:16px 0 6px}.offer-scroll p{margin:0 0 8px}.offer-box{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
 .pilot-banner{position:relative;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#e7f3ff;color:#0a3f8c;font-size:12px;border-bottom:1px solid #cfe2fb}
 .pilot-banner strong{font-weight:700}
 .pilot-banner span{flex:1 1 220px;min-width:0}
@@ -5837,6 +5840,19 @@ var qrcode = function() {
     "blogger.status.trial": "пробный месяц до",
     "blogger.status.paid": "оплатил",
     "blogger.status.expired": "пробный месяц закончился",
+    "nav.adminBans": "Чёрный список",
+    "bans.title": "Чёрный список",
+    "bans.text": "Номера, которым закрыты регистрация и вход. Человек сразу выходит из приложения на всех устройствах.",
+    "bans.noAccess": "Раздел доступен только администраторам.",
+    "bans.reason": "Причина",
+    "bans.add": "Добавить в чёрный список",
+    "bans.added": "Номер добавлен в чёрный список.",
+    "bans.unban": "Разблокировать",
+    "bans.unbanConfirm": "Разблокировать {phone}?",
+    "bans.empty": "Чёрный список пуст.",
+    "bans.banShort": "Заблокировать",
+    "bans.reasonPrompt": "Заблокировать {phone}? Причина (необязательно):",
+    "error.account_blocked": "Доступ закрыт. Если это ошибка, напишите в Friends.",
     "nav.adminPartners": "Блогеры",
     "nav.host": "Провести встречу",
     "nav.recordings": "Записи встреч",
@@ -6449,6 +6465,14 @@ var qrcode = function() {
     "view.experts.subtitle": "Юристы, бухгалтеры, маркетологи и другие специалисты среди резидентов.",
     "view.adminExperts.title": "Модерация экспертов",
     "view.adminExperts.subtitle": "Проверьте карточки перед публикацией.",
+    "offer.open": "Прочитать договор-оферту и согласиться",
+    "offer.openUpdated": "Условия обновились: прочитать и согласиться",
+    "offer.notAccepted": "Не принят",
+    "offer.accepted": "Договор принят",
+    "offer.title": "Договор-оферта",
+    "offer.agree": "Я прочитал(а) и согласен(на)",
+    "offer.scrollHint": "Прокрутите текст до конца, чтобы нажать «Я согласен».",
+    "offer.loadFailed": "Не удалось загрузить текст. Откройте договор по ссылке и повторите:",
     "offer.label": "Я прочитал(а) и принимаю условия",
     "offer.labelUpdated": "Условия обновились. Я прочитал(а) и принимаю новую редакцию:",
     "offer.link": "договора-оферты Friends",
@@ -8042,6 +8066,19 @@ var qrcode = function() {
     "blogger.status.trial": "сынақ айы дейін",
     "blogger.status.paid": "төледі",
     "blogger.status.expired": "сынақ айы аяқталды",
+    "nav.adminBans": "Қара тізім",
+    "bans.title": "Қара тізім",
+    "bans.text": "Тіркелу мен кіру жабық нөмірлер. Адам барлық құрылғылардағы қосымшадан бірден шығады.",
+    "bans.noAccess": "Бөлім тек әкімшілерге қолжетімді.",
+    "bans.reason": "Себебі",
+    "bans.add": "Қара тізімге қосу",
+    "bans.added": "Нөмір қара тізімге қосылды.",
+    "bans.unban": "Бұғаттан шығару",
+    "bans.unbanConfirm": "{phone} бұғатын алу керек пе?",
+    "bans.empty": "Қара тізім бос.",
+    "bans.banShort": "Бұғаттау",
+    "bans.reasonPrompt": "{phone} бұғатталсын ба? Себебі (міндетті емес):",
+    "error.account_blocked": "Қолжетімділік жабық. Қателік болса, Friends-ке жазыңыз.",
     "nav.adminPartners": "Блогерлер",
     "nav.host": "Кездесу өткізу",
     "nav.recordings": "Кездесу жазбалары",
@@ -8654,6 +8691,14 @@ var qrcode = function() {
     "view.experts.subtitle": "Резиденттер арасындағы заңгерлер, бухгалтерлер, маркетологтар және басқа мамандар.",
     "view.adminExperts.title": "Сарапшыларды модерациялау",
     "view.adminExperts.subtitle": "Жарияламас бұрын карточкаларды тексеріңіз.",
+    "offer.open": "Оферта шартын оқып, келісу",
+    "offer.openUpdated": "Шарттар жаңарды: оқып, келісу",
+    "offer.notAccepted": "Қабылданбаған",
+    "offer.accepted": "Шарт қабылданды",
+    "offer.title": "Оферта шарты",
+    "offer.agree": "Мен оқыдым және келісемін",
+    "offer.scrollHint": "«Келісемін» түймесін басу үшін мәтінді соңына дейін айналдырыңыз.",
+    "offer.loadFailed": "Мәтін жүктелмеді. Шартты сілтемемен ашып, қайталаңыз:",
     "offer.label": "Мен оқыдым және шарттарын қабылдаймын:",
     "offer.labelUpdated": "Шарттар жаңартылды. Мен жаңа редакциясын оқыдым және қабылдаймын:",
     "offer.link": "Friends шарт-офертасы",
@@ -10247,6 +10292,19 @@ var qrcode = function() {
     "blogger.status.trial": "free month until",
     "blogger.status.paid": "paid",
     "blogger.status.expired": "free month ended",
+    "nav.adminBans": "Blacklist",
+    "bans.title": "Blacklist",
+    "bans.text": "Numbers blocked from registering and signing in. The person is signed out of the app on every device at once.",
+    "bans.noAccess": "Only administrators can open this section.",
+    "bans.reason": "Reason",
+    "bans.add": "Add to blacklist",
+    "bans.added": "Number added to the blacklist.",
+    "bans.unban": "Unblock",
+    "bans.unbanConfirm": "Unblock {phone}?",
+    "bans.empty": "The blacklist is empty.",
+    "bans.banShort": "Block",
+    "bans.reasonPrompt": "Block {phone}? Reason (optional):",
+    "error.account_blocked": "Access is closed. If this is a mistake, contact Friends.",
     "nav.adminPartners": "Bloggers",
     "nav.host": "Host a meetup",
     "nav.recordings": "Recordings",
@@ -10859,6 +10917,14 @@ var qrcode = function() {
     "view.experts.subtitle": "Lawyers, accountants, marketers and other specialists among the members.",
     "view.adminExperts.title": "Expert moderation",
     "view.adminExperts.subtitle": "Review cards before they are published.",
+    "offer.open": "Read the offer agreement and accept",
+    "offer.openUpdated": "Terms updated: read and accept",
+    "offer.notAccepted": "Not accepted",
+    "offer.accepted": "Agreement accepted",
+    "offer.title": "Offer agreement",
+    "offer.agree": "I have read and agree",
+    "offer.scrollHint": "Scroll the text to the end to enable “I agree”.",
+    "offer.loadFailed": "Could not load the text. Open the agreement by the link and try again:",
     "offer.label": "I have read and accept the",
     "offer.labelUpdated": "The terms have changed. I have read and accept the new edition of the",
     "offer.link": "Friends public offer",
@@ -11099,7 +11165,7 @@ var qrcode = function() {
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans"];
   const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
@@ -11121,7 +11187,7 @@ var qrcode = function() {
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -11311,6 +11377,20 @@ var qrcode = function() {
     }
   }
 
+  // Watermark with the account name and a masked phone: a deterrent against screenshots and a way to trace a leak.
+  function applyWatermark() {
+    document.querySelector("#wm")?.remove();
+    if (APP === "admin" || !user) return;
+    const nm = String((profile && profile.display_name) || "").split(" ")[0] || "";
+    const txt = [nm, user.phone_masked || ""].filter(Boolean).join(" ").replace(/[<>&"']/g, "");
+    if (!txt) return;
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='260' height='170'><text x='20' y='110' transform='rotate(-24 130 85)' font-family='sans-serif' font-size='15' fill='%23888' fill-opacity='0.16'>" + txt + "</text></svg>";
+    const el = document.createElement("div");
+    el.id = "wm"; el.setAttribute("aria-hidden", "true");
+    el.style.cssText = "position:fixed;inset:0;z-index:50;pointer-events:none;background-image:url(\"data:image/svg+xml;utf8," + encodeURIComponent(svg).replace(/'/g, "%27") + "\")";
+    document.body.appendChild(el);
+  }
+
   // After every sign-in: claim the free month (blogger link), ask new people for their profile and city, then show the app.
   async function afterSignIn(onboard) {
     await claimTrial();
@@ -11319,6 +11399,7 @@ var qrcode = function() {
     try { const pr = await api("/v1/me/profile"); needProfile = !pr.city_id; } catch (e) { if (e.status === 404) needProfile = true; }
     if (onboard && needProfile && APP !== "admin") { active = "profile"; try { sessionStorage.setItem("friends.welcome", "1"); } catch { /* none */ } }
     await render(active);
+    applyWatermark();
     if (onboard && needProfile && APP !== "admin") status(t("profile.welcome"));
     showTrialNotice();
   }
@@ -11744,12 +11825,28 @@ var qrcode = function() {
     }));
   }
 
+  // The contract is shown in full; "Agree" turns on only after the text is scrolled to the end.
+  async function readOffer() {
+    let html = "";
+    try { const r = await fetch("/offer.html", { cache: "no-store" }); if (r.ok) { const d = new DOMParser().parseFromString(await r.text(), "text/html"); const m = d.querySelector("#offer-text"); html = m ? m.innerHTML : ""; } } catch { /* offline */ }
+    return new Promise(resolve => {
+      const dlg = authDialog('<h3>' + esc(t("offer.title")) + '</h3><div class="offer-scroll" tabindex="0">' + (html || '<p>' + esc(t("offer.loadFailed")) + ' <a href="https://friendscommunity.kz/offer" target="_blank" rel="noopener noreferrer">friendscommunity.kz/offer</a></p>') + '</div><p class="muted offer-hint">' + esc(t("offer.scrollHint")) + '</p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="primary-button" data-ok disabled>' + esc(t("offer.agree")) + "</button></div>");
+      dlg.root.querySelector(".auth-card").classList.add("offer-card");
+      const sc = dlg.q(".offer-scroll"), ok = dlg.q("[data-ok]");
+      const check = () => { if (html && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 12) { ok.disabled = false; dlg.q(".offer-hint").hidden = true; } };
+      sc.addEventListener("scroll", check); setTimeout(check, 100);
+      dlg.q("[data-x]").addEventListener("click", () => { dlg.close(); resolve(false); });
+      ok.addEventListener("click", () => { dlg.close(); resolve(true); });
+    });
+  }
+
   async function profileView() {
     let p = profile;
     try { if (!p) p = await api("/v1/me/profile"); } catch (e) { if (e.status !== 404) throw e; }
     p = p || { display_name: user?.email?.split("@")[0] || "", headline: "", bio: "", avatar_url: "", visibility: "members", city_id: null };
     const needsConsent = !p.consent_accepted_at;
     const needsOffer = p.offer_acceptance_required !== false;
+    let offerAgreed = !needsOffer;
     const cities = (await api("/v1/cities").catch(() => ({ items: [] }))).items;
     const cityName = c => (I18N.getLocale() === "kk" && c.name_kk) || (I18N.getLocale() === "en" && c.name_en) || c.name;
     content.innerHTML = panel(t("profile.section"), t("profile.sectionText"),
@@ -11770,20 +11867,21 @@ var qrcode = function() {
           (privacyPolicyUrl ? '<a href="' + esc(safeUrl(privacyPolicyUrl)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("consent.link")) + "</a>" : esc(t("consent.link"))) + "</span></label>"
         : "") +
       (needsOffer
-        ? '<label class="consent-field"><input type="checkbox" name="offer_accepted" value="yes" required> <span>' + esc(t(p.offer_accepted_at ? "offer.labelUpdated" : "offer.label")) + " " +
-          (offerUrl ? '<a href="' + esc(safeUrl(offerUrl)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("offer.link")) + "</a>" : esc(t("offer.link"))) + "</span></label>"
+        ? '<div class="consent-field offer-box"><button type="button" class="outline-button" id="offer-open">' + esc(t(p.offer_accepted_at ? "offer.openUpdated" : "offer.open")) + '</button><span id="offer-state" class="muted">' + esc(t("offer.notAccepted")) + "</span></div>"
         : "") +
       '<button class="primary-button">' + esc(t("profile.save")) + "</button></form>") +
       '<div id="wa-box"></div><div id="nudge-box"></div><section class="danger-zone" aria-labelledby="delete-account-title"><h2 id="delete-account-title">' + esc(t("account.section")) + '</h2><p class="muted">' + esc(t("account.sectionText")) +
       '</p><button type="button" class="danger-button" id="delete-account">' + esc(t("account.delete")) + "</button></section>";
     document.querySelector("#delete-account").addEventListener("click", deleteAccount);
+    const offerBtn = document.querySelector("#offer-open");
+    if (offerBtn) offerBtn.addEventListener("click", async () => { if (await readOffer()) { offerAgreed = true; document.querySelector("#offer-state").textContent = t("offer.accepted"); offerBtn.hidden = true; } });
     whatsappBox().catch(() => { /* optional section */ });
     nudgeBox().catch(() => { /* optional section */ });
     document.querySelector("#profile-form").addEventListener("submit", async e => {
       e.preventDefault();
       const f = new FormData(e.currentTarget);
       if (needsConsent && f.get("consent_accepted") !== "yes") { status(t("consent.required"), true); return; }
-      if (needsOffer && f.get("offer_accepted") !== "yes") { status(t("offer.required"), true); return; }
+      if (needsOffer && !offerAgreed) { status(t("offer.required"), true); return; }
       try {
         profile = await api("/v1/me/profile", {
           method: "PUT",
@@ -12997,6 +13095,23 @@ var qrcode = function() {
 
   // ---------- Bloggers (promo partners): links, free month, funnel, bonuses ----------
   // Phone sign-ups: who came, from which blogger, with what access. CSV opens in Excel / Google Sheets.
+  async function adminBans() {
+    let d;
+    try { d = await api("/v1/admin/bans"); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("bans.title"), t("bans.noAccess"), ""); return; } throw e; }
+    const rows = d.items.map(r => "<tr><td>" + esc(r.phone) + "</td><td>" + esc(r.name || "") + "</td><td>" + esc(r.reason || "") + "</td><td>" + esc(date(r.created_at)) + '</td><td><button type="button" class="text-button" data-unban="' + esc(r.phone) + '">' + esc(t("bans.unban")) + "</button></td></tr>").join("");
+    content.innerHTML = panel(t("bans.title"), t("bans.text"),
+      '<form id="ban-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("bans.reason"), "reason", "", "text", 'maxlength="500"') + '<button class="primary-button">' + esc(t("bans.add")) + "</button></form>" +
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("bans.reason")) + "</th><th>" + esc(t("signups.joined")) + "</th><th></th></tr></thead><tbody>" + (rows || '<tr><td colspan="5">' + esc(t("bans.empty")) + "</td></tr>") + "</tbody></table></div>");
+    content.querySelector("#ban-form").addEventListener("submit", async e => {
+      e.preventDefault(); const f = new FormData(e.currentTarget);
+      try { await api("/v1/admin/bans", { method: "POST", body: JSON.stringify({ phone: String(f.get("phone")).replace(/[\s()-]/g, ""), reason: String(f.get("reason") || "").trim() || null }) }); status(t("bans.added")); await adminBans(); } catch (x) { status(x.message, true); }
+    });
+    content.querySelectorAll("[data-unban]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm(t("bans.unbanConfirm", { phone: b.dataset.unban }))) return;
+      try { await api("/v1/admin/bans/" + encodeURIComponent(b.dataset.unban), { method: "DELETE" }); await adminBans(); } catch (x) { status(x.message, true); }
+    }));
+  }
+
   async function adminSignups() {
     let d;
     const qv = (content.querySelector("#signups-q") || {}).value || "";
@@ -13006,8 +13121,13 @@ var qrcode = function() {
     const rows = d.items.map(r => "<tr><td>" + esc(r.phone) + "</td><td>" + esc(r.display_name || "") + "</td><td>" + esc(r.city || "") + "</td><td>" + esc(r.partner_name || r.utm_source || "") + "</td><td>" + esc(access(r)) + "</td><td>" + esc(dt(r.created_at)) + "</td><td>" + esc(dt(r.last_login_at)) + "</td></tr>").join("");
     content.innerHTML = panel(t("signups.title"), t("signups.text", { n: d.total }),
       '<form id="signups-form" class="inline-form"><input id="signups-q" type="search" value="' + esc(qv) + '" placeholder="' + esc(t("signups.search")) + '"><button class="outline-button">' + esc(t("signups.find")) + '</button><button type="button" class="primary-button" id="signups-csv">' + esc(t("signups.csv")) + "</button></form>" +
-      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("profile.city")) + "</th><th>" + esc(t("signups.source")) + "</th><th>" + esc(t("signups.access")) + "</th><th>" + esc(t("signups.joined")) + "</th><th>" + esc(t("signups.last")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="7">' + esc(t("signups.empty")) + "</td></tr>") + "</tbody></table></div>");
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.phone")) + "</th><th>" + esc(t("signups.name")) + "</th><th>" + esc(t("profile.city")) + "</th><th>" + esc(t("signups.source")) + "</th><th>" + esc(t("signups.access")) + "</th><th>" + esc(t("signups.joined")) + "</th><th>" + esc(t("signups.last")) + "</th><th></th></tr></thead><tbody>" + (rows || '<tr><td colspan="8">' + esc(t("signups.empty")) + "</td></tr>") + "</tbody></table></div>");
     content.querySelector("#signups-form").addEventListener("submit", e => { e.preventDefault(); adminSignups(); });
+    content.querySelectorAll("[data-ban-phone]").forEach(b => b.addEventListener("click", async () => {
+      const why = prompt(t("bans.reasonPrompt", { phone: b.dataset.banPhone }));
+      if (why === null) return;
+      try { await api("/v1/admin/bans", { method: "POST", body: JSON.stringify({ phone: b.dataset.banPhone, reason: why.trim() || null }) }); status(t("bans.added")); } catch (x) { status(x.message, true); }
+    }));
     content.querySelector("#signups-csv").addEventListener("click", () => {
       const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
       const lines = [["phone", "name", "city", "source", "access", "joined", "last_login"].map(q).join(",")].concat(d.items.map(r => [r.phone, r.display_name, r.city, r.partner_name || r.utm_source, access(r), r.created_at, r.last_login_at].map(q).join(",")));
@@ -14503,7 +14623,7 @@ var qrcode = function() {
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
+  const RENDERERS = { "admin-bans": adminBans, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

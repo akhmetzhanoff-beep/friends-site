@@ -657,3 +657,6 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .week-list span{color:var(--muted,#9aa3ad)}
 
 .kind-pick{border:0;margin:0 0 12px;padding:0}.kind-pick legend{font-weight:600;margin-bottom:8px;padding:0}
+
+.offer-card{max-width:560px}.offer-scroll{max-height:56vh;overflow:auto;border:1px solid var(--line,rgba(255,255,255,.15));border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55}
+.offer-scroll h1{font-size:19px}.offer-scroll h2{font-size:16px;margin:16px 0 6px}.offer-scroll p{margin:0 0 8px}.offer-box{display:flex;gap:12px;align-items:center;flex-wrap:wrap}

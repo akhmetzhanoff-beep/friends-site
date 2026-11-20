@@ -11,7 +11,7 @@ RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 # Old Tilda pages -> home page (keeps old links and search positions).
 RewriteRule ^page(01|02|60153321|155348503|155349083|164703303|166047403)(\.html)?$ / [L,R=301]
 # Short links of pages the stores ask for.
-RewriteRule ^(privacy|support|delete-account)/?$ $1.html [L]
+RewriteRule ^(privacy|support|delete-account|offer)/?$ $1.html [L]
 # Blogger links like /kappas open the landing (it reads the code from the path).
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

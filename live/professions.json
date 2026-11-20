@@ -1,0 +1,359 @@
+[
+ {
+  "id": "marketer",
+  "icon": "trend",
+  "title": {
+   "ru": "Маркетолог",
+   "kk": "Маркетолог",
+   "en": "Marketer"
+  },
+  "desc": {
+   "ru": "Стратегия, бренд, аналитика, сайт и контент: всё, чтобы вести маркетинг компании.",
+   "kk": "Стратегия, бренд, аналитика, сайт және контент: компанияның маркетингін жүргізу үшін.",
+   "en": "Strategy, brand, analytics, web and content: everything to run a company's marketing."
+  },
+  "courses": [
+   "marketing-positioning-usp",
+   "marketing-strategy-annual-plan",
+   "marketing-brand-identity",
+   "marketing-analytics-cac-ltv",
+   "marketing-website-seo",
+   "marketing-landing-conversion",
+   "marketing-content-short-video",
+   "smm-strategy-month",
+   "marketing-crm-email-whatsapp",
+   "marketing-reviews-reputation",
+   "marketing-event-marketing"
+  ],
+  "books": [
+   "book-22-laws-marketing-ries-trout",
+   "book-positioning-ries-trout",
+   "book-purple-cow-godin",
+   "book-this-is-marketing-godin",
+   "book-storybrand-miller",
+   "book-contagious-berger",
+   "book-ogilvy-on-advertising"
+  ],
+  "templates": [
+   "marketing-plan"
+  ]
+ },
+ {
+  "id": "targetologist",
+  "icon": "megaphone",
+  "title": {
+   "ru": "Таргетолог",
+   "kk": "Таргетолог",
+   "en": "Paid-social specialist"
+  },
+  "desc": {
+   "ru": "Платная реклама в Instagram и Meta: настройка, бюджет, посадочные страницы и окупаемость.",
+   "kk": "Instagram және Meta-дағы ақылы жарнама: баптау, бюджет, түсу беттері және өтелімділік.",
+   "en": "Paid ads on Instagram and Meta: setup, budget, landing pages and payback."
+  },
+  "courses": [
+   "marketing-positioning-usp",
+   "instagram-targeting-small-business",
+   "marketing-meta-ads",
+   "marketing-instagram-business",
+   "marketing-landing-conversion",
+   "marketing-analytics-cac-ltv",
+   "marketing-content-short-video",
+   "marketing-influencers",
+   "ai-marketing-content"
+  ],
+  "books": [
+   "book-ogilvy-on-advertising",
+   "book-made-to-stick-heath",
+   "book-contagious-berger"
+  ],
+  "templates": [
+   "marketing-plan"
+  ]
+ },
+ {
+  "id": "smm",
+  "icon": "phone",
+  "title": {
+   "ru": "SMM-менеджер",
+   "kk": "SMM-менеджер",
+   "en": "SMM manager"
+  },
+  "desc": {
+   "ru": "Соцсети компании: контент-план, Reels, блогеры, отзывы и личный бренд.",
+   "kk": "Компанияның әлеуметтік желілері: контент-жоспар, Reels, блогерлер, пікірлер және жеке бренд.",
+   "en": "Company social media: content plan, Reels, bloggers, reviews and personal brand."
+  },
+  "courses": [
+   "smm-strategy-month",
+   "marketing-instagram-business",
+   "marketing-content-short-video",
+   "marketing-influencers",
+   "marketing-reviews-reputation",
+   "owner-personal-brand",
+   "marketing-brand-identity",
+   "ai-content-for-business"
+  ],
+  "books": [
+   "book-contagious-berger",
+   "book-made-to-stick-heath",
+   "book-storybrand-miller"
+  ],
+  "templates": [
+   "marketing-plan"
+  ]
+ },
+ {
+  "id": "sales-manager",
+  "icon": "percent",
+  "title": {
+   "ru": "Менеджер по продажам",
+   "kk": "Сату менеджері",
+   "en": "Sales manager"
+  },
+  "desc": {
+   "ru": "От первого контакта до повторной продажи: скрипты, возражения, предложение, воронка.",
+   "kk": "Алғашқы байланыстан қайталама сатуға дейін: скрипттер, қарсылықтар, ұсыныс, воронка.",
+   "en": "From first contact to repeat sale: scripts, objections, proposal, funnel."
+  },
+  "courses": [
+   "sales-cold-calls",
+   "sales-whatsapp-instagram",
+   "sales-scripts-objections",
+   "sales-objections",
+   "sales-proposal-presentation",
+   "sales-pricing-discounts",
+   "sales-crm-pipeline",
+   "sales-retention",
+   "customer-service-repeat",
+   "sales-service-standards"
+  ],
+  "books": [
+   "book-spin-selling",
+   "book-challenger-sale",
+   "book-to-sell-is-human",
+   "book-never-split-difference-voss",
+   "book-fanatical-prospecting",
+   "book-exactly-what-to-say",
+   "book-little-red-book-selling"
+  ],
+  "templates": [
+   "sales-funnel",
+   "kpi-sales",
+   "dolzhnostnaya-menedzher-prodazh"
+  ]
+ },
+ {
+  "id": "head-of-sales",
+  "icon": "users",
+  "title": {
+   "ru": "Руководитель отдела продаж",
+   "kk": "Сату бөлімінің басшысы",
+   "en": "Head of sales"
+  },
+  "desc": {
+   "ru": "Строим и ведём отдел продаж: найм, план, KPI, мотивация, крупные сделки.",
+   "kk": "Сату бөлімін құру және басқару: жалдау, жоспар, KPI, ынталандыру, ірі мәмілелер.",
+   "en": "Build and run a sales team: hiring, plan, KPI, motivation, big deals."
+  },
+  "courses": [
+   "head-of-sales",
+   "sales-team-building",
+   "sales-plan-kpi",
+   "sales-crm-pipeline",
+   "sales-b2b-long-deals",
+   "sales-key-accounts",
+   "b2b-sales-tenders-kz",
+   "management-motivation-pay",
+   "management-kpi-okr",
+   "management-hiring"
+  ],
+  "books": [
+   "book-who-a-method-hiring",
+   "book-high-output-management",
+   "book-radical-candor",
+   "book-challenger-sale"
+  ],
+  "templates": [
+   "kpi-sales",
+   "sales-funnel"
+  ]
+ },
+ {
+  "id": "ai",
+  "icon": "star",
+  "title": {
+   "ru": "ИИ-специалист для бизнеса",
+   "kk": "Бизнеске арналған ЖИ маманы",
+   "en": "AI specialist for business"
+  },
+  "desc": {
+   "ru": "Нейросети в работе: ChatGPT, Claude, автоматизация, боты, сайты и приложения без кода.",
+   "kk": "Жұмыстағы нейрожелілер: ChatGPT, Claude, автоматтандыру, боттар, сайттар және кодсыз қолданбалар.",
+   "en": "AI at work: ChatGPT, Claude, automation, bots, sites and no-code apps."
+  },
+  "courses": [
+   "ai-start",
+   "chatgpt-for-business",
+   "claude-for-business",
+   "prompt-engineering",
+   "ai-for-business",
+   "ai-content-for-business",
+   "ai-sales-crm",
+   "ai-data-analytics",
+   "ai-agents-automation",
+   "ai-chatbots-agents",
+   "ai-websites",
+   "ai-app-building",
+   "ai-strategy-leadership"
+  ],
+  "books": [],
+  "templates": []
+ },
+ {
+  "id": "finance",
+  "icon": "business",
+  "title": {
+   "ru": "Финансовый менеджер",
+   "kk": "Қаржы менеджері",
+   "en": "Finance manager"
+  },
+  "desc": {
+   "ru": "Деньги бизнеса: ДДС, ОПиУ, бюджет, юнит-экономика, налоги и финансовая модель.",
+   "kk": "Бизнестің ақшасы: ДДС, ПЗТ, бюджет, юнит-экономика, салықтар және қаржылық модель.",
+   "en": "Business money: cash flow, P&L, budget, unit economics, taxes and financial model."
+  },
+  "courses": [
+   "owner-finance",
+   "finance-cash-flow",
+   "finance-pnl-margin",
+   "finance-management-accounting",
+   "finance-annual-budget",
+   "finance-costing-pricing",
+   "unit-economics-metrics",
+   "finance-model-breakeven",
+   "financial-model-weekend",
+   "finance-taxes-kz",
+   "payroll-taxes-kz"
+  ],
+  "books": [
+   "book-financial-intelligence-entrepreneurs",
+   "book-profit-first-michalowicz",
+   "book-psychology-of-money-housel"
+  ],
+  "templates": [
+   "dds",
+   "opiu",
+   "payment-calendar",
+   "breakeven"
+  ]
+ },
+ {
+  "id": "hr",
+  "icon": "users",
+  "title": {
+   "ru": "HR-менеджер",
+   "kk": "HR-менеджер",
+   "en": "HR manager"
+  },
+  "desc": {
+   "ru": "Найм, адаптация, мотивация, трудовое право, обратная связь и командная культура.",
+   "kk": "Жалдау, бейімдеу, ынталандыру, еңбек құқығы, кері байланыс және командалық мәдениет.",
+   "en": "Hiring, onboarding, motivation, labour law, feedback and team culture."
+  },
+  "courses": [
+   "management-hiring",
+   "hiring-small-business",
+   "management-onboarding",
+   "management-motivation-pay",
+   "hr-analytics-metrics",
+   "legal-labor-employer",
+   "legal-personal-data",
+   "hr-dismissal-employee",
+   "team-conflicts",
+   "management-feedback-1on1",
+   "management-culture"
+  ],
+  "books": [
+   "book-who-a-method-hiring",
+   "book-five-dysfunctions",
+   "book-radical-candor",
+   "book-culture-code"
+  ],
+  "templates": [
+   "trudovoy-dogovor",
+   "dolzhnostnaya-menedzher-prodazh"
+  ]
+ },
+ {
+  "id": "manager",
+  "icon": "calendar",
+  "title": {
+   "ru": "Руководитель и управляющий",
+   "kk": "Басшы және басқарушы",
+   "en": "Manager and operations lead"
+  },
+  "desc": {
+   "ru": "Лидерство, делегирование, регламенты, цели и ритм работы команды.",
+   "kk": "Көшбасшылық, өкілеттік беру, регламенттер, мақсаттар және команда жұмысының ырғағы.",
+   "en": "Leadership, delegation, processes, goals and team rhythm."
+  },
+  "courses": [
+   "management-leadership",
+   "management-delegation",
+   "management-processes",
+   "operations-regulations",
+   "management-kpi-okr",
+   "owner-week-time-management",
+   "project-management-kanban-sprints",
+   "remote-hybrid-teams",
+   "emotional-intelligence-leader",
+   "growth-negotiation-harvard"
+  ],
+  "books": [
+   "book-e-myth-revisited",
+   "book-good-to-great",
+   "book-hard-thing-about-hard-things",
+   "book-scaling-up-harnish",
+   "book-extreme-ownership",
+   "book-leaders-eat-last"
+  ],
+  "templates": []
+ },
+ {
+  "id": "entrepreneur",
+  "icon": "star",
+  "title": {
+   "ru": "Предприниматель: мини-MBA",
+   "kk": "Кәсіпкер: мини-MBA",
+   "en": "Entrepreneur: mini-MBA"
+  },
+  "desc": {
+   "ru": "Путь от идеи до работающего бизнеса: мини-MBA, бизнес-план, проверка спроса, стратегия.",
+   "kk": "Идеядан жұмыс істейтін бизнеске дейінгі жол: мини-MBA, бизнес-жоспар, сұранысты тексеру, стратегия.",
+   "en": "From idea to a working business: mini-MBA, business plan, demand testing, strategy."
+  },
+  "courses": [
+   "mini-mba-friends",
+   "business-plan-launch",
+   "customer-development",
+   "growth-strategy-one-page",
+   "growth-unit-economics",
+   "legal-ip-or-too",
+   "finance-taxes-kz",
+   "marketing-positioning-usp",
+   "sales-system"
+  ],
+  "books": [
+   "book-lean-startup",
+   "book-zero-to-one",
+   "book-start-with-why",
+   "book-personal-mba-kaufman",
+   "book-e-myth-revisited"
+  ],
+  "templates": [
+   "breakeven",
+   "dds"
+  ]
+ }
+]

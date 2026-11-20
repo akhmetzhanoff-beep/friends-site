@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -437,8 +437,8 @@
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
-    notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+    notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -1379,6 +1379,43 @@
   // Course cover illustration: category colour, emoji and a pattern seeded by the slug (no image files needed).
   const COVER = { sales: ["#1468d8", "#4fa3ff", "briefcase"], marketing: ["#c2306b", "#ff7aa8", "megaphone"], finance: ["#127a4a", "#3fd08a", "bank"], management: ["#6b3fd1", "#a98bff", "users"],
     growth: ["#b45a00", "#ffb04f", "trend"], ai: ["#0b6c8a", "#3cd2f0", "spark"], legal: ["#41506b", "#9fb0cf", "scale"], books: ["#3d2f8f", "#8c7ae6", "book"], other: ["#7a4b14", "#e3a35b", "store"] };
+  // ---------- Professions: learning paths made of courses, books and templates ----------
+  let profOpen = null;
+  async function professions() {
+    let list = [], tpl = [];
+    try { list = await (await fetch("professions.json", { cache: "no-cache" })).json(); } catch { list = []; }
+    try { tpl = await (await fetch("templates/manifest.json", { cache: "no-cache" })).json(); } catch { tpl = []; }
+    const access = await api("/v1/learn/access");
+    const d = await api("/v1/learn/courses");
+    const bySlug = Object.fromEntries(d.items.map(c => [c.slug, c]));
+    const lang = ["kk", "en"].includes(I18N.getLocale()) ? I18N.getLocale() : "ru";
+    const L = o => (o && (o[lang] || o.ru)) || "";
+    const stats = p => {
+      const cs = p.courses.map(slug => bySlug[slug]).filter(Boolean);
+      const total = cs.reduce((a, c) => a + c.lesson_count, 0), done = cs.reduce((a, c) => a + c.completed_count, 0);
+      return { cs, total, done, pct: total ? Math.round(done / total * 100) : 0, finished: cs.length > 0 && cs.every(c => c.lesson_count && c.completed_count >= c.lesson_count) };
+    };
+    if (profOpen) {
+      const p = list.find(x => x.id === profOpen);
+      if (p) {
+        const st = stats(p);
+        const steps = st.cs.map((c, i) => '<li class="lesson-row"><button type="button" class="lesson-link" data-prof-course="' + esc(c.slug) + '"><span class="lesson-num' + (c.lesson_count && c.completed_count >= c.lesson_count ? " done" : "") + '" aria-hidden="true">' + (c.lesson_count && c.completed_count >= c.lesson_count ? "✓" : i + 1) + "</span><span><strong>" + esc(c.title) + "</strong><small>" + esc(t("learn.meta", { lessons: c.lesson_count, minutes: c.duration_min })) + (c.locked ? " · " + esc(t("prof.locked")) : "") + "</small></span></button></li>").join("");
+        const books = p.books.map(b => bySlug[b]).filter(Boolean).map(c => '<button type="button" class="chip-tab" data-prof-course="' + esc(c.slug) + '">' + esc(c.title.split(" — ")[0]) + "</button>").join("");
+        const tpls = p.templates.map(f => tpl.find(x => x.file === "templates/" + f + ".xlsx" || x.file === "templates/" + f + ".docx")).filter(Boolean).map(x => '<a class="chip-tab" href="' + esc(x.file) + '" download>' + esc(x.title) + "</a>").join("");
+        content.innerHTML = '<button type="button" class="text-button" id="prof-back">← ' + esc(t("prof.all")) + "</button>" +
+          panel(L(p.title), L(p.desc), progressBar(st.done, st.total) + (st.finished ? '<p class="demo-note">' + esc(t("prof.finished")) + "</p>" : "") + '<h3>' + esc(t("prof.steps")) + '</h3><ol class="lesson-list">' + steps + "</ol>" +
+            (books ? "<h3>" + esc(t("prof.books")) + '</h3><div class="chip-tabs">' + books + "</div>" : "") + (tpls ? "<h3>" + esc(t("prof.templates")) + '</h3><div class="chip-tabs">' + tpls + "</div>" : ""));
+        content.querySelector("#prof-back").addEventListener("click", () => { profOpen = null; render("professions"); });
+        content.querySelectorAll("[data-prof-course]").forEach(b => b.addEventListener("click", () => { learnCourse = b.dataset.profCourse; render("course"); }));
+        return;
+      }
+    }
+    const cards = list.map(p => { const st = stats(p); return '<article class="invoice-card course-card"><div class="invoice-top"><div><span class="pill">' + ic(p.icon || "star", "ic-inline") + " " + esc(t("prof.pill")) + "</span><h3>" + esc(L(p.title)) + "</h3><small>" + esc(t("prof.meta", { courses: st.cs.length, books: p.books.length })) + "</small></div></div><p>" + esc(L(p.desc)) + "</p>" + progressBar(st.done, st.total) +
+      '<div class="receipt-actions"><button class="primary-button" data-prof="' + esc(p.id) + '">' + esc(t(st.done ? (st.finished ? "learn.review" : "learn.continue") : "learn.start")) + "</button></div></article>"; }).join("");
+    content.innerHTML = panel(t("prof.title"), t("prof.text"), '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t("learn.empty")) + "</p>") + "</div>");
+    content.querySelectorAll("[data-prof]").forEach(b => b.addEventListener("click", () => { profOpen = b.dataset.prof; render("professions"); }));
+  }
+
   // Real book covers (small copies kept next to the app); books without one keep the drawn cover.
   let coverManifest = null;
   async function loadCovers() {
@@ -3742,7 +3779,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings, templates };
+  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

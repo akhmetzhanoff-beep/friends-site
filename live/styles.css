@@ -712,3 +712,4 @@ body.has-player .main{padding-bottom:calc(160px + env(safe-area-inset-bottom,0px
 @media (min-width:700px){.mini-player{left:auto;right:16px;bottom:16px;width:420px}}
 .book-audio .primary-button{background:#fff;color:#0f5bc4;border:0}
 .book-audio .primary-button .ic{color:#0f5bc4}
+a.chip-tab{text-decoration:none;color:inherit}

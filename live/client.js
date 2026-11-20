@@ -157,22 +157,6 @@
     el.classList.toggle("error", error);
   }
 
-  async function emailLogin() {
-    try {
-      const email = prompt(t("auth.emailPrompt"));
-      if (!email || !email.trim()) return;
-      const normalized = email.trim().toLowerCase();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) { status(t("auth.emailInvalid"), true); return; }
-      const client = await authClient();
-      const { error } = await client.auth.signInWithOtp({ email: normalized, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true } });
-      if (error) throw error;
-      status(t("auth.emailSent", { email: normalized }));
-    } catch (e) {
-      status(e.message || t("auth.emailFailed"), true);
-    }
-  }
-
-
   // ---------- Own sign-in dialogs: phone with a mask, code that fills itself from the SMS ----------
   function authDialog(html) {
     const wrap = document.createElement("div");
@@ -578,11 +562,9 @@
     setHeading("overview");
     setTimeout(() => { expertInviteBanner(); inviteBanner(); }, 0);
     content.innerHTML = '<div class="empty-panel login-panel"><div class="brand-mark" aria-hidden="true">f</div><p class="eyebrow">' + esc(t("login.eyebrow")) + "</p><h2>" + esc(t("login.title")) + "</h2><p>" + esc(t("login.text")) +
-      '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button><button class="outline-button" id="login-email">' + esc(t("login.email")) +
-      '</button></div>' + (ownAuth ? "" : '<div class="demo-note">' + esc(t("login.note")) + "</div>") + "</div>" + installCard();
+      '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button>' +
+      '</div>' + (ownAuth ? "" : '<div class="demo-note">' + esc(t("login.note")) + "</div>") + "</div>" + installCard();
     document.querySelector("#login-main").addEventListener("click", login);
-    if (ownAuth) document.querySelector("#login-email").hidden = true;
-    else document.querySelector("#login-email").addEventListener("click", emailLogin);
   }
 
   const field = (label, name, value = "", type = "text", attrs = "") =>

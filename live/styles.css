@@ -640,25 +640,25 @@ a.primary-button,a.outline-button{display:inline-block;text-decoration:none}
 .day-info{margin-top:14px;display:grid;gap:6px}
 
 .auth-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px 16px;padding-top:12vh;background:rgba(0,0,0,.55)}
-.auth-card{width:100%;max-width:380px;background:var(--surface,#1d1f21);color:inherit;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:18px;padding:22px;display:grid;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.auth-card{width:100%;max-width:380px;background:var(--fb-card,#1d1f21);color:inherit;border:1px solid var(--fb-line,rgba(255,255,255,.12));border-radius:18px;padding:22px;display:grid;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
 .auth-card h3{margin:0;font-size:20px}
 .auth-card p{margin:0}
-.auth-input{width:100%;font:inherit;font-size:22px;font-weight:600;padding:14px 16px;border-radius:12px;border:1px solid var(--line,rgba(255,255,255,.2));background:transparent;color:inherit;letter-spacing:.02em}
+.auth-input{width:100%;font:inherit;font-size:22px;font-weight:600;padding:14px 16px;border-radius:12px;border:1px solid var(--fb-line,rgba(255,255,255,.2));background:transparent;color:inherit;letter-spacing:.02em}
 .auth-input:focus{outline:2px solid var(--accent,#4a8cf0);outline-offset:1px}
 .auth-code{text-align:center;font-size:30px;letter-spacing:.35em}
 .auth-error{color:#ff7a7a;font-size:14px}
 .auth-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 
-.week-card{background:var(--surface,#1d1f21);border:1px solid var(--line,rgba(255,255,255,.12));border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.week-card{background:var(--fb-card,#1d1f21);border:1px solid var(--fb-line,rgba(255,255,255,.12));border-radius:16px;padding:16px 18px;margin-bottom:14px}
 .week-card h3{margin:0 0 10px;font-size:18px}
 .week-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.week-list li{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline;border-top:1px solid var(--line,rgba(255,255,255,.08));padding-top:8px}
+.week-list li{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline;border-top:1px solid var(--fb-line,rgba(255,255,255,.08));padding-top:8px}
 .week-list li:first-child{border-top:0;padding-top:0}
-.week-list span{color:var(--muted,#9aa3ad)}
+.week-list span{color:var(--fb-text-2,#9aa3ad)}
 
 .kind-pick{border:0;margin:0 0 12px;padding:0}.kind-pick legend{font-weight:600;margin-bottom:8px;padding:0}
 
-.offer-card{max-width:560px}.offer-scroll{max-height:56vh;overflow:auto;border:1px solid var(--line,rgba(255,255,255,.15));border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55}
+.offer-card{max-width:560px}.offer-scroll{max-height:56vh;overflow:auto;border:1px solid var(--fb-line,rgba(255,255,255,.15));border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55}
 .offer-scroll h1{font-size:19px}.offer-scroll h2{font-size:16px;margin:16px 0 6px}.offer-scroll p{margin:0 0 8px}.offer-box{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
 .clock-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,.92);padding:16px}

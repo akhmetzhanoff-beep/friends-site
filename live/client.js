@@ -214,7 +214,7 @@
       });
       const done = v => { dlg.close(); resolve(v); };
       dlg.q("[data-x]").addEventListener("click", () => done(null));
-      const go = channel => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done({ phone: v, channel: wa && !isKzPhone(v) ? "whatsapp" : channel }); };
+      const go = channel => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done({ phone: v, channel: isKzPhone(v) ? "sms" : (wa ? "whatsapp" : channel) }); }; // Kazakhstan: SMS only (WhatsApp is not delivered there yet)
       dlg.q("[data-ok]").addEventListener("click", () => go("sms"));
       dlg.q("[data-wa]")?.addEventListener("click", () => go("whatsapp"));
       input.addEventListener("keydown", e => { if (e.key === "Enter") go("sms"); });
@@ -268,7 +268,7 @@
     }
     for (;;) {
       const send = async ch2 => { const d = await ownPost("/v1/auth/sms/request", { phone, channel: ch2 }); if (d && d.channel && d.channel !== ch2) channel = d.channel; return d; };
-      const r = await askCode(phone, () => send(channel), channel, ch.whatsapp ? () => send(channel === "whatsapp" ? "sms" : "whatsapp") : null);
+      const r = await askCode(phone, () => send(channel), channel, ch.whatsapp && !isKzPhone(phone) ? () => send(channel === "whatsapp" ? "sms" : "whatsapp") : null);
       if (!r) return null;
       if (r.switchTo) { channel = r.switchTo; continue; }
       try { storeSession(await ownPost("/v1/auth/sms/verify", { phone, code: r.code })); return phone; }

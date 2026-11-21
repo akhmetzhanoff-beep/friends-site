@@ -235,12 +235,11 @@
   // Watermark with the account name and a masked phone: a deterrent against screenshots and a way to trace a leak.
   function applyWatermark() {
     document.querySelector("#wm")?.remove();
-    return; // off: the owner wants a clean look, not content protection
     if (APP === "admin" || !user) return;
     const nm = String((profile && profile.display_name) || "").split(" ")[0] || "";
     const txt = [nm, user.phone_masked || ""].filter(Boolean).join(" ").replace(/[<>&"']/g, "");
     if (!txt) return;
-    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='260' height='170'><text x='20' y='110' transform='rotate(-24 130 85)' font-family='sans-serif' font-size='15' fill='%23888' fill-opacity='0.16'>" + txt + "</text></svg>";
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='340' height='240'><text x='20' y='110' transform='rotate(-24 170 120)' font-family='sans-serif' font-size='13' fill='%23888' fill-opacity='0.09'>" + txt + "</text></svg>";
     const el = document.createElement("div");
     el.id = "wm"; el.setAttribute("aria-hidden", "true");
     el.style.cssText = "position:fixed;inset:0;z-index:50;pointer-events:none;background-image:url(\"data:image/svg+xml;utf8," + encodeURIComponent(svg).replace(/'/g, "%27") + "\")";

@@ -235,6 +235,7 @@
   // Watermark with the account name and a masked phone: a deterrent against screenshots and a way to trace a leak.
   function applyWatermark() {
     document.querySelector("#wm")?.remove();
+    return; // off by the owner's decision: no visible watermark
     if (APP === "admin" || !user) return;
     const nm = String((profile && profile.display_name) || "").split(" ")[0] || "";
     const txt = [nm, user.phone_masked || ""].filter(Boolean).join(" ").replace(/[<>&"']/g, "");

@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", "partner-apply": "partnerApply", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -441,7 +441,7 @@
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
-    notifications: "messages", chat: "messages", host: "overview", blogger: "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
+    notifications: "messages", chat: "messages", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
   const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
@@ -3177,6 +3177,20 @@
     ["me.groupApp", [["settings", "gear"]]]
   ];
   // Blogger cabinet: own funnel and bonus. Opens from the "me" page when a partner is linked to this account.
+  // Anyone can become a partner in one step: name and surname, the phone they signed in with is their identity.
+  async function partnerApply() {
+    try { const have = await api("/v1/me/partner"); if (have && have.partner) { active = "blogger"; return blogger(); } } catch { /* not a partner yet */ }
+    content.innerHTML = panel(t("partnerApply.title"), t("partnerApply.text"),
+      '<form id="apply-form" class="app-form">' + field(t("partnerApply.first"), "first_name", profile?.display_name ? String(profile.display_name).split(" ")[0] : "", "text", 'required maxlength="40" autocomplete="given-name"') +
+      field(t("partnerApply.last"), "last_name", profile?.display_name ? String(profile.display_name).split(" ").slice(1).join(" ") : "", "text", 'required maxlength="40" autocomplete="family-name"') +
+      '<button class="primary-button">' + esc(t("partnerApply.go")) + "</button></form>");
+    content.querySelector("#apply-form").addEventListener("submit", async e => {
+      e.preventDefault(); const f = new FormData(e.currentTarget);
+      try { await api("/v1/me/partner/apply", { method: "POST", body: JSON.stringify({ first_name: String(f.get("first_name")).trim(), last_name: String(f.get("last_name")).trim() }) }); status(t("partnerApply.done")); await render("blogger"); }
+      catch (x) { status(x.code === "invalid_name" ? t("partnerApply.badName") : x.message, true); }
+    });
+  }
+
   async function blogger() {
     let d;
     try { d = await api("/v1/me/partner"); } catch (e) { content.innerHTML = panel(t("blogger.title"), t("blogger.none"), ""); return; }
@@ -3206,7 +3220,7 @@
     content.innerHTML = '<section class="me-head"><div class="member-avatar big" aria-hidden="true">' + esc((name || "?").slice(0, 1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p class="muted">' + esc(user?.email || "") + '</p><span class="pill">' + esc(sub) + "</span></div></section>" +
       (APP === "pilot" ? pilotModeCard() : "") +
       (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><a class="me-row" href="' + esc(WA_URL) + '" target="_blank" rel="noopener noreferrer"><span class="me-ic">' + ic("chat") + "</span><span>" + esc(t("wa.writeUs")) + '</span><span class="me-go">›</span></a></div></section>') +
-      (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : "") +
+      (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="partner-apply"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("partnerApply.tile")) + '</span><span class="me-go">›</span></button></div></section>')) +
       ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i, l]) => row(v, i, l)).join("") + "</div></section>").join("") +
       (extra.length ? '<section class="me-group"><h3>' + esc(t("services.more")) + '</h3><div class="me-list" id="me-extra"></div></section>' : "") +
       '<div class="receipt-actions"><button type="button" class="outline-button" id="me-logout">' + ic("logout", "ic-inline") + " " + esc(t("auth.logout")) + "</button></div>";
@@ -3830,7 +3844,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, host, recordings, templates, professions };
+  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

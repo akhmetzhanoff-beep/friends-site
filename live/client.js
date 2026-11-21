@@ -561,8 +561,7 @@
     const ref = (q.get("ref") || q.get("b") || "").trim().toLowerCase() || null;
     const inv = { ref, utm_source: q.get("utm_source"), utm_medium: q.get("utm_medium"), utm_campaign: q.get("utm_campaign") };
     if (!inv.ref && !inv.utm_source) return;
-    const prev = readInvite();
-    if (prev && prev.ref) return;
+    // an explicit newer link replaces an older stored one (the person opened this blogger's link last)
     store.set(INVITE_KEY, JSON.stringify(inv));
   }
   async function inviteBanner() {

@@ -239,7 +239,9 @@ var BLOGGERS = {
 var VIDEOS = ["jZfzWBlJPgA","eNyRFP3947Y","Kv6A1CAVfco","ZnmGq8eBz6k","3E-mzqSy6DQ","x1pbr3Mc4zk"];
 function q(k){try{return new URLSearchParams(location.search).get(k)}catch(e){return null}}
 var seg=(location.pathname.split("/").filter(Boolean).pop()||"").toLowerCase();
-var code=(q("b")||q("ref")||(BLOGGERS[seg]?seg:"")||"").toLowerCase().trim();
+var RESERVED={"":1,"index.html":1,"privacy":1,"support":1,"delete-account":1,"offer":1,"live":1,"app":1,"admin":1,"kk":1,"ru":1,"en":1,"stats":1,"academy":1,"server":1,"landing":1,"terms":1};
+var segCode=(/^[a-z0-9_-]{2,40}$/.test(seg)&&!RESERVED[seg])?seg:"";
+var code=(q("b")||q("ref")||segCode||"").toLowerCase().replace(/[^a-z0-9_-]/g,"").trim();
 try{ if(code) localStorage.setItem("fr_ref",code); else code=localStorage.getItem("fr_ref")||""; }catch(e){}
 var B=BLOGGERS[code];
 var source=B?code:(code||"site");

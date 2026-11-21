@@ -13792,10 +13792,8 @@ var qrcode = function() {
     const form = '<form id="partner-form" class="app-form">' + field(t("adminPartners.name"), "name", "", "text", 'required minlength="2" maxlength="120"') +
       field(t("adminPartners.code"), "code", "", "text", 'required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,39}" placeholder="kappas"') +
       field(t("adminPartners.contact"), "contact", "", "text", 'maxlength="200"') +
-      '<div class="form-grid">' + field(t("adminPartners.trialDays"), "trial_days", "30", "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", "20", "number", 'min="0" max="100" step="0.5"') +
-      field(t("adminPartners.renewalPct"), "renewal_bonus_pct", "10", "number", 'min="0" max="100" step="0.5"') + field(t("adminPartners.renewalMonths"), "renewal_months", "12", "number", 'min="0" max="120"') +
-      field(t("adminPartners.fixedKzt"), "fixed_bonus_kzt", "0", "number", 'min="0" step="1000"') + "</div>" +
-      field(t("adminPartners.tiers"), "tiers", "", "text", 'placeholder="20,10" maxlength="40"') + '<p class="muted">' + esc(t("adminPartners.tiersHint")) + "</p>" +
+      '<div class="form-grid">' + field(t("adminPartners.trialDays"), "trial_days", "30", "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", "40", "number", 'min="0" max="100" step="0.5"') + "</div>" +
+      field(t("adminPartners.tiers"), "tiers", "20,10", "text", 'placeholder="20,10" maxlength="40"') + '<p class="muted">' + esc(t("adminPartners.tiersHint")) + "</p>" +
       field(t("adminPartners.ownerPhone"), "owner_phone", "", "tel", 'placeholder="+7 701 123 45 67" inputmode="tel"') + '<p class="muted">' + esc(t("adminPartners.ownerHint")) + "</p>" +
       '<button class="primary-button">' + esc(t("adminPartners.add")) + "</button></form>";
     content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.text"), totals) +
@@ -13807,7 +13805,7 @@ var qrcode = function() {
       const num = k => Number(f.get(k) || 0);
       try {
         await api("/v1/admin/partners", { method: "POST", body: JSON.stringify({ name: String(f.get("name")).trim(), code: String(f.get("code")).trim().toLowerCase(), contact: String(f.get("contact") || "").trim() || null,
-          trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: num("renewal_bonus_pct"), renewal_months: num("renewal_months"), fixed_bonus_kzt: num("fixed_bonus_kzt"),
+          trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: (parseTiers(f.get("tiers")) || [20])[0], renewal_months: 12, fixed_bonus_kzt: 0,
           renewal_tiers: parseTiers(f.get("tiers")), ...(String(f.get("owner_phone") || "").trim() ? { owner_phone: String(f.get("owner_phone")).replace(/[ ()-]/g, "") } : {}) }) });
         status(t("adminPartners.added")); await adminPartners();
       } catch (x) { status(x.code === "code_taken" ? t("adminPartners.codeTaken") : x.code === "owner_not_signed_in" ? t("adminPartners.ownerNotSignedIn") : x.message, true); }
@@ -13838,8 +13836,7 @@ var qrcode = function() {
       if (!p || !box) return;
       if (box.innerHTML) { box.innerHTML = ""; return; }
       box.innerHTML = '<form class="app-form" data-edit-form="' + esc(id) + '"><div class="form-grid">' +
-        field(t("adminPartners.trialDays"), "trial_days", p.trial_days, "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", Number(p.first_bonus_pct), "number", 'min="0" max="100" step="0.5"') +
-        field(t("adminPartners.renewalPct"), "renewal_bonus_pct", Number(p.renewal_bonus_pct), "number", 'min="0" max="100" step="0.5"') + field(t("adminPartners.renewalMonths"), "renewal_months", p.renewal_months, "number", 'min="0" max="120"') + "</div>" +
+        field(t("adminPartners.trialDays"), "trial_days", p.trial_days, "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", Number(p.first_bonus_pct), "number", 'min="0" max="100" step="0.5"') + "</div>" +
         field(t("adminPartners.tiers"), "tiers", (p.renewal_tiers || []).join(","), "text", 'placeholder="20,10"') +
         field(t("adminPartners.ownerPhone"), "owner_phone", p.owner_phone || "", "tel", 'placeholder="+7 701 123 45 67"') +
         '<button class="primary-button">' + esc(t("adminPartners.save")) + "</button></form>";
@@ -13847,7 +13844,7 @@ var qrcode = function() {
         e.preventDefault();
         const f = new FormData(e.currentTarget), num = k => Number(f.get(k) || 0), ph = String(f.get("owner_phone") || "").replace(/[ ()-]/g, "");
         try {
-          await api("/v1/admin/partners/" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), renewal_bonus_pct: num("renewal_bonus_pct"), renewal_months: num("renewal_months"), renewal_tiers: parseTiers(f.get("tiers")), owner_phone: ph || null }) });
+          await api("/v1/admin/partners/" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ trial_days: num("trial_days"), first_bonus_pct: num("first_bonus_pct"), ...(parseTiers(f.get("tiers")) ? { renewal_bonus_pct: parseTiers(f.get("tiers"))[0] } : {}), renewal_tiers: parseTiers(f.get("tiers")), owner_phone: ph || null }) });
           status(t("adminPartners.saved")); await adminPartners();
         } catch (x) { status(x.code === "owner_not_signed_in" ? t("adminPartners.ownerNotSignedIn") : x.message, true); }
       });

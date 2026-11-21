@@ -396,7 +396,7 @@ html[data-theme="dark"] .free-pill{background:#1f3a2a;color:#8fe0aa}
 .svc-settings{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 .svc-settings h2{width:100%}
 .chat-list{display:grid;gap:4px}
-.chat-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 8px;border:0;border-radius:10px;background:transparent;color:inherit;text-align:left;cursor:pointer;min-height:60px}
+.chat-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 8px;border:0;border-radius:10px;background:transparent;color:inherit;text-align:left;cursor:pointer;min-height:60px;min-width:0;max-width:100%;overflow:hidden;box-sizing:border-box}
 .chat-row:hover{background:var(--fb-hover,#f2f2f2)}
 .chat-avatar{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--fb-blue-soft,#e7f3ff);color:var(--fb-blue,#1468d8);font-weight:800;font-size:18px;flex:0 0 auto}
 .chat-main{flex:1;min-width:0}.chat-main strong{display:block}

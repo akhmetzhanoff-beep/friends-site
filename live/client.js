@@ -97,6 +97,10 @@
     gift: "M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C10 5 6 5 6 7.5S9 9 12 9s6-.5 6-1.5S14 5 12 9",
     lock: "M6 11h12v10H6zM8 11V8a4 4 0 0 1 8 0v3",
     speaker: "M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12",
+    attach: "M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.9-8.9a3.7 3.7 0 0 1 5.2 5.2l-8.9 8.9a1.8 1.8 0 0 1-2.6-2.6l8.2-8.2",
+    smile: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14a4.5 4.5 0 0 0 7 0M9 9.5h.01M15 9.5h.01",
+    file: "M7 3h7l5 5v13H7zM14 3v5h5",
+    send: "M4 12l16-8-6 16-3-7z",
     stop: "M7 7h10v10H7z",
     deal: "M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1",
     building: "M5 21V4h10v17M15 9h4v12M3 21h18M8 8h1M11 8h1M8 12h1M11 12h1M8 16h1M11 16h1",
@@ -3281,8 +3285,29 @@
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
   }
+  const linkify = text => esc(text).replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g, u => '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + "</a>");
+  const fileSize = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+  const attachHtml = a => {
+    const url = esc((apiBase || "") + a.url);
+    if (a.kind === "image") return '<a class="msg-img" href="' + url + '" target="_blank" rel="noopener noreferrer"><img src="' + url + '" alt="' + esc(a.name) + '" loading="lazy"></a>';
+    if (a.kind === "video") return '<video class="msg-video" controls preload="metadata" playsinline src="' + url + '"></video>';
+    return '<a class="msg-file" href="' + url + '" target="_blank" rel="noopener noreferrer">' + ic("file", "ic-inline") + '<span><strong>' + esc(a.name) + "</strong><small>" + esc(fileSize(a.size)) + "</small></span></a>";
+  };
   const bubble = m => '<div class="msg' + (m.mine ? " mine" : "") + '" data-msg="' + esc(m.id) + '">' + (m.mine ? "" : '<strong class="msg-author">' + esc(m.author) + "</strong>") +
-    (m.deleted ? '<em class="muted">' + esc(t("messages.deleted")) + "</em>" : "<p>" + esc(m.body) + "</p>") + '<small>' + esc(new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })) + "</small></div>";
+    (m.deleted ? '<em class="muted">' + esc(t("messages.deleted")) + "</em>" : (m.attachments || []).map(attachHtml).join("") + (m.body ? "<p>" + linkify(m.body) + "</p>" : "")) + '<small>' + esc(new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })) + "</small></div>";
+  const EMOJI = "😀 😁 😂 🤣 😊 😍 😘 😎 🤔 😅 😉 🙏 👍 👏 🙌 💪 🔥 ✨ 🎉 ❤️ 💯 ✅ 👌 🤝 🚀 💡 📈 💰 ☕ 🌟 😢 😮 🙈 🤷 👋 🎯 📌 📎 🏆 🎁".split(" ");
+  /** Photos are shrunk on the phone before upload (max 1600 px), everything else goes as it is. */
+  async function prepareUpload(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || !window.createImageBitmap) return file;
+    try {
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.82));
+      return blob ? new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" }) : file;
+    } catch { return file; }
+  }
   async function chat() {
     if (!chatRoom) { active = "messages"; setHeading("messages"); return messages(); }
     const d = await api("/v1/chats/" + encodeURIComponent(chatRoom) + "/messages");
@@ -3290,7 +3315,7 @@
     chatLastId = d.items.length ? d.items.at(-1).id : null;
     content.innerHTML = '<div class="chat-head"><h2>' + esc(r.name) + "</h2>" + (r.description ? '<p class="muted">' + esc(r.description) + "</p>" : "") + "</div>" +
       '<div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="' + esc(r.name) + '">' + (d.items.length ? d.items.map(bubble).join("") : '<p class="muted">' + esc(t("messages.first")) + "</p>") + "</div>" +
-      (r.can_post ? '<form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">' + esc(t("messages.write")) + '</label><textarea id="chat-input" name="body" rows="1" maxlength="2000" required placeholder="' + esc(t("messages.write")) + '"></textarea><button class="primary-button">' + esc(t("messages.send")) + "</button></form>"
+      (r.can_post ? '<div id="chat-pending" class="chat-pending" hidden></div><div id="emoji-panel" class="emoji-panel" hidden>' + EMOJI.map(e => '<button type="button" data-emoji="' + e + '">' + e + "</button>").join("") + '</div><form id="chat-form" class="chat-form"><input type="file" id="chat-file" hidden multiple accept="image/*,video/mp4,video/quicktime,application/pdf,.docx,.xlsx,.pptx"><button type="button" class="icon-button" id="chat-attach" aria-label="' + esc(t("chat.attach")) + '">' + ic("attach") + '</button><button type="button" class="icon-button" id="chat-emoji" aria-label="' + esc(t("chat.emoji")) + '">' + ic("smile") + '</button><label class="sr-only" for="chat-input">' + esc(t("messages.write")) + '</label><textarea id="chat-input" name="body" rows="1" maxlength="2000" placeholder="' + esc(t("messages.write")) + '"></textarea><button class="primary-button">' + esc(t("messages.send")) + "</button></form>"
         : r.can_join ? '<button type="button" class="primary-button" id="chat-join">' + esc(t("messages.join")) + "</button>"
         : '<p class="muted chat-readonly">' + esc(t(r.status === "active" ? "messages.readOnlyPolicy" : "messages.readOnly")) + "</p>");
     const log = document.querySelector("#chat-log");
@@ -3302,11 +3327,29 @@
     if (form) {
       const input = form.querySelector("textarea");
       input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+      const pending = []; // files chosen but not yet sent
+      const pendingBox = document.querySelector("#chat-pending"), emojiBox = document.querySelector("#emoji-panel"), fileInput = document.querySelector("#chat-file");
+      const drawPending = () => { pendingBox.hidden = !pending.length; pendingBox.innerHTML = pending.map((f, i) => '<span class="pending-chip">' + esc(f.name) + ' <button type="button" data-rm="' + i + '" aria-label="' + esc(t("chat.remove")) + '">×</button></span>').join(""); pendingBox.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", () => { pending.splice(Number(b.dataset.rm), 1); drawPending(); })); };
+      document.querySelector("#chat-attach").addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", () => { for (const f of fileInput.files) { if (f.size > 40 * 1048576) { status(t("chat.tooLarge"), true); continue; } if (pending.length < 5) pending.push(f); } fileInput.value = ""; drawPending(); });
+      document.querySelector("#chat-emoji").addEventListener("click", () => { emojiBox.hidden = !emojiBox.hidden; });
+      emojiBox.addEventListener("click", e => { const b = e.target.closest("[data-emoji]"); if (!b) return; const p = input.selectionStart ?? input.value.length; input.value = input.value.slice(0, p) + b.dataset.emoji + input.value.slice(input.selectionEnd ?? p); input.focus(); input.setSelectionRange(p + b.dataset.emoji.length, p + b.dataset.emoji.length); });
       form.addEventListener("submit", async e => {
         e.preventDefault();
         const body = input.value.trim();
-        if (!body) return;
-        try { await api("/v1/chats/" + encodeURIComponent(chatRoom) + "/messages", { method: "POST", body: JSON.stringify({ body }) }); input.value = ""; await pollChat(); input.focus(); } catch (x) { status(x.message, true); }
+        if (!body && !pending.length) return;
+        const send = form.querySelector(".primary-button"); send.disabled = true;
+        try {
+          const ids = [];
+          for (const f of pending) {
+            const small = await prepareUpload(f);
+            const fd = new FormData(); fd.append("file", small, small.name);
+            const up = await api("/v1/chats/" + encodeURIComponent(chatRoom) + "/upload", { method: "POST", body: fd });
+            ids.push(up.id);
+          }
+          await api("/v1/chats/" + encodeURIComponent(chatRoom) + "/messages", { method: "POST", body: JSON.stringify({ body, ...(ids.length ? { attachments: ids } : {}) }) });
+          input.value = ""; pending.length = 0; drawPending(); emojiBox.hidden = true; await pollChat(); input.focus();
+        } catch (x) { status(x.message, true); } finally { send.disabled = false; }
       });
     }
     clearInterval(chatTimer);

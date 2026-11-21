@@ -191,9 +191,16 @@
     return new Promise(resolve => {
       const dlg = authDialog('<h3>' + esc(t("auth.phoneTitle")) + '</h3><p class="muted">' + esc(t("auth.phoneHint")) + '</p>' +
         '<input class="auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" value="+7 " aria-label="' + esc(t("auth.phoneTitle")) + '">' +
+        '<p class="muted auth-other">' + esc(t("auth.phoneOther")) + '</p>' +
         '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="primary-button" data-ok>' + esc(t("auth.sendCode")) + "</button></div>");
       const input = dlg.q("input"), err = dlg.q(".auth-error");
-      input.addEventListener("input", () => { input.value = maskPhone(input.value) || "+7 "; err.hidden = true; });
+      // The prefix is only a default: erase the 7 to type another country code (for example +375).
+      input.addEventListener("input", () => {
+        let raw = input.value; const k = raw.lastIndexOf("+"); if (k > 0) raw = raw.slice(k); // a full number typed or pasted after the default prefix
+        const d = digitsOf(raw);
+        if (d.length === 12 && d[0] === "7" && (d[1] === "7" || d[1] === "8")) raw = "+" + d.slice(1); // "+7 " + pasted 8701... / 7701...
+        input.value = raw.trim() === "+" ? "+" : (maskPhone(raw) || "+7 "); err.hidden = true;
+      });
       const done = v => { dlg.close(); resolve(v); };
       dlg.q("[data-x]").addEventListener("click", () => done(null));
       const ok = () => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done(v); };

@@ -2173,9 +2173,18 @@
       '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("subs.status")) + "</th><th>" + esc(t("subs.until")) + '</th><th class="num">' + esc(t("subs.paid")) + "</th><th>" + esc(t("subs.lastPaid")) + "</th><th>" + esc(t("signups.source")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>") +
       panel(t("subs.facesTitle"), t("subs.facesText"), '<ul class="plain-list">' + (faceList || "<li class=\"muted\">" + esc(t("act.empty")) + "</li>") + "</ul>" +
         '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>") +
-      panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div>');
+      panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div><div class="receipt-actions"><button type="button" class="outline-button" id="sms-check">' + esc(t("subs.smsCheck")) + '</button></div><div id="sms-out" class="demo-note" hidden></div>');
     content.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { subSegment = b.dataset.seg; adminSubscriptions(); }));
     const q = content.querySelector("#subs-q"); q.addEventListener("keydown", e => { if (e.key === "Enter") { subQuery = q.value.trim(); adminSubscriptions(); } });
+    content.querySelector("#sms-check").addEventListener("click", async () => {
+      const out = content.querySelector("#sms-out");
+      try {
+        const r = await api("/v1/admin/sms-status");
+        const bal = r.balance ? t("subs.smsBalance", { amount: r.balance.amount || "?", currency: r.balance.currency || "" }) : (r.balance_error ? t("subs.smsBalanceErr", { err: r.balance_error }) : t("subs.smsNoBalance", { provider: r.provider }));
+        const fails = (r.failures || []).length ? (r.failures || []).map(f => new Date(f.created_at).toLocaleString() + " " + f.phone_masked + " " + f.reason).join("\n") : t("subs.smsNoFails");
+        out.hidden = false; out.style.whiteSpace = "pre-line"; out.textContent = bal + "\n" + t("subs.smsLast") + "\n" + fails;
+      } catch (x) { status(x.message, true); }
+    });
     content.querySelector("#code-form").addEventListener("submit", async e => {
       e.preventDefault(); const f = new FormData(e.currentTarget); const out = content.querySelector("#code-out");
       try {

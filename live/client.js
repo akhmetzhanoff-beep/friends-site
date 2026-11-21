@@ -2172,9 +2172,17 @@
       '<div class="learn-tools"><input type="search" id="subs-q" placeholder="' + esc(t("subs.search")) + '" value="' + esc(subQuery) + '"></div>' +
       '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("subs.status")) + "</th><th>" + esc(t("subs.until")) + '</th><th class="num">' + esc(t("subs.paid")) + "</th><th>" + esc(t("subs.lastPaid")) + "</th><th>" + esc(t("signups.source")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>") +
       panel(t("subs.facesTitle"), t("subs.facesText"), '<ul class="plain-list">' + (faceList || "<li class=\"muted\">" + esc(t("act.empty")) + "</li>") + "</ul>" +
-        '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>");
+        '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>") +
+      panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div>');
     content.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { subSegment = b.dataset.seg; adminSubscriptions(); }));
     const q = content.querySelector("#subs-q"); q.addEventListener("keydown", e => { if (e.key === "Enter") { subQuery = q.value.trim(); adminSubscriptions(); } });
+    content.querySelector("#code-form").addEventListener("submit", async e => {
+      e.preventDefault(); const f = new FormData(e.currentTarget); const out = content.querySelector("#code-out");
+      try {
+        const r = await api("/v1/admin/login-code", { method: "POST", body: JSON.stringify({ phone: String(f.get("phone")).replace(/[\s()-]/g, "") }) });
+        out.hidden = false; out.textContent = t("subs.codeResult", { phone: r.phone, code: r.code, min: Math.round(r.expires_in / 60) });
+      } catch (x) { status(x.message, true); }
+    });
     content.querySelector("#face-form").addEventListener("submit", async e => {
       e.preventDefault(); const f = new FormData(e.currentTarget);
       try { const r = await api("/v1/admin/friend-faces", { method: "POST", body: JSON.stringify({ phone: String(f.get("phone")).replace(/[\s()-]/g, ""), name: String(f.get("name") || "").trim() || undefined }) }); status(t(r.granted ? "subs.faceGranted" : "subs.faceQueued")); await adminSubscriptions(); } catch (x) { status(x.message, true); }

@@ -261,6 +261,8 @@ if(API&&code){
   try{var vk="fr_v_"+code+"_"+new Date().toISOString().slice(0,10);if(!localStorage.getItem(vk)){localStorage.setItem(vk,"1");fetch(API+"/v1/public/partners/"+encodeURIComponent(code)+"/visit",{method:"POST",keepalive:true}).catch(function(){})}}catch(e){}
   if(!B)fetch(API+"/v1/public/partners/"+encodeURIComponent(code)).then(function(r){return r.ok?r.json():null}).then(function(d){if(!d)return;document.getElementById("ref").classList.add("on");document.getElementById("refName").textContent=d.name;document.getElementById("refAv").textContent=d.name.charAt(0)}).catch(function(){});
 }
+// resident link of the owner: no marketing page, straight to the app (sign-in + install hint)
+if(code==="dosbol"&&!q("stay")){setTimeout(function(){location.replace(appUrl)},250)}
 var waText="Сәлеметсіз бе! Friends-ке қосылғым келеді"+(B?" ("+B.name+" шақыруымен, коды "+code+")":(code?" (коды "+code+")":""));
 var utmStr=["utm_source","utm_medium","utm_campaign"].map(function(k){return pass.get(k)}).filter(Boolean).join("/");
 document.getElementById("wa").href="https://wa.me/"+WA+"?text="+encodeURIComponent(waText);

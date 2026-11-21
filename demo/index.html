@@ -6192,7 +6192,7 @@ var qrcode = function() {
     "adminPartners.added": "Блогер добавлен, ссылка готова",
     "adminPartners.codeTaken": "Такой код уже занят, придумайте другой",
     "adminPartners.name": "Имя блогера",
-    "adminPartners.code": "Код ссылки (латиница)",
+    "adminPartners.code": "Код ссылки: только слово латиницей, например assel",
     "adminPartners.contact": "Контакт (Instagram, WhatsApp)",
     "adminPartners.trialDays": "Бесплатных дней",
     "adminPartners.firstPct": "Бонус с первой оплаты, %",
@@ -8541,7 +8541,7 @@ var qrcode = function() {
     "adminPartners.added": "Блогер қосылды, сілтеме дайын",
     "adminPartners.codeTaken": "Бұл код бос емес, басқасын ойлаңыз",
     "adminPartners.name": "Блогердің аты",
-    "adminPartners.code": "Сілтеме коды (латынша)",
+    "adminPartners.code": "Сілтеме коды: тек латынша сөз, мысалы assel",
     "adminPartners.contact": "Байланыс (Instagram, WhatsApp)",
     "adminPartners.trialDays": "Тегін күндер",
     "adminPartners.firstPct": "Алғашқы төлемнен бонус, %",
@@ -10890,7 +10890,7 @@ var qrcode = function() {
     "adminPartners.added": "Blogger added, link is ready",
     "adminPartners.codeTaken": "This code is taken, choose another",
     "adminPartners.name": "Blogger name",
-    "adminPartners.code": "Link code (latin)",
+    "adminPartners.code": "Link code: just one Latin word, e.g. assel",
     "adminPartners.contact": "Contact (Instagram, WhatsApp)",
     "adminPartners.trialDays": "Free days",
     "adminPartners.firstPct": "Bonus on first payment, %",
@@ -13787,7 +13787,7 @@ var qrcode = function() {
       '<button type="button" class="text-button" data-partner-toggle="' + esc(p.id) + '" data-next="' + (p.status === "active" ? "paused" : "active") + '">' + esc(t(p.status === "active" ? "adminPartners.pause" : "adminPartners.resume")) + "</button></div>" +
       '<div data-partner-edit-box="' + esc(p.id) + '"></div><div data-partner-details="' + esc(p.id) + '"></div></article>';
     const form = '<form id="partner-form" class="app-form">' + field(t("adminPartners.name"), "name", "", "text", 'required minlength="2" maxlength="120"') +
-      field(t("adminPartners.code"), "code", "", "text", 'required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,39}" placeholder="kappas"') +
+      field(t("adminPartners.code"), "code", "", "text", 'required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,39}" placeholder="assel" autocapitalize="none" autocorrect="off" spellcheck="false"') +
       field(t("adminPartners.contact"), "contact", "", "text", 'maxlength="200"') +
       '<div class="form-grid">' + field(t("adminPartners.trialDays"), "trial_days", "30", "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", "40", "number", 'min="0" max="100" step="0.5"') + "</div>" +
       field(t("adminPartners.tiers"), "tiers", "20,10", "text", 'placeholder="20,10" maxlength="40"') + '<p class="muted">' + esc(t("adminPartners.tiersHint")) + "</p>" +
@@ -13796,6 +13796,13 @@ var qrcode = function() {
     content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.text"), totals) +
       panel(t("adminPartners.listTitle"), t("adminPartners.listText"), d.items.length ? d.items.map(card).join("") : '<p class="muted">' + esc(t("adminPartners.empty")) + "</p>") +
       panel(t("adminPartners.addTitle"), t("adminPartners.addText"), form);
+    // The code field accepts a pasted link too: only the last part is kept (friendscommunity.kz/assel -> assel).
+    const codeInput = document.querySelector('#partner-form [name="code"]');
+    if (codeInput) codeInput.addEventListener("input", () => {
+      const v = codeInput.value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+      const cleaned = (v.includes("/") ? v.split("/").pop() : v).replace(/[^a-z0-9_-]/g, "");
+      if (cleaned !== codeInput.value) codeInput.value = cleaned;
+    });
     document.querySelector("#partner-form").addEventListener("submit", async e => {
       e.preventDefault();
       const f = new FormData(e.currentTarget);

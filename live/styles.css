@@ -713,3 +713,8 @@ body.has-player .main{padding-bottom:calc(160px + env(safe-area-inset-bottom,0px
 .book-audio .primary-button{background:#fff;color:#0f5bc4;border:0}
 .book-audio .primary-button .ic{color:#0f5bc4}
 a.chip-tab{text-decoration:none;color:inherit}
+
+/* Illustrated banners */
+.course-cover.art{height:132px;background:#0f3a8a}
+.course-cover.art img{display:block;width:100%;height:100%;object-fit:cover;object-position:right center}
+.course-cover.art.hero{height:150px;margin:0 0 14px;border-radius:16px}

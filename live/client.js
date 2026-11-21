@@ -1410,9 +1410,9 @@
         return;
       }
     }
-    const cards = list.map(p => { const st = stats(p); return '<article class="invoice-card course-card"><div class="invoice-top"><div><span class="pill">' + ic(p.icon || "star", "ic-inline") + " " + esc(t("prof.pill")) + "</span><h3>" + esc(L(p.title)) + "</h3><small>" + esc(t("prof.meta", { courses: st.cs.length, books: p.books.length })) + "</small></div></div><p>" + esc(L(p.desc)) + "</p>" + progressBar(st.done, st.total) +
+    const cards = list.map(p => { const st = stats(p); return '<article class="invoice-card course-card">' + artBanner(({ marketer: "marketing", targetologist: "marketing", smm: "marketing", "sales-manager": "sales", "head-of-sales": "sales", ai: "ai", finance: "finance", hr: "management", manager: "management", entrepreneur: "growth" })[p.id] || "professions") + '<div class="invoice-top"><div><span class="pill">' + ic(p.icon || "star", "ic-inline") + " " + esc(t("prof.pill")) + "</span><h3>" + esc(L(p.title)) + "</h3><small>" + esc(t("prof.meta", { courses: st.cs.length, books: p.books.length })) + "</small></div></div><p>" + esc(L(p.desc)) + "</p>" + progressBar(st.done, st.total) +
       '<div class="receipt-actions"><button class="primary-button" data-prof="' + esc(p.id) + '">' + esc(t(st.done ? (st.finished ? "learn.review" : "learn.continue") : "learn.start")) + "</button></div></article>"; }).join("");
-    content.innerHTML = panel(t("prof.title"), t("prof.text"), '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t("learn.empty")) + "</p>") + "</div>");
+    content.innerHTML = artBanner("professions", "hero") + panel(t("prof.title"), t("prof.text"), '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t("learn.empty")) + "</p>") + "</div>");
     content.querySelectorAll("[data-prof]").forEach(b => b.addEventListener("click", () => { profOpen = b.dataset.prof; render("professions"); }));
   }
 
@@ -1422,8 +1422,12 @@
     if (!coverManifest) { try { coverManifest = await (await fetch("covers/manifest.json", { cache: "no-cache" })).json(); } catch { coverManifest = {}; } }
     return coverManifest;
   }
+  // Illustrated banners per category (art/<name>.jpg); a drawn gradient stays as the fallback.
+  const ART = new Set(["sales", "marketing", "finance", "management", "growth", "ai", "legal", "other", "books", "professions"]);
+  const artBanner = (name, cls) => ART.has(name) ? '<div class="course-cover art ' + (cls || "") + '" aria-hidden="true"><img src="art/' + name + '.jpg" alt="" loading="lazy" decoding="async"></div>' : "";
   function courseCover(c) {
     if (c.category === "books" && coverManifest && coverManifest[c.slug]) return '<div class="book-cover" aria-hidden="true"><img src="' + esc(coverManifest[c.slug]) + '" alt="" loading="lazy" decoding="async"></div>';
+    const art = artBanner(c.category in COVER ? c.category : "other"); if (art) return art;
     const [a, b, icon] = COVER[c.category] || COVER.other;
     let h = 0; for (const ch of String(c.slug)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
     const shapes = Array.from({ length: 6 }, (_, k) => { const x = (h >> (k * 3)) % 300, y = (h >> (k * 2 + 1)) % 120, r = 14 + ((h >> k) % 40); return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" opacity="' + (0.06 + (k % 3) * 0.04).toFixed(2) + '"/>'; }).join("");
@@ -1458,7 +1462,7 @@
     const cards = list.map(c => '<article class="invoice-card course-card">' + courseCover(c) + '<div class="invoice-top"><div><span class="pill">' + esc(I18N.label("courseCategory", c.category)) + "</span>" + (I18N.getLocale() === "kk" && !c.translated ? ' <span class="pill muted-pill">' + esc(t("learn.ruOnly")) + "</span>" : "") + "<h3>" + esc(c.title) + '</h3><small>' +
       esc(t("learn.meta", { lessons: c.lesson_count, minutes: c.duration_min })) + "</small></div></div><p>" + esc(c.description || "") + "</p>" + progressBar(c.completed_count, c.lesson_count) +
       '<div class="receipt-actions"><button class="primary-button" data-course="' + esc(c.slug) + '">' + esc(t(c.completed_count ? (c.completed_count >= c.lesson_count ? "learn.review" : "learn.continue") : "learn.start")) + "</button></div></article>").join("");
-    content.innerHTML = via + (catalogScope === "books" ? "" : testsTeaser()) + panel(t(catalogScope === "books" ? "books.section" : "learn.section"), t(catalogScope === "books" ? "books.sectionText" : "learn.sectionText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>");
+    content.innerHTML = via + (catalogScope === "books" ? artBanner("books", "hero") : testsTeaser()) + panel(t(catalogScope === "books" ? "books.section" : "learn.section"), t(catalogScope === "books" ? "books.sectionText" : "learn.sectionText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>");
     content.querySelectorAll("[data-course]").forEach(b => b.addEventListener("click", () => { learnCourse = b.dataset.course; render("course"); }));
     wireCatalog(draw);
     };
@@ -2910,7 +2914,7 @@
       esc(t("learn.meta", { lessons: c.lesson_count, minutes: c.duration_min })) + "</small></div></div><p>" + esc(c.description || "") + "</p>" +
       (c.locked ? '<p class="muted">' + esc(t(c.track ? "academy.lockedTrack" : "academy.lockedMembers")) + "</p>" : progressBar(c.completed_count, c.lesson_count) + '<div class="receipt-actions"><button class="primary-button" data-course="' + esc(c.slug) + '">' + esc(t(c.completed_count ? "learn.continue" : "learn.start")) + "</button></div>") + "</article>").join("");
     content.innerHTML = offer + '<div class="card-cta"><div><strong>' + esc(t("academy.membersTitle")) + "</strong><p>" + esc(t("academy.membersText")) + '</p></div><button type="button" class="primary-button" data-view="membership">' + esc(t("academy.membersCta")) + "</button></div>" +
-      (catalogScope === "books" ? "" : testsTeaser()) + panel(t(catalogScope === "books" ? "books.section" : "learn.section"), t(catalogScope === "books" ? "books.sectionText" : "academy.catalogText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>") +
+      (catalogScope === "books" ? artBanner("books", "hero") : testsTeaser()) + panel(t(catalogScope === "books" ? "books.section" : "learn.section"), t(catalogScope === "books" ? "books.sectionText" : "academy.catalogText"), catalogTools(d.items) + '<div class="course-grid">' + (cards || '<p class="muted">' + esc(t(d.items.length ? "learn.nothingFound" : "learn.empty")) + "</p>") + "</div>") +
       panel(t("learn.noAccessTitle"), t("learn.noAccessText"), joinForm());
     wireJoin(learn);
     wireCatalog(draw);

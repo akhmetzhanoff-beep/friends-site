@@ -48,7 +48,7 @@
     try { r = await fetch(apiBase + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); }
     catch { const e = Error(t("error.network")); e.status = 0; throw e; }
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) { const e = Error(I18N.apiError(d && d.error, r.status)); e.status = r.status; e.code = d && d.error; throw e; }
+    if (!r.ok) { const e = Error(d && d.error === "sms_retry_later" ? t("error.sms_retry_later", { s: d.retry_after || RESEND_S }) : I18N.apiError(d && d.error, r.status)); e.status = r.status; e.code = d && d.error; e.retryAfter = d && d.retry_after; throw e; }
     return d;
   }
   async function ownChannels() {
@@ -190,6 +190,8 @@
     if (r.length > 8) out += " " + r.slice(8, 10);
     return out;
   }
+  const isKzPhone = v => /^\+7[67]\d{9}$/.test(v); // Kazakhstan: +7 6xx / +7 7xx; other +7 numbers are Russia
+  const RESEND_S = 60;
   const phoneValue = v => { let d = digitsOf(v); if (d[0] === "8" && d.length === 11) d = "7" + d.slice(1); return "+" + d; };
   function askPhone(ch) {
     return new Promise(resolve => {
@@ -198,8 +200,9 @@
         '<input class="auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" value="+7 " aria-label="' + esc(t("auth.phoneTitle")) + '">' +
         '<p class="muted auth-other">' + esc(t("auth.phoneOther")) + '</p>' +
         '<p class="auth-error" hidden></p><div class="auth-actions auth-actions-col">' +
-        (wa ? '<button type="button" class="primary-button" data-wa>' + esc(t("auth.viaWhatsapp")) + '</button>' : "") +
-        '<button type="button" class="' + (wa ? "outline-button" : "primary-button") + '" data-ok>' + esc(t(wa ? "auth.viaSms" : "auth.sendCode")) + '</button>' +
+        // SMS first: most members have Kazakhstan numbers. WhatsApp is the second option (and the default abroad).
+        '<button type="button" class="primary-button" data-ok>' + esc(t(wa ? "auth.viaSms" : "auth.sendCode")) + '</button>' +
+        (wa ? '<button type="button" class="outline-button" data-wa>' + esc(t("auth.viaWhatsapp")) + '</button>' : "") +
         '<button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div>");
       const input = dlg.q("input"), err = dlg.q(".auth-error");
       // The prefix is only a default: erase the 7 to type another country code (for example +375).
@@ -211,10 +214,10 @@
       });
       const done = v => { dlg.close(); resolve(v); };
       dlg.q("[data-x]").addEventListener("click", () => done(null));
-      const go = channel => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done({ phone: v, channel }); };
+      const go = channel => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done({ phone: v, channel: wa && !isKzPhone(v) ? "whatsapp" : channel }); };
       dlg.q("[data-ok]").addEventListener("click", () => go("sms"));
       dlg.q("[data-wa]")?.addEventListener("click", () => go("whatsapp"));
-      input.addEventListener("keydown", e => { if (e.key === "Enter") go(wa ? "whatsapp" : "sms"); });
+      input.addEventListener("keydown", e => { if (e.key === "Enter") go("sms"); });
       setTimeout(() => { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
     });
   }
@@ -228,7 +231,17 @@
       const done = v => { if (ctl) ctl.abort(); dlg.close(); resolve(v); };
       input.addEventListener("input", () => { input.value = digitsOf(input.value).slice(0, 6); err.hidden = true; if (input.value.length === 6) done({ code: input.value }); });
       dlg.q("[data-x]").addEventListener("click", () => done(null));
-      dlg.q("[data-again]").addEventListener("click", async () => { try { await resend(); err.hidden = true; } catch (e) { err.textContent = e.message; err.hidden = false; } });
+      // "Send again" waits 60 seconds; the same code is sent again, so any SMS that arrives works.
+      const again = dlg.q("[data-again]");
+      let left = 0, timer = null;
+      const tick = () => { if (!dlg.q("[data-again]")) { clearInterval(timer); return; } if (left > 0) { again.disabled = true; again.textContent = t("auth.resendIn", { s: left }); left--; } else { clearInterval(timer); timer = null; again.disabled = false; again.textContent = t("auth.resend"); } };
+      const countdown = s => { left = s; if (timer) clearInterval(timer); tick(); timer = setInterval(tick, 1000); };
+      countdown(RESEND_S);
+      again.addEventListener("click", async () => {
+        if (again.disabled) return;
+        try { const d = await resend(); err.textContent = t("auth.resentSame"); err.hidden = false; countdown((d && d.resend_after) || RESEND_S); }
+        catch (e) { err.textContent = e.message; err.hidden = false; if (e.retryAfter) countdown(e.retryAfter); }
+      });
       dlg.q("[data-switch]")?.addEventListener("click", async () => { try { await other(); done({ switchTo: channel === "whatsapp" ? "sms" : "whatsapp" }); } catch (e) { err.textContent = e.message; err.hidden = false; } });
       // Android Chrome: the code from the SMS is read automatically (WebOTP). iPhone: the code appears above the keyboard, one tap.
       if (channel !== "whatsapp" && ctl && "OTPCredential" in window && navigator.credentials) {
@@ -244,11 +257,17 @@
       const a = await askPhone(ch);
       if (!a) return null;
       phone = a.phone; channel = a.channel;
-      try { await ownPost("/v1/auth/sms/request", { phone, channel }); break; }
-      catch (e) { if (channel === "whatsapp" && e.code === "wa_failed") { status(e.message, true); continue; } throw e; }
+      try { const d = await ownPost("/v1/auth/sms/request", { phone, channel }); if (d && d.channel) channel = d.channel; break; }
+      catch (e) {
+        if (channel === "whatsapp" && e.code === "wa_failed") { status(e.message, true); continue; }
+        // a code was already sent less than a minute ago: go straight to entering it
+        if (e.code === "sms_retry_later") { status(e.message); break; }
+        if (e.code === "sms_daily_limit") { status(t(ch.whatsapp ? "error.sms_daily_limit_wa" : "error.sms_daily_limit"), true); continue; }
+        throw e;
+      }
     }
     for (;;) {
-      const send = ch2 => ownPost("/v1/auth/sms/request", { phone, channel: ch2 });
+      const send = async ch2 => { const d = await ownPost("/v1/auth/sms/request", { phone, channel: ch2 }); if (d && d.channel && d.channel !== ch2) channel = d.channel; return d; };
       const r = await askCode(phone, () => send(channel), channel, ch.whatsapp ? () => send(channel === "whatsapp" ? "sms" : "whatsapp") : null);
       if (!r) return null;
       if (r.switchTo) { channel = r.switchTo; continue; }

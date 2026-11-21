@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity", "admin-subscriptions"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-subscriptions": "adminSubscriptions", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", "partner-apply": "partnerApply", me: "me"
+    discounts: "discounts", card: "card", "my-card": "myCard", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-subscriptions": "adminSubscriptions", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", "partner-apply": "partnerApply", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -441,7 +441,7 @@
   // Which bottom-bar block a screen belongs to, and the sub-sections shown as tabs inside a block.
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
-    course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
+    "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
     notifications: "messages", chat: "messages", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
   const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
@@ -3198,7 +3198,7 @@
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
   // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
   const ME_GROUPS = [
-    ["me.groupAccount", [["profile", "user", "nav.account"]]],
+    ["me.groupAccount", [["my-card", "star", "card.myTitle"], ["profile", "user", "nav.account"]]],
     ["me.groupCommunity", [["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
     ["me.groupApp", [["settings", "gear"]]]
   ];
@@ -3702,8 +3702,10 @@
     if (!memberId) { active = "members"; setHeading("members"); return members(); }
     const c = await api("/v1/members/" + encodeURIComponent(memberId) + "/trust");
     const mine = c.my_review;
-    content.innerHTML =
-      '<section class="lesson-box member-head"><div class="member-avatar big" aria-hidden="true">' + esc((c.display_name || "?").slice(0, 1)) + "</div><div><h2>" + esc(c.display_name) + "</h2><p class=\"muted\">" + esc([c.headline, c.city_name].filter(Boolean).join(" · ")) + "</p></div></section>" +
+    let cardHtml = "";
+    try { cardHtml = cardView(await api("/v1/members/" + encodeURIComponent(memberId) + "/card")); } catch { /* the old header below is the fallback */ }
+    content.innerHTML = (cardHtml ? cardHtml + "<!--c-->" : "") + (cardHtml ? "" :
+      '<section class="lesson-box member-head"><div class="member-avatar big" aria-hidden="true">' + esc((c.display_name || "?").slice(0, 1)) + "</div><div><h2>" + esc(c.display_name) + "</h2><p class=\"muted\">" + esc([c.headline, c.city_name].filter(Boolean).join(" · ")) + "</p></div></section>") +
       panel(t("trust.title"), t("trust.text"), trustSummary(c)) +
       panel(t("trust.reviews"), "", reviewList(c, false)) +
       '<div class="receipt-actions member-deal"><button type="button" class="primary-button" id="propose-deal">' + ic("deal", "ic-inline") + ' ' + esc(t("deals.proposeTo")) + "</button></div>" +
@@ -3722,6 +3724,82 @@
         try { await api("/v1/members/" + encodeURIComponent(memberId) + "/reviews", { method: "POST", body: JSON.stringify({ rating: Number(d.get("rating")), body: String(d.get("body")).trim() }) }); status(t("trust.sent")); await member(); } catch (x) { status(x.message, true); }
       });
     }
+  }
+  // ---- Resident business card (profile page) ----
+  const CARD_LINKS = ["map2gis", "whatsapp", "instagram", "tiktok", "telegram", "youtube", "website", "menu", "booking"];
+  const CARD_SOCIALS = ["instagram", "youtube", "tiktok", "telegram", "website"];
+  const CARD_REV = ["lt10", "10_50", "50_100", "100_500", "gt500"];
+  const safeHref = u => /^https?:\/\//i.test(String(u || "")) ? esc(u) : "#";
+  function cardView(d) {
+    const p = d.person || {}, c = d.card || {}, biz = d.businesses || [];
+    const stats = [];
+    if (c.years_in_business != null) stats.push([String(c.years_in_business), t("card.statYears")]);
+    if (c.branches != null) stats.push([String(c.branches), t("card.statBranches")]);
+    if (c.employees != null) stats.push([String(c.employees), t("card.statStaff")]);
+    if (c.revenue_range) stats.push([t("card.rev." + c.revenue_range), t("card.statRevenue")]);
+    const since = p.member_since ? new Date(p.member_since).getFullYear() : "";
+    const social = CARD_SOCIALS.filter(k => c.socials && c.socials[k]).map(k => '<a class="cv-chip" href="' + safeHref(c.socials[k]) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + k)) + "</a>").join("");
+    return '<article class="cv"><div class="cv-cover" aria-hidden="true"></div><div class="cv-top">' +
+      '<div class="cv-av" aria-hidden="true">' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '</div>' +
+      '<div class="cv-badges">' + (p.badges && p.badges.face ? '<span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + "</div>" +
+      "<h2>" + esc(p.display_name || "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
+      (stats.length ? '<div class="cv-stats">' + stats.map(s => '<div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>").join("") + "</div>" : "") +
+      (c.about ? '<section class="cv-box"><h3>' + esc(t("card.about")) + "</h3><p>" + esc(c.about) + "</p>" + ((c.tags || []).length ? '<div class="cv-tags">' + c.tags.map(x => "<span>" + esc(x) + "</span>").join("") + "</div>" : "") + "</section>" : "") +
+      (c.seeking || c.offering ? '<section class="cv-box"><h3>' + esc(t("card.seekOffer")) + '</h3><div class="cv-two">' +
+        (c.seeking ? '<div class="cv-seek"><b>' + esc(t("card.seeking")) + "</b>" + esc(c.seeking) + "</div>" : "") +
+        (c.offering ? '<div class="cv-offer"><b>' + esc(t("card.offering")) + "</b>" + esc(c.offering) + "</div>" : "") + "</div></section>" : "") +
+      (biz.length ? '<section class="cv-box"><h3>' + esc(t("card.businesses")) + "</h3>" + biz.map(b =>
+        '<div class="cv-biz"><div class="cv-biz-head"><div class="cv-logo" aria-hidden="true">' + esc(String(b.name || "?").slice(0, 1).toUpperCase()) + "</div><div><strong>" + esc(b.name) + '</strong><small>' + esc([b.kind, b.city].filter(Boolean).join(" · ")) + "</small></div></div>" +
+        (b.description ? "<p>" + esc(b.description) + "</p>" : "") +
+        ((b.links || []).length ? '<div class="cv-links">' + b.links.map(l => '<a class="cv-chip ' + esc(l.type) + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + l.type)) + "</a>").join("") + "</div>" : "") +
+        (b.offer_text ? '<div class="cv-deal"><b>' + esc(t("card.forResidents")) + "</b> " + esc(b.offer_text) + "</div>" : "") + "</div>").join("") + "</section>" : "") +
+      (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "") + "</article>";
+  }
+  async function myCard() {
+    const d = await api("/v1/me/card");
+    const c = d.card || {}, so = c.socials || {};
+    const n = v => v == null ? "" : String(v);
+    const bizForm = b => {
+      const links = Object.fromEntries((b.links || []).map(l => [l.type, l.url]));
+      return '<details class="cv-edit"' + (b._open ? " open" : "") + "><summary>" + esc(b.name) + '</summary><form class="app-form" data-biz="' + esc(b.id) + '">' +
+        field(t("card.bizName"), "name", b.name, "text", 'required maxlength="80"') + field(t("card.bizKind"), "kind", n(b.kind), "text", 'maxlength="60"') + field(t("card.bizCity"), "city", n(b.city), "text", 'maxlength="60"') +
+        area(t("card.bizDesc"), "description", n(b.description)) + field(t("card.bizOffer"), "offer_text", n(b.offer_text), "text", 'maxlength="120"') +
+        "<h4>" + esc(t("card.bizLinks")) + "</h4>" + CARD_LINKS.map(k => field(t("card.link." + k), "link_" + k, n(links[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
+        '<div class="receipt-actions"><button class="primary-button">' + esc(t("card.save")) + '</button><button type="button" class="outline-button" data-biz-del="' + esc(b.id) + '">' + esc(t("card.bizDelete")) + "</button></div></form></details>";
+    };
+    content.innerHTML = '<p class="muted">' + esc(t("card.previewHint")) + "</p>" + cardView(d) +
+      panel(t("card.editTitle"), t("card.editText"),
+        '<form id="card-form" class="app-form"><div class="app-grid">' +
+        field(t("card.statYears"), "years_in_business", n(c.years_in_business), "number", 'min="0" max="80"') + field(t("card.statBranches"), "branches", n(c.branches), "number", 'min="0" max="500"') + field(t("card.statStaff"), "employees", n(c.employees), "number", 'min="0" max="100000"') + "</div>" +
+        '<label class="field"><span>' + esc(t("card.statRevenue")) + '</span><select name="revenue_range">' + option("", t("card.rev.none"), !c.revenue_range) + CARD_REV.map(r => option(r, t("card.rev." + r), c.revenue_range === r)).join("") + "</select></label>" +
+        '<label class="check"><input type="checkbox" name="revenue_visible"' + (c.revenue_visible ? " checked" : "") + "> " + esc(t("card.revShow")) + "</label>" +
+        area(t("card.about"), "about", n(c.about)) + area(t("card.seeking"), "seeking", n(c.seeking)) + area(t("card.offering"), "offering", n(c.offering)) +
+        field(t("card.tags"), "tags", (c.tags || []).join(", "), "text", 'maxlength="250"') +
+        "<h4>" + esc(t("card.socials")) + "</h4>" + CARD_SOCIALS.map(k => field(t("card.link." + k), "soc_" + k, n(so[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
+        '<button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
+      panel(t("card.businesses"), t("card.bizText"), (d.businesses || []).map(bizForm).join("") + '<button type="button" class="outline-button" id="biz-add">' + esc(t("card.bizAdd")) + "</button>");
+    const form = document.querySelector("#card-form");
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const body = { years_in_business: f.get("years_in_business") || null, branches: f.get("branches") || null, employees: f.get("employees") || null, revenue_range: f.get("revenue_range") || null,
+        revenue_visible: form.elements.revenue_visible.checked, about: f.get("about"), seeking: f.get("seeking"), offering: f.get("offering"),
+        tags: String(f.get("tags") || "").split(",").map(x => x.trim()).filter(Boolean), socials: Object.fromEntries(CARD_SOCIALS.map(k => [k, f.get("soc_" + k)])) };
+      try { await api("/v1/me/card", { method: "PUT", body: JSON.stringify(body) }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
+    });
+    document.querySelectorAll("form[data-biz]").forEach(bf => bf.addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = new FormData(bf);
+      const body = { name: String(f.get("name")).trim(), kind: f.get("kind"), city: f.get("city"), description: f.get("description"), offer_text: f.get("offer_text"), links: CARD_LINKS.map(k => ({ type: k, url: f.get("link_" + k) })).filter(l => String(l.url || "").trim()) };
+      try { await api("/v1/me/businesses/" + encodeURIComponent(bf.dataset.biz), { method: "PUT", body: JSON.stringify(body) }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
+    }));
+    document.querySelectorAll("[data-biz-del]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm(t("card.bizDeleteAsk"))) return;
+      try { await api("/v1/me/businesses/" + encodeURIComponent(b.dataset.bizDel), { method: "DELETE" }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
+    }));
+    document.querySelector("#biz-add")?.addEventListener("click", async () => {
+      try { await api("/v1/me/businesses", { method: "POST", body: JSON.stringify({ name: t("card.bizNew") }) }); await myCard(); document.querySelector(".cv-edit:last-of-type")?.setAttribute("open", ""); } catch (x) { status(x.message, true); }
+    });
   }
   async function trust() {
     const c = await api("/v1/me/trust");
@@ -3870,7 +3948,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
+  const RENDERERS = { "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

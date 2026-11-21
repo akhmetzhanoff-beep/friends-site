@@ -733,3 +733,23 @@ a.chip-tab{text-decoration:none;color:inherit}
 .emoji-panel[hidden]{display:none}
 .emoji-panel button{border:0;background:transparent;font-size:24px;line-height:1.4;cursor:pointer;border-radius:8px}
 .emoji-panel button:hover{background:var(--fb-hover,#f2f2f2)}
+/* Resident business card */
+.cv{background:var(--fb-card);border:1px solid var(--fb-line);border-radius:22px;overflow:hidden;margin-bottom:14px}
+.cv-cover{height:120px;background:linear-gradient(135deg,#10285a,#1d56c9 55%,#c9a24b)}
+.cv-top{position:relative;padding:0 18px 16px}
+.cv-av{width:92px;height:92px;border-radius:50%;margin-top:-46px;border:4px solid var(--fb-card);background:linear-gradient(135deg,#2457d6,#6ea0ff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;box-shadow:0 6px 18px rgba(36,87,214,.3)}
+.cv-badges{position:absolute;right:16px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.cv-badge{font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px}.cv-badge.gold{background:#fff6dd;color:#7a5c10;border:1px solid #ecd9a0}
+.cv-top h2{margin:12px 0 2px;font-size:22px}.cv-role{margin:0;color:var(--fb-text-2)}.cv-city{margin:2px 0 0;font-size:13px;color:var(--fb-text-2)}
+.cv-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;padding:0 14px 14px}
+.cv-stats div{background:var(--fb-hover);border-radius:14px;padding:10px 4px;text-align:center}.cv-stats b{display:block;font-size:17px;color:var(--fb-blue)}.cv-stats span{font-size:10.5px;color:var(--fb-text-2)}
+.cv-box{padding:4px 18px 16px}.cv-box h3{margin:0 0 8px;font-size:12px;letter-spacing:.9px;text-transform:uppercase;color:var(--fb-blue)}.cv-box p{margin:0 0 8px;white-space:pre-line}
+.cv-tags{display:flex;flex-wrap:wrap;gap:6px}.cv-tags span{background:var(--fb-hover);border-radius:99px;padding:5px 11px;font-size:12.5px}
+.cv-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cv-two>div{border-radius:14px;padding:12px;font-size:13px;white-space:pre-line}.cv-two b{display:block;font-size:11px;letter-spacing:.6px;margin-bottom:6px}
+.cv-seek{background:rgba(255,140,60,.12)}.cv-offer{background:var(--fb-blue-soft)}
+.cv-biz{border:1px solid var(--fb-line);border-radius:16px;padding:12px;margin-bottom:10px}.cv-biz-head{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.cv-biz-head small{display:block;color:var(--fb-text-2)}.cv-logo{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#10131a,#2a3350);color:#c9a24b;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.cv-links{display:flex;flex-wrap:wrap;gap:8px}.cv-chip{display:inline-block;padding:9px 13px;border-radius:12px;background:var(--fb-blue-soft);color:var(--fb-blue);font-weight:600;font-size:13px;text-decoration:none}
+.cv-chip.whatsapp{background:rgba(30,126,52,.12);color:var(--fb-green)}.cv-chip.instagram,.cv-chip.tiktok{background:rgba(194,24,91,.1);color:#c2185b}.cv-chip.map2gis{background:rgba(180,95,6,.12);color:#b45f06}
+.cv-deal{margin-top:10px;border:1px dashed #c9a24b;background:rgba(201,162,75,.1);border-radius:12px;padding:10px;font-size:13px}
+.cv-edit{border:1px solid var(--fb-line);border-radius:14px;padding:10px 14px;margin-bottom:10px}.cv-edit summary{cursor:pointer;font-weight:700}

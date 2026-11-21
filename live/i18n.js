@@ -96,8 +96,8 @@
 
     "login.eyebrow": "FRIENDS",
     "login.title": "Всё бизнес-сообщество в одном кабинете",
-    "login.text": "Войдите по номеру телефона: пришлём код в SMS.",
-    "login.sms": "Войти по SMS",
+    "login.text": "Войдите по номеру телефона: пришлём код в WhatsApp или SMS.",
+    "login.sms": "Войти по номеру телефона",
     "login.email": "Войти по email",
     "login.note": "SMS-вход заработает после настройки провайдера. Для email-входа должны быть настроены отправка писем и разрешённый адрес перенаправления.",
 
@@ -2563,8 +2563,8 @@
 
     "login.eyebrow": "FRIENDS",
     "login.title": "Бүкіл бизнес-қауымдастық бір кабинетте",
-    "login.text": "Телефон нөмірі арқылы кіріңіз: SMS-пен код жібереміз.",
-    "login.sms": "SMS арқылы кіру",
+    "login.text": "Телефон нөмірі арқылы кіріңіз: кодты WhatsApp немесе SMS арқылы жібереміз.",
+    "login.sms": "Телефон нөмірі арқылы кіру",
     "login.email": "Email арқылы кіру",
     "login.note": "SMS арқылы кіру провайдер бапталғаннан кейін жұмыс істейді. Email арқылы кіру үшін хат жіберу және рұқсат етілген қайта бағыттау мекенжайы бапталуы керек.",
 
@@ -5030,8 +5030,8 @@
 
     "login.eyebrow": "FRIENDS",
     "login.title": "The whole business community in one portal",
-    "login.text": "Sign in with your phone number: we will text you a code.",
-    "login.sms": "Sign in with SMS",
+    "login.text": "Sign in with your phone number: we will send you a code in WhatsApp or by SMS.",
+    "login.sms": "Sign in with your phone number",
     "login.email": "Sign in with email",
     "login.note": "SMS sign-in works once the SMS provider is configured. Email sign-in requires email delivery and an allowed redirect address.",
 

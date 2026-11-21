@@ -2029,7 +2029,7 @@
     const box = document.querySelector("#wa-box");
     if (!box) return;
     box.innerHTML = panel(t("whatsapp.title"), t("whatsapp.text"),
-      '<form id="wa-form" class="app-form">' + field(t("whatsapp.phone"), "phone", w.phone || "", "tel", 'inputmode="tel" autocomplete="tel" placeholder="+7 701 123 45 67" maxlength="20"') +
+      '<form id="wa-test" class="app-form"><label class="field"><span>' + esc(t("subs.waTestPhone")) + '</span><input name="phone" type="tel" inputmode="tel" required placeholder="+7 700 000 00 00"></label><button class="outline-button">' + esc(t("subs.waTest")) + '</button></form><div id="wa-test-out" class="demo-note" hidden></div><form id="wa-form" class="app-form">' + field(t("whatsapp.phone"), "phone", w.phone || "", "tel", 'inputmode="tel" autocomplete="tel" placeholder="+7 701 123 45 67" maxlength="20"') +
       '<label class="consent-field"><input type="checkbox" name="opted_in" value="yes"' + (w.opted_in ? " checked" : "") + "> <span>" + esc(t("whatsapp.consent")) + " " +
       (privacyPolicyUrl ? '<a href="' + esc(safeUrl(privacyPolicyUrl)) + '" target="_blank" rel="noopener noreferrer">' + esc(t("consent.link")) + "</a>" : "") + "</span></label>" +
       '<p class="muted">' + esc(w.opted_in ? t("whatsapp.on") : t("whatsapp.off")) + '</p><button class="primary-button">' + esc(t("whatsapp.save")) + "</button></form>");
@@ -2215,6 +2215,14 @@
     content.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { subSegment = b.dataset.seg; adminSubscriptions(); }));
     const q = content.querySelector("#subs-q"); q.addEventListener("keydown", e => { if (e.key === "Enter") { subQuery = q.value.trim(); adminSubscriptions(); } });
     api("/v1/admin/bird-key").then(r => { content.querySelector("#wa-state").textContent = r.set ? t("subs.waOn", { last4: r.last4 }) : t("subs.waOff"); }).catch(() => { const el = content.querySelector("#wa-state"); if (el) el.textContent = t("subs.waOff"); });
+    content.querySelector("#wa-test").addEventListener("submit", async e => {
+      e.preventDefault(); const out = content.querySelector("#wa-test-out");
+      try {
+        const r = await api("/v1/admin/wa-test", { method: "POST", body: JSON.stringify({ phone: String(new FormData(e.currentTarget).get("phone")).replace(/[\s()-]/g, "") }) });
+        out.hidden = false; out.style.whiteSpace = "pre-wrap";
+        out.textContent = !r.configured ? t("subs.waOff") : r.error ? "Bird: " + r.error : "Bird HTTP " + r.status + "\n" + JSON.stringify(r.body, null, 1).slice(0, 700);
+      } catch (x) { status(x.message, true); }
+    });
     content.querySelector("#wa-form").addEventListener("submit", async e => {
       e.preventDefault(); const f = e.currentTarget;
       try { await api("/v1/admin/bird-key", { method: "PUT", body: JSON.stringify({ key: String(new FormData(f).get("key")).trim() }) }); f.reset(); status(t("subs.waSaved")); adminSubscriptions(); }

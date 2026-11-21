@@ -14,7 +14,7 @@
   // in the resident app; the API enforces roles either way.
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
-  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity"];
+  const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity", "admin-subscriptions"];
   const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
@@ -36,7 +36,7 @@
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
-    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", "partner-apply": "partnerApply", me: "me"
+    discounts: "discounts", card: "card", partner: "partner", "admin-discounts": "adminDiscounts", feedback: "feedback", "admin-stats": "adminStats", "admin-feedback": "adminFeedback", "admin-referrals": "adminReferrals", "admin-staff": "adminStaff", business: "business", "admin-loans": "adminLoans", certificate: "certificate", checkin: "checkin", polls: "polls", "admin-pulse": "adminPulse", "admin-polls": "adminPolls", "admin-learning-orders": "adminLearningOrders", services: "services", messages: "messages", chat: "chat", "admin-chats": "adminChats", tests: "tests", test: "test", settings: "settings", member: "member", trust: "trust", "admin-trust": "adminTrust", deals: "deals", deal: "deal", "admin-deals": "adminDeals", "admin-partners": "adminPartners", blogger: "blogger", "admin-signups": "adminSignups", "admin-bans": "adminBans", "admin-activity": "adminActivity", "admin-subscriptions": "adminSubscriptions", "admin-proposals": "adminProposals", host: "host", recordings: "recordings", books: "books", templates: "templates", professions: "professions", "partner-apply": "partnerApply", me: "me"
   };
   let user = null, profile = null, roles = null, active = APP === "admin" ? "admin-stats" : "overview";
   const token = () => sessionStorage.getItem(KEY);
@@ -2149,6 +2149,32 @@
     content.querySelectorAll("#act-days, #act-inactive").forEach(el => el.addEventListener("change", () => adminActivity()));
   }
 
+  // ---------- Subscriptions: who pays, who does not, who has free access; «Лица Friends» ----------
+  let subSegment = "", subQuery = "";
+  async function adminSubscriptions() {
+    let d, faces = { granted: [], waiting: [] };
+    try { d = await api("/v1/admin/subscriptions?" + (subSegment ? "segment=" + subSegment + "&" : "") + (subQuery ? "q=" + encodeURIComponent(subQuery) : "")); }
+    catch (e) { if (e.status === 403) { content.innerHTML = panel(t("subs.title"), t("signups.noAccess"), ""); return; } throw e; }
+    try { faces = await api("/v1/admin/friend-faces"); } catch { /* optional */ }
+    const SEGS = ["friend", "paid_active", "trial_active", "no_payment", "paid_expired", "trial_expired", "expired", "none"];
+    const chips = '<div class="chip-tabs">' + '<button type="button" class="chip-tab' + (subSegment ? "" : " active") + '" data-seg="">' + esc(t("subs.all")) + "</button>" + SEGS.map(k => '<button type="button" class="chip-tab' + (subSegment === k ? " active" : "") + '" data-seg="' + k + '">' + esc(t("subs.seg." + k)) + " · " + (d.counts[k] || 0) + "</button>").join("") + "</div>";
+    const rows = d.items.map(r => "<tr><td>" + esc(r.name || "—") + "<br><small class=\"muted\">" + esc(r.phone || "") + "</small></td><td>" + esc(t("subs.seg." + r.segment)) + "</td><td>" + (r.ends_at ? esc(day(r.ends_at)) + (r.days_left != null ? "<br><small class=\"muted\">" + esc(t("subs.daysLeft", { n: r.days_left })) + "</small>" : "") : (r.segment === "friend" ? esc(t("subs.forever")) : "—")) + '</td><td class="num">' + r.paid_count + "</td><td>" + (r.last_paid_at ? esc(day(r.last_paid_at)) : "—") + "</td><td>" + esc(r.partner || "") + "</td></tr>").join("");
+    const faceList = faces.granted.map(f => "<li>" + esc(f.name || f.phone || "") + ' <small class="muted">' + esc(f.phone || "") + '</small> <button type="button" class="text-button" data-face-del="' + esc(f.phone || "") + '">' + esc(t("subs.faceRemove")) + "</button></li>").join("") +
+      faces.waiting.map(f => "<li>" + esc(f.name || f.phone) + ' <small class="muted">' + esc(f.phone) + " · " + esc(t("subs.faceWaiting")) + '</small> <button type="button" class="text-button" data-face-del="' + esc(f.phone) + '">' + esc(t("subs.faceRemove")) + "</button></li>").join("");
+    content.innerHTML = panel(t("subs.title"), t("subs.text"), chips +
+      '<div class="learn-tools"><input type="search" id="subs-q" placeholder="' + esc(t("subs.search")) + '" value="' + esc(subQuery) + '"></div>' +
+      '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("subs.status")) + "</th><th>" + esc(t("subs.until")) + '</th><th class="num">' + esc(t("subs.paid")) + "</th><th>" + esc(t("subs.lastPaid")) + "</th><th>" + esc(t("signups.source")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>") +
+      panel(t("subs.facesTitle"), t("subs.facesText"), '<ul class="plain-list">' + (faceList || "<li class=\"muted\">" + esc(t("act.empty")) + "</li>") + "</ul>" +
+        '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>");
+    content.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { subSegment = b.dataset.seg; adminSubscriptions(); }));
+    const q = content.querySelector("#subs-q"); q.addEventListener("keydown", e => { if (e.key === "Enter") { subQuery = q.value.trim(); adminSubscriptions(); } });
+    content.querySelector("#face-form").addEventListener("submit", async e => {
+      e.preventDefault(); const f = new FormData(e.currentTarget);
+      try { const r = await api("/v1/admin/friend-faces", { method: "POST", body: JSON.stringify({ phone: String(f.get("phone")).replace(/[\s()-]/g, ""), name: String(f.get("name") || "").trim() || undefined }) }); status(t(r.granted ? "subs.faceGranted" : "subs.faceQueued")); await adminSubscriptions(); } catch (x) { status(x.message, true); }
+    });
+    content.querySelectorAll("[data-face-del]").forEach(b => b.addEventListener("click", async () => { if (!confirm(t("subs.faceConfirm"))) return; try { await api("/v1/admin/friend-faces/" + encodeURIComponent(b.dataset.faceDel), { method: "DELETE" }); await adminSubscriptions(); } catch (x) { status(x.message, true); } }));
+  }
+
   async function adminSignups() {
     let d;
     const qv = (content.querySelector("#signups-q") || {}).value || "";
@@ -3844,7 +3870,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
+  const RENDERERS = { "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

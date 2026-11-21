@@ -753,3 +753,4 @@ a.chip-tab{text-decoration:none;color:inherit}
 .cv-chip.whatsapp{background:rgba(30,126,52,.12);color:var(--fb-green)}.cv-chip.instagram,.cv-chip.tiktok{background:rgba(194,24,91,.1);color:#c2185b}.cv-chip.map2gis{background:rgba(180,95,6,.12);color:#b45f06}
 .cv-deal{margin-top:10px;border:1px dashed #c9a24b;background:rgba(201,162,75,.1);border-radius:12px;padding:10px;font-size:13px}
 .cv-edit{border:1px solid var(--fb-line);border-radius:14px;padding:10px 14px;margin-bottom:10px}.cv-edit summary{cursor:pointer;font-weight:700}
+.auth-actions-col{flex-direction:column;align-items:stretch}.auth-actions-col button{width:100%}

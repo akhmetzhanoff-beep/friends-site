@@ -51,6 +51,10 @@
     if (!r.ok) { const e = Error(I18N.apiError(d && d.error, r.status)); e.status = r.status; e.code = d && d.error; throw e; }
     return d;
   }
+  async function ownChannels() {
+    try { const r = await fetch(apiBase + "/v1/auth/channels"); const d = await r.json(); return { sms: true, whatsapp: d && d.whatsapp === true }; }
+    catch { return { sms: true, whatsapp: false }; }
+  }
   function storeSession(d) { sessionStorage.setItem(KEY, d.access_token); if (d.refresh_token) setRefresh(d.refresh_token); }
   // Theme: dark by default (owner request), light on demand; remembered per device.
   const THEME_KEY = "friends.theme";
@@ -187,12 +191,16 @@
     return out;
   }
   const phoneValue = v => { let d = digitsOf(v); if (d[0] === "8" && d.length === 11) d = "7" + d.slice(1); return "+" + d; };
-  function askPhone() {
+  function askPhone(ch) {
     return new Promise(resolve => {
-      const dlg = authDialog('<h3>' + esc(t("auth.phoneTitle")) + '</h3><p class="muted">' + esc(t("auth.phoneHint")) + '</p>' +
+      const wa = !!(ch && ch.whatsapp);
+      const dlg = authDialog('<h3>' + esc(t("auth.phoneTitle")) + '</h3><p class="muted">' + esc(t(wa ? "auth.phoneHintWa" : "auth.phoneHint")) + '</p>' +
         '<input class="auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" value="+7 " aria-label="' + esc(t("auth.phoneTitle")) + '">' +
         '<p class="muted auth-other">' + esc(t("auth.phoneOther")) + '</p>' +
-        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="primary-button" data-ok>' + esc(t("auth.sendCode")) + "</button></div>");
+        '<p class="auth-error" hidden></p><div class="auth-actions auth-actions-col">' +
+        (wa ? '<button type="button" class="primary-button" data-wa>' + esc(t("auth.viaWhatsapp")) + '</button>' : "") +
+        '<button type="button" class="' + (wa ? "outline-button" : "primary-button") + '" data-ok>' + esc(t(wa ? "auth.viaSms" : "auth.sendCode")) + '</button>' +
+        '<button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div>");
       const input = dlg.q("input"), err = dlg.q(".auth-error");
       // The prefix is only a default: erase the 7 to type another country code (for example +375).
       input.addEventListener("input", () => {
@@ -203,38 +211,48 @@
       });
       const done = v => { dlg.close(); resolve(v); };
       dlg.q("[data-x]").addEventListener("click", () => done(null));
-      const ok = () => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done(v); };
-      dlg.q("[data-ok]").addEventListener("click", ok);
-      input.addEventListener("keydown", e => { if (e.key === "Enter") ok(); });
+      const go = channel => { const v = phoneValue(input.value); if (!/^\+[1-9]\d{7,14}$/.test(v) || (v.startsWith("+7") && v.length !== 12)) { err.textContent = t("auth.phoneInvalid"); err.hidden = false; return; } done({ phone: v, channel }); };
+      dlg.q("[data-ok]").addEventListener("click", () => go("sms"));
+      dlg.q("[data-wa]")?.addEventListener("click", () => go("whatsapp"));
+      input.addEventListener("keydown", e => { if (e.key === "Enter") go(wa ? "whatsapp" : "sms"); });
       setTimeout(() => { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
     });
   }
-  function askCode(phone, resend) {
+  function askCode(phone, resend, channel, other) {
     return new Promise(resolve => {
-      const dlg = authDialog('<h3>' + esc(t("auth.codeTitle")) + '</h3><p class="muted">' + esc(t("auth.codeHint", { phone: maskPhone(phone) })) + '</p>' +
+      const dlg = authDialog('<h3>' + esc(t(channel === "whatsapp" ? "auth.codeTitleWa" : "auth.codeTitle")) + '</h3><p class="muted">' + esc(t(channel === "whatsapp" ? "auth.codeHintWa" : "auth.codeHint", { phone: maskPhone(phone) })) + '</p>' +
         '<input class="auth-input auth-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="' + esc(t("auth.codeTitle")) + '">' +
-        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="outline-button" data-again>' + esc(t("auth.resend")) + '</button></div>');
+        '<p class="auth-error" hidden></p><div class="auth-actions"><button type="button" class="outline-button" data-x>' + esc(t("auth.cancel")) + '</button><button type="button" class="outline-button" data-again>' + esc(t("auth.resend")) + '</button>' + (other ? '<button type="button" class="outline-button" data-switch>' + esc(t(channel === "whatsapp" ? "auth.otherSms" : "auth.otherWa")) + '</button>' : "") + '</div>');
       const input = dlg.q("input"), err = dlg.q(".auth-error");
       const ctl = typeof AbortController === "function" ? new AbortController() : null;
       const done = v => { if (ctl) ctl.abort(); dlg.close(); resolve(v); };
-      input.addEventListener("input", () => { input.value = digitsOf(input.value).slice(0, 6); err.hidden = true; if (input.value.length === 6) done(input.value); });
+      input.addEventListener("input", () => { input.value = digitsOf(input.value).slice(0, 6); err.hidden = true; if (input.value.length === 6) done({ code: input.value }); });
       dlg.q("[data-x]").addEventListener("click", () => done(null));
       dlg.q("[data-again]").addEventListener("click", async () => { try { await resend(); err.hidden = true; } catch (e) { err.textContent = e.message; err.hidden = false; } });
+      dlg.q("[data-switch]")?.addEventListener("click", async () => { try { await other(); done({ switchTo: channel === "whatsapp" ? "sms" : "whatsapp" }); } catch (e) { err.textContent = e.message; err.hidden = false; } });
       // Android Chrome: the code from the SMS is read automatically (WebOTP). iPhone: the code appears above the keyboard, one tap.
-      if (ctl && "OTPCredential" in window && navigator.credentials) {
-        navigator.credentials.get({ otp: { transport: ["sms"] }, signal: ctl.signal }).then(c => { if (c && c.code) { input.value = digitsOf(c.code).slice(0, 6); done(input.value); } }).catch(() => { /* typed by hand */ });
+      if (channel !== "whatsapp" && ctl && "OTPCredential" in window && navigator.credentials) {
+        navigator.credentials.get({ otp: { transport: ["sms"] }, signal: ctl.signal }).then(c => { if (c && c.code) { input.value = digitsOf(c.code).slice(0, 6); done({ code: input.value }); } }).catch(() => { /* typed by hand */ });
       }
       setTimeout(() => input.focus(), 50);
     });
   }
   async function ownLogin() {
-    const phone = await askPhone();
-    if (!phone) return null;
-    await ownPost("/v1/auth/sms/request", { phone });
+    const ch = await ownChannels();
+    let phone = null, channel = "sms";
     for (;;) {
-      const code = await askCode(phone, () => ownPost("/v1/auth/sms/request", { phone }));
-      if (!code) return null;
-      try { storeSession(await ownPost("/v1/auth/sms/verify", { phone, code })); return phone; }
+      const a = await askPhone(ch);
+      if (!a) return null;
+      phone = a.phone; channel = a.channel;
+      try { await ownPost("/v1/auth/sms/request", { phone, channel }); break; }
+      catch (e) { if (channel === "whatsapp" && e.code === "wa_failed") { status(e.message, true); continue; } throw e; }
+    }
+    for (;;) {
+      const send = ch2 => ownPost("/v1/auth/sms/request", { phone, channel: ch2 });
+      const r = await askCode(phone, () => send(channel), channel, ch.whatsapp ? () => send(channel === "whatsapp" ? "sms" : "whatsapp") : null);
+      if (!r) return null;
+      if (r.switchTo) { channel = r.switchTo; continue; }
+      try { storeSession(await ownPost("/v1/auth/sms/verify", { phone, code: r.code })); return phone; }
       catch (e) { if (e.code !== "invalid_code") throw e; status(e.message, true); }
     }
   }
@@ -2173,9 +2191,16 @@
       '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("subs.status")) + "</th><th>" + esc(t("subs.until")) + '</th><th class="num">' + esc(t("subs.paid")) + "</th><th>" + esc(t("subs.lastPaid")) + "</th><th>" + esc(t("signups.source")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>") +
       panel(t("subs.facesTitle"), t("subs.facesText"), '<ul class="plain-list">' + (faceList || "<li class=\"muted\">" + esc(t("act.empty")) + "</li>") + "</ul>" +
         '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>") +
-      panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div><div class="receipt-actions"><button type="button" class="outline-button" id="sms-check">' + esc(t("subs.smsCheck")) + '</button></div><div id="sms-out" class="demo-note" hidden></div>');
+      panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div><div class="receipt-actions"><button type="button" class="outline-button" id="sms-check">' + esc(t("subs.smsCheck")) + '</button></div><div id="sms-out" class="demo-note" hidden></div>') +
+      panel(t("subs.waTitle"), t("subs.waText"), '<p class="muted" id="wa-state">' + esc(t("subs.waChecking")) + '</p><form id="wa-form" class="app-form"><label class="field"><span>' + esc(t("subs.waKey")) + '</span><input name="key" type="password" autocomplete="off" required maxlength="300" placeholder="bk_us1_..."></label><button class="primary-button">' + esc(t("subs.waSave")) + "</button></form>");
     content.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { subSegment = b.dataset.seg; adminSubscriptions(); }));
     const q = content.querySelector("#subs-q"); q.addEventListener("keydown", e => { if (e.key === "Enter") { subQuery = q.value.trim(); adminSubscriptions(); } });
+    api("/v1/admin/bird-key").then(r => { content.querySelector("#wa-state").textContent = r.set ? t("subs.waOn", { last4: r.last4 }) : t("subs.waOff"); }).catch(() => { const el = content.querySelector("#wa-state"); if (el) el.textContent = t("subs.waOff"); });
+    content.querySelector("#wa-form").addEventListener("submit", async e => {
+      e.preventDefault(); const f = e.currentTarget;
+      try { await api("/v1/admin/bird-key", { method: "PUT", body: JSON.stringify({ key: String(new FormData(f).get("key")).trim() }) }); f.reset(); status(t("subs.waSaved")); adminSubscriptions(); }
+      catch (x) { status(x.message, true); }
+    });
     content.querySelector("#sms-check").addEventListener("click", async () => {
       const out = content.querySelector("#sms-out");
       try {

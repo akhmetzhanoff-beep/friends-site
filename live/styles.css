@@ -757,3 +757,6 @@ a.chip-tab{text-decoration:none;color:inherit}
 .cv-cover.has-img{background-size:cover;background-position:center}
 .cv-av-img{object-fit:cover;background:#fff}
 .cv-pick{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cv-pick b{display:block;margin-bottom:6px}.cv-file{display:inline-block;cursor:pointer}
+.cv-link{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:11px 12px;margin-bottom:8px;border:1px solid var(--fb-line);border-radius:12px;color:inherit;text-decoration:none}
+.cv-link span{font-weight:600}.cv-link small{color:var(--fb-text-2);white-space:nowrap}
+.cv-path{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid #c9a24b}.cv-path li{margin:0 0 10px;padding-left:10px}.cv-path b{color:var(--fb-blue);margin-right:6px}

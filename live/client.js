@@ -3823,6 +3823,11 @@
   const CARD_SOCIALS = ["instagram", "youtube", "tiktok", "telegram", "website"];
   const CARD_REV = ["lt10", "10_50", "50_100", "100_500", "gt500"];
   const safeHref = u => /^https?:\/\//i.test(String(u || "")) ? esc(u) : "#";
+  const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
+  function cardLinksView(links, kind, titleKey) {
+    const list = links.filter(l => l.kind === kind);
+    return list.length ? '<section class="cv-box"><h3>' + esc(t(titleKey)) + '</h3>' + list.map(l => '<a class="cv-link" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow"><span>' + esc(l.title) + "</span><small>" + esc(hostOf(l.url)) + "</small></a>").join("") + "</section>" : "";
+  }
   function cardView(d) {
     const p = d.person || {}, c = d.card || {}, biz = d.businesses || [];
     const stats = [];
@@ -3847,6 +3852,8 @@
         (b.description ? "<p>" + esc(b.description) + "</p>" : "") +
         ((b.links || []).length ? '<div class="cv-links">' + b.links.map(l => '<a class="cv-chip ' + esc(l.type) + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + l.type)) + "</a>").join("") + "</div>" : "") +
         (b.offer_text ? '<div class="cv-deal"><b>' + esc(t("card.forResidents")) + "</b> " + esc(b.offer_text) + "</div>" : "") + "</div>").join("") + "</section>" : "") +
+      cardLinksView(d.links || [], "video", "card.videos") + cardLinksView(d.links || [], "press", "card.press") +
+      ((d.achievements || []).length ? '<section class="cv-box"><h3>' + esc(t("card.path")) + '</h3><ol class="cv-path">' + d.achievements.map(a => "<li><b>" + esc(a.year || "") + "</b> " + esc(a.title) + "</li>").join("") + "</ol></section>" : "") +
       (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "") + "</article>";
   }
   async function myCard() {
@@ -3865,6 +3872,12 @@
       panel(t("card.photoTitle"), t("card.photoText"),
         '<div class="cv-pick"><div><b>' + esc(t("card.photo")) + '</b><label class="outline-button cv-file"><input type="file" accept="image/*" data-media="photo" hidden>' + esc(t("card.pickGallery")) + '</label>' + (d.person.photo_url ? '<button type="button" class="text-button" data-media-del="photo">' + esc(t("card.photoDelete")) + "</button>" : "") + '</div>' +
         '<div><b>' + esc(t("card.cover")) + '</b><label class="outline-button cv-file"><input type="file" accept="image/*" data-media="cover" hidden>' + esc(t("card.pickGallery")) + '</label>' + (d.person.cover_url ? '<button type="button" class="text-button" data-media-del="cover">' + esc(t("card.photoDelete")) + "</button>" : "") + "</div></div>") +
+      panel(t("card.linksTitle"), t("card.linksText"),
+        '<form id="links-form" class="app-form">' +
+        area(t("card.videos"), "videos", (d.links || []).filter(l => l.kind === "video").map(l => l.title + " | " + l.url).join("\n")) +
+        area(t("card.press"), "press", (d.links || []).filter(l => l.kind === "press").map(l => l.title + " | " + l.url).join("\n")) +
+        area(t("card.path"), "ach", (d.achievements || []).map(a => (a.year ? a.year + " | " : "") + a.title).join("\n")) +
+        '<p class="muted">' + esc(t("card.linesHint")) + '</p><button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
       panel(t("card.editTitle"), t("card.editText"),
         '<form id="card-form" class="app-form"><div class="app-grid">' +
         field(t("card.statYears"), "years_in_business", n(c.years_in_business), "number", 'min="0" max="80"') + field(t("card.statBranches"), "branches", n(c.branches), "number", 'min="0" max="500"') + field(t("card.statStaff"), "employees", n(c.employees), "number", 'min="0" max="100000"') + "</div>" +
@@ -3898,6 +3911,22 @@
     document.querySelectorAll("[data-media-del]").forEach(b => b.addEventListener("click", async () => {
       try { await api("/v1/me/card/media/" + b.dataset.mediaDel, { method: "DELETE" }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
     }));
+    document.querySelector("#links-form")?.addEventListener("submit", async e => {
+      e.preventDefault(); const f = new FormData(e.currentTarget);
+      const lines = k => String(f.get(k) || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+      const parseLink = (kind, line) => {
+        const i = line.indexOf("|");
+        if (i < 0) return { kind, title: hostOf(/^https?:/i.test(line) ? line : "https://" + line) || line, url: line };
+        return { kind, title: line.slice(0, i).trim(), url: line.slice(i + 1).trim() };
+      };
+      const items = lines("videos").map(l => parseLink("video", l)).concat(lines("press").map(l => parseLink("press", l)));
+      const ach = lines("ach").map(l => { const m = /^(\d{4})\s*[|:\-]?\s*(.+)$/.exec(l); return m ? { year: Number(m[1]), title: m[2].trim() } : { year: null, title: l }; });
+      try {
+        await api("/v1/me/card/links", { method: "PUT", body: JSON.stringify({ items }) });
+        await api("/v1/me/card/achievements", { method: "PUT", body: JSON.stringify({ items: ach }) });
+        status(t("card.saved")); await myCard();
+      } catch (x) { status(x.message, true); }
+    });
     const form = document.querySelector("#card-form");
     form.addEventListener("submit", async e => {
       e.preventDefault();

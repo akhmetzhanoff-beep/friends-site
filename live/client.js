@@ -3351,8 +3351,7 @@
   async function me() {
     const mem = await api("/v1/me/membership").catch(() => ({ membership: null }));
     const m = mem.membership;
-    const staffUser = APP === "resident" ? isStaff(await loadRoles()) : false; // staff see partners and analytics in the admin app, so their resident app matches the residents'
-    const hasPartner = APP === "admin" || staffUser ? false : await api("/v1/me/partner").then(() => true, () => false);
+    const hasPartner = APP === "admin" ? false : await api("/v1/me/partner").then(() => true, () => false);
     const listed = new Set(ME_GROUPS.flatMap(g => g[1].map(x => x[0])).concat(["overview", "business", "card", "learn", "me", "services", "events", "experts", "members", "announcements", "tests", "deals", "discounts", "partner"]));
     const extra = [...document.querySelectorAll(".sidebar nav .nav-item[data-view]:not([hidden]), .sidebar nav a[data-crm-link]")].filter(el => !listed.has(el.dataset.view) && !(APP === "pilot" && el.hasAttribute("data-admin-item")));
     const row = (view, icon, label) => '<button type="button" class="me-row" data-view="' + view + '"><span class="me-ic">' + ic(icon) + "</span><span>" + esc(t(label || "nav." + view)) + '</span><span class="me-go">' + ic("chevron") + "</span></button>";

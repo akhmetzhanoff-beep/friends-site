@@ -2297,12 +2297,18 @@
       '<div data-partner-edit-box="' + esc(p.id) + '"></div><div data-partner-details="' + esc(p.id) + '"></div></article>';
     const form = '<form id="partner-form" class="app-form">' + field(t("adminPartners.name"), "name", "", "text", 'required minlength="2" maxlength="120"') +
       field(t("adminPartners.code"), "code", "", "text", 'required pattern="[A-Za-z0-9][A-Za-z0-9_\\-]{1,39}" placeholder="assel" autocapitalize="none" autocorrect="off" spellcheck="false"') +
+      '<div class="receipt-actions"><button type="button" class="outline-button" id="code-gen">' + esc(t("adminPartners.gen")) + "</button></div>" +
       field(t("adminPartners.contact"), "contact", "", "text", 'maxlength="200"') +
       '<div class="form-grid">' + field(t("adminPartners.trialDays"), "trial_days", "30", "number", 'min="0" max="90"') + field(t("adminPartners.firstPct"), "first_bonus_pct", "40", "number", 'min="0" max="100" step="0.5"') + "</div>" +
       field(t("adminPartners.tiers"), "tiers", "20,10", "text", 'placeholder="20,10" maxlength="40"') + '<p class="muted">' + esc(t("adminPartners.tiersHint")) + "</p>" +
       field(t("adminPartners.ownerPhone"), "owner_phone", "", "tel", 'placeholder="+7 701 123 45 67" inputmode="tel"') + '<p class="muted">' + esc(t("adminPartners.ownerHint")) + "</p>" +
       '<button class="primary-button">' + esc(t("adminPartners.add")) + "</button></form>";
+    const shortLink = p => SITE_URL + "/" + encodeURIComponent(p.code);
+    const allLinks = '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("adminPartners.sourceCol")) + "</th><th>" + esc(t("adminPartners.linkCol")) + '</th><th class="num">' + esc(t("adminPartners.visits30")) + '</th><th class="num">' + esc(t("adminPartners.signups")) + '</th><th class="num">' + esc(t("adminPartners.paidUsers")) + "</th></tr></thead><tbody>" +
+      d.items.map(p => "<tr><td>" + esc(p.name) + '</td><td><a href="' + esc(shortLink(p)) + '" target="_blank" rel="noopener">' + esc(shortLink(p).replace(/^https?:\/\//, "")) + '</a> <button type="button" class="text-button" data-copy-link="' + esc(shortLink(p)) + '">' + esc(t("adminPartners.copy")) + '</button></td><td class="num">' + p.visits_30d + '</td><td class="num">' + p.signups + '</td><td class="num">' + p.paid_users + "</td></tr>").join("") +
+      '</tbody></table></div><div class="receipt-actions"><button type="button" class="outline-button" id="links-csv">' + esc(t("adminPartners.csv")) + "</button></div>";
     content.innerHTML = panel(t("adminPartners.title"), t("adminPartners.text"), totals) +
+      panel(t("adminPartners.allLinks"), t("adminPartners.allLinksText"), allLinks) +
       panel(t("adminPartners.listTitle"), t("adminPartners.listText"), d.items.length ? d.items.map(card).join("") : '<p class="muted">' + esc(t("adminPartners.empty")) + "</p>") +
       panel(t("adminPartners.addTitle"), t("adminPartners.addText"), form);
     // The code field accepts a pasted link too: only the last part is kept (friendscommunity.kz/assel -> assel).
@@ -2311,6 +2317,17 @@
       const v = codeInput.value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
       const cleaned = (v.includes("/") ? v.split("/").pop() : v).replace(/[^a-z0-9_-]/g, "");
       if (cleaned !== codeInput.value) codeInput.value = cleaned;
+    });
+    document.querySelector("#code-gen")?.addEventListener("click", () => {
+      const L = "abcdefghjkmnpqrstuvwxyz", D = "23456789"; const pick = a => a[Math.floor(Math.random() * a.length)];
+      const used = new Set(d.items.map(x => x.code)); let c;
+      do { c = pick(L) + pick(D) + pick(L) + pick(D); } while (used.has(c));
+      codeInput.value = c;
+    });
+    content.querySelector("#links-csv")?.addEventListener("click", () => {
+      const rows = [[t("adminPartners.sourceCol"), t("adminPartners.linkCol"), t("adminPartners.visits30"), t("adminPartners.signups"), t("adminPartners.paidUsers")]].concat(d.items.map(p => [p.name, shortLink(p), p.visits_30d, p.signups, p.paid_users]));
+      const csv = "\ufeff" + rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(";")).join("\r\n");
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = "friends-links.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     });
     document.querySelector("#partner-form").addEventListener("submit", async e => {
       e.preventDefault();

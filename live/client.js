@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity", "admin-subscriptions"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "together", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -48,7 +48,7 @@
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
-    overview: "overview", support: "messages", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
+    overview: "overview", support: "messages", together: "together", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
@@ -532,8 +532,8 @@
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
-    notifications: "messages", support: "messages", chat: "messages", "my-card": "account", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications", "support"] };
+    notifications: "messages", together: "messages", support: "messages", chat: "messages", "my-card": "account", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "together", "notifications", "support"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -574,7 +574,7 @@
     row.setAttribute("aria-label", t("nav." + block));
     row.innerHTML = tabs.map(v => '<button type="button" class="chip-tab' + (v === active ? " active" : "") + '" data-view="' + v + '"' + (v === active ? ' aria-current="page"' : "") + ">" + esc(t("nav." + v)) + "</button>").join("");
     content.insertBefore(row, content.firstChild);
-    if (active === "notifications") mountStories(row);
+    if (active === "notifications" || active === "together") mountStories(row);
   }
 
   // The phone stays signed in after the first SMS code (session kept on the device and refreshed automatically).
@@ -594,7 +594,7 @@
     title.textContent = t("view." + key + ".title");
     subtitle.textContent = t("view." + key + ".subtitle");
     // Messages start straight with the stories strip: the big title card stays for screen readers only.
-    document.querySelector(".welcome")?.classList.toggle("is-compact", ["messages", "notifications", "support"].includes(view));
+    document.querySelector(".welcome")?.classList.toggle("is-compact", ["messages", "together", "notifications", "support"].includes(view));
   }
 
   // Install as an app from the website (PWA): shown only in a regular browser tab.
@@ -3525,6 +3525,36 @@
     root.querySelectorAll("[data-story]").forEach(b => b.addEventListener("click", () => openStories(d, Number(b.dataset.story))));
     root.querySelector("[data-story-add]")?.addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) pickStory(f); });
   }
+  // ---- Together: coffee, sport, a concert, a trip: propose, join, a chat opens ----
+  const MEETUP_KINDS = ["coffee", "sport", "concert", "trip", "online", "other"];
+  async function together() {
+    const d = await api("/v1/meetups");
+    const when = v => v ? new Date(v).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : t("together.anytime");
+    const card = m => '<article class="mt-card"><div class="mt-top"><span class="mt-kind">' + esc(t("together.kind." + m.kind)) + '</span><span class="mt-when">' + esc(when(m.starts_at)) + "</span></div><h3>" + esc(m.title) + "</h3>" +
+      (m.place ? '<p class="muted">' + esc(m.place) + "</p>" : "") + '<p class="mt-people">' + esc(m.author) + " \u00b7 " + esc(t("together.going", { n: m.going })) + (m.capacity ? " / " + m.capacity : "") + "</p>" +
+      '<div class="receipt-actions">' + (m.joined ? (m.room_id ? '<button type="button" class="primary-button" data-mt-chat="' + esc(m.room_id) + '">' + esc(t("together.chat")) + "</button>" : "") +
+        (m.mine ? '<button type="button" class="text-button" data-mt-del="' + esc(m.id) + '">' + esc(t("stories.delete")) + "</button>" : '<button type="button" class="outline-button" data-mt-leave="' + esc(m.id) + '">' + esc(t("together.leave")) + "</button>")
+        : '<button type="button" class="primary-button" data-mt-join="' + esc(m.id) + '"' + (m.capacity && m.going >= m.capacity ? " disabled" : "") + ">" + esc(m.capacity && m.going >= m.capacity ? t("together.full") : t("together.join")) + "</button>") + "</div></article>";
+    content.innerHTML = '<button type="button" class="primary-button mt-new" id="mt-new">+ ' + esc(t("together.propose")) + "</button>" +
+      (d.items.length ? '<div class="mt-list">' + d.items.map(card).join("") + "</div>" : '<p class="muted">' + esc(t("together.empty")) + "</p>");
+    const act = (sel, fn) => content.querySelectorAll(sel).forEach(b => b.addEventListener("click", async () => { try { await fn(b); } catch (x) { status(x.message, true); } }));
+    act("[data-mt-join]", async b => { const r = await api("/v1/meetups/" + b.dataset.mtJoin + "/join", { method: "POST", body: "{}" }); status(t("together.joined")); await together(); if (r.room_id) { /* chat button appears */ } });
+    act("[data-mt-leave]", async b => { await api("/v1/meetups/" + b.dataset.mtLeave + "/leave", { method: "POST", body: "{}" }); await together(); });
+    act("[data-mt-del]", async b => { if (!confirm(t("together.deleteAsk"))) return; await api("/v1/meetups/" + b.dataset.mtDel, { method: "DELETE" }); await together(); });
+    act("[data-mt-chat]", async b => { chatRoom = b.dataset.mtChat; render("chat"); });
+    document.querySelector("#mt-new")?.addEventListener("click", () => {
+      const dlg = authDialog('<h3>' + esc(t("together.propose")) + '</h3><form class="app-form" id="mt-form">' +
+        '<label class="field"><span>' + esc(t("together.what")) + '</span><select name="kind">' + MEETUP_KINDS.map(k => '<option value="' + k + '">' + esc(t("together.kind." + k)) + "</option>").join("") + "</select></label>" +
+        field(t("together.title"), "title", "", "text", 'required minlength="3" maxlength="120" placeholder="' + esc(t("together.titleHint")) + '"') + field(t("together.place"), "place", "", "text", 'maxlength="120"') +
+        field(t("together.when"), "starts_at", "", "datetime-local") + field(t("together.capacity"), "capacity", "", "number", 'min="2" max="200"') +
+        '<div class="auth-actions auth-actions-col"><button class="primary-button">' + esc(t("together.publish")) + '</button><button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div></form>");
+      dlg.q("[data-x]").addEventListener("click", dlg.close);
+      dlg.q("#mt-form").addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget);
+        const body = { kind: f.get("kind"), title: String(f.get("title")).trim() }; if (String(f.get("place") || "").trim()) body.place = String(f.get("place")).trim();
+        if (f.get("starts_at")) body.starts_at = new Date(String(f.get("starts_at"))).toISOString(); if (f.get("capacity")) body.capacity = Number(f.get("capacity"));
+        try { await api("/v1/meetups", { method: "POST", body: JSON.stringify(body) }); dlg.close(); status(t("together.published")); await together(); } catch (x) { dlg.close(); status(x.message, true); } });
+    });
+  }
   /** The stories strip stays on top of every tab of the Messages block. */
   async function mountStories(row) {
     const d = await loadStories(); const html = storiesStrip(d);
@@ -3543,7 +3573,7 @@
     const mineSupport = r => r.room_type === "support" && r.name === "Friends \u2014 \u043a\u043e\u043c\u0430\u043d\u0434\u0430";
     const supportRows = d.items.filter(r => r.room_type === "support" && !mineSupport(r));
     const rest = d.items.filter(r => r.room_type !== "main" && r.room_type !== "direct" && r.room_type !== "support");
-    const groups = [["news", r => r.room_type === "advertising"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports"].includes(r.room_type)]];
+    const groups = [["news", r => r.room_type === "advertising"], ["meetup", r => r.room_type === "meetup"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports", "meetup"].includes(r.room_type)]];
     const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
       : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
     content.innerHTML = storiesStrip(stories) + quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
@@ -4298,7 +4328,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
+  const RENDERERS = { together, support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

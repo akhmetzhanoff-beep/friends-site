@@ -3962,6 +3962,9 @@
       (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "") + "</article>";
   }
   const linkRow = (l) => '<div class="cv-row"><input name="lu" type="url" inputmode="url" maxlength="400" placeholder="' + esc(t("card.rowUrl")) + '" value="' + esc(l ? l.url : "") + '"><input name="lt" maxlength="120" placeholder="' + esc(t("card.rowTitle")) + '" value="' + esc(l ? l.title : "") + '"><button type="button" class="icon-button" data-row-del aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>';
+  const achRow = a => { const y0 = new Date().getFullYear(); let opts = '<option value="">' + esc(t("card.year")) + "</option>"; for (let y = y0; y >= 1990; y--) opts += '<option value="' + y + '"' + (a && Number(a.year) === y ? " selected" : "") + ">" + y + "</option>";
+    return '<div class="cv-row"><select name="ay" aria-label="' + esc(t("card.year")) + '">' + opts + '</select><input name="at" maxlength="160" placeholder="' + esc(t("card.achPlaceholder")) + '" value="' + esc(a ? a.title : "") + '"><button type="button" class="icon-button" data-row-del aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>'; };
+  const achRows = list => '<div class="cv-rows" data-kind="ach"><b>' + esc(t("card.path")) + "</b><div>" + (list.length ? list.map(achRow).join("") : achRow(null)) + '</div><button type="button" class="outline-button" data-row-add>+ ' + esc(t("card.achAdd")) + "</button></div>";
   const linkRows = (kind, label, list) => '<div class="cv-rows" data-kind="' + kind + '"><b>' + esc(label) + "</b><div>" + (list.length ? list.map(linkRow).join("") : linkRow(null)) + '</div><button type="button" class="outline-button" data-row-add>+ ' + esc(t("card.rowAdd")) + "</button></div>";
   async function myCard() {
     const d = await api("/v1/me/card");
@@ -3983,8 +3986,8 @@
         '<form id="links-form" class="app-form">' +
         linkRows("video", t("card.videos"), (d.links || []).filter(l => l.kind === "video")) +
         linkRows("press", t("card.press"), (d.links || []).filter(l => l.kind === "press")) +
-        area(t("card.path"), "ach", (d.achievements || []).map(a => (a.year ? a.year + " | " : "") + a.title).join("\n")) +
-        '<p class="muted">' + esc(t("card.linesHint")) + '</p><button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
+        achRows(d.achievements || []) +
+        '<button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
       panel(t("card.editTitle"), t("card.editText"),
         '<form id="card-form" class="app-form">' +
         "<h4>" + esc(t("card.socials")) + "</h4>" + CARD_SOCIALS.map(k => field(t("card.link." + k), "soc_" + k, n(so[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
@@ -4034,7 +4037,7 @@
         return { kind, title: line.slice(0, i).trim(), url: line.slice(i + 1).trim() };
       };
       const items = rowItems("video").concat(rowItems("press"));
-      const ach = lines("ach").map(l => { const m = /^(\d{4})\s*[|:\-]?\s*(.+)$/.exec(l); return m ? { year: Number(m[1]), title: m[2].trim() } : { year: null, title: l }; });
+      const ach = [...document.querySelectorAll('.cv-rows[data-kind="ach"] .cv-row')].map(r => { const ti = r.querySelector('[name="at"]').value.trim(), y = r.querySelector('[name="ay"]').value; return ti ? { year: y ? Number(y) : null, title: ti } : null; }).filter(Boolean);
       try {
         const saved = await api("/v1/me/card/links", { method: "PUT", body: JSON.stringify({ items }) });
         await api("/v1/me/card/achievements", { method: "PUT", body: JSON.stringify({ items: ach }) });
@@ -4046,7 +4049,7 @@
       box.addEventListener("click", e => {
         const del = e.target.closest("[data-row-del]"), add = e.target.closest("[data-row-add]");
         if (del) { const rows = box.querySelectorAll(".cv-row"); if (rows.length > 1) del.closest(".cv-row").remove(); else box.querySelectorAll("input").forEach(i => { i.value = ""; }); }
-        if (add) { box.querySelector("div").insertAdjacentHTML("beforeend", linkRow(null)); const ins = box.querySelectorAll(".cv-row:last-child input"); ins[0]?.focus(); }
+        if (add) { box.querySelector("div").insertAdjacentHTML("beforeend", box.dataset.kind === "ach" ? achRow(null) : linkRow(null)); const ins = box.querySelectorAll(".cv-row:last-child input"); ins[0]?.focus(); }
       });
     });
     const form = document.querySelector("#card-form");

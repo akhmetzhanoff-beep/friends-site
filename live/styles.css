@@ -802,3 +802,7 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 
 .welcome.is-compact{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0}
 .stories{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.stories .story{scroll-snap-align:start}
+
+.cv-rows{margin-bottom:24px}.cv-rows>b{font-size:17px}.cv-rows>div{gap:12px;margin:8px 0 12px}
+.cv-row{grid-template-columns:1fr auto;gap:8px;padding:12px;border:1px solid var(--fb-line);border-radius:14px;background:var(--fb-surface,#fff)}
+.cv-row input,.cv-row select{grid-column:1;min-width:0;width:100%;box-sizing:border-box}.cv-row [data-row-del]{grid-column:2;grid-row:1/3;align-self:center}

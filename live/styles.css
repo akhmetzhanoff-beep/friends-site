@@ -774,3 +774,8 @@ a.chip-tab{text-decoration:none;color:inherit}
 .app-status[hidden]{display:none}
 html[data-theme="dark"] .app-status{background:#1f7a4a;border:0;color:#fff}
 html[data-theme="dark"] .app-status.error{background:#c0392b;border:0;color:#fff}
+
+/* WhatsApp-like dialogue: day lines and read ticks */
+.msg-day{align-self:center;margin:10px 0 4px}.msg-day span{display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(15,23,42,.08);color:var(--fb-text-2,#65676b);font-size:12px;font-weight:600}
+.msg .tick{margin-left:6px;letter-spacing:-2px;font-size:12px;opacity:.85}.msg .tick.read{color:#7fd1ff;opacity:1}
+html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}

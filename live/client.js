@@ -710,7 +710,7 @@
     const recent = (n.items || []).map(x => '<div class="list-row"><div><strong>' + esc(x.title) + "</strong><p>" + esc(x.body) + "</p><small>" + esc(date(x.created_at)) + '</small></div><span class="pill">' + esc(x.read_at ? t("status.read") : t("status.new")) + "</span></div>").join("")
       || '<p class="muted">' + esc(t("notifications.empty")) + "</p>";
     content.innerHTML =
-      '<div class="block-tiles">' + ["events", "experts", "discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
+      '<div class="block-tiles">' + ["discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
       (due ? '<div class="stats-grid"><article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(money(due.amount_kzt)) + "</strong><small>" + esc(due.invoice_number) + "</small></article></div>" : "") +
       fbHtml + bdayHtml + newsHtml + installCard() +
       '<div class="section-heading"><div><h2>' + esc(t("overview.hello", { name: p?.display_name || user?.email || t("overview.participant") })) + '</h2><p class="muted">' + esc(t("overview.helloText")) + '</p></div></div>' +
@@ -3358,7 +3358,7 @@
     const sub = !m ? t("settings.subNone") : m.active ? (m.ends_at ? t("me.subUntil", { date: day(m.ends_at) }) : t("settings.subActive")) : t("settings.subExpired", { date: m.ends_at ? day(m.ends_at) : "—" });
     content.innerHTML = '<section class="me-head"><div class="member-avatar big" aria-hidden="true">' + esc((name || "?").slice(0, 1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p class="muted">' + esc(user?.email || "") + '</p><span class="pill">' + esc(sub) + "</span></div></section>" +
       (APP === "pilot" ? pilotModeCard() : "") +
-      (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><a class="me-row" href="' + esc(WA_URL) + '" target="_blank" rel="noopener noreferrer"><span class="me-ic">' + ic("chat") + "</span><span>" + esc(t("wa.writeUs")) + '</span><span class="me-go">›</span></a></div></section>') +
+      (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-support><span class="me-ic">' + ic("chat") + "</span><span>" + esc(t("support.write")) + '</span><span class="me-go">›</span></button></div></section>') +
       (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="partner-apply"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("partnerApply.tile")) + '</span><span class="me-go">›</span></button></div></section>')) +
       ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i, l]) => row(v, i, l)).join("") + "</div></section>").join("") +
       (extra.length ? '<section class="me-group"><h3>' + esc(t("services.more")) + '</h3><div class="me-list" id="me-extra"></div></section>' : "") +
@@ -3374,6 +3374,7 @@
     });
     I18N.applyStatic(content);
     document.querySelector("#me-logout").addEventListener("click", logout);
+    bindSupport();
     wirePilotMode();
   }
   const services = me;
@@ -3432,15 +3433,29 @@
       esc(r.last_message && r.last_message.body ? (r.last_message.author ? r.last_message.author + ": " : "") + r.last_message.body : (r.description || t("messages.noMessages"))) + "</small></span>" +
       (r.unread ? '<span class="chat-unread">' + r.unread + "</span>" : !r.joined && r.can_join ? '<span class="pill">' + esc(t("messages.open")) + "</span>" : "") + "</button>";
     const pinned = d.items.filter(r => r.room_type === "main");
-    const rest = d.items.filter(r => r.room_type !== "main");
+    const direct = d.items.filter(r => r.room_type === "direct");
+    const mineSupport = r => r.room_type === "support" && r.name === "Friends \u2014 \u043a\u043e\u043c\u0430\u043d\u0434\u0430";
+    const supportRows = d.items.filter(r => r.room_type === "support" && !mineSupport(r));
+    const rest = d.items.filter(r => r.room_type !== "main" && r.room_type !== "direct" && r.room_type !== "support");
+    const mySupport = d.items.find(mineSupport);
+    const supportRow = '<button type="button" class="chat-row" data-support><span class="chat-avatar" aria-hidden="true">F</span><span class="chat-main"><strong>' + esc(t("support.title")) + "</strong><small>" +
+      esc(mySupport && mySupport.last_message && mySupport.last_message.body ? mySupport.last_message.body : t("support.hint")) + "</small></span>" + (mySupport && mySupport.unread ? '<span class="chat-unread">' + mySupport.unread + "</span>" : "") + "</button>";
     const groups = [["news", r => r.room_type === "advertising"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports"].includes(r.room_type)]];
     const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
       : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
-    content.innerHTML = quota + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+    content.innerHTML = quota + '<div class="chat-list chat-pinned">' + supportRow + "</div>" + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+      (direct.length ? panel(t("messages.group.direct"), "", '<div class="chat-list">' + direct.map(row).join("") + "</div>") : "") +
       groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
         return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
+    bindSupport();
+  }
+  /** Opens (creating on first use) the private dialogue with the Friends team. */
+  function bindSupport() {
+    content.querySelectorAll("[data-support]").forEach(b => b.addEventListener("click", async () => {
+      try { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; render("chat"); } catch (x) { status(x.message, true); }
+    }));
   }
   const linkify = text => esc(text).replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g, u => '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + "</a>");
   const fileSize = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
@@ -3450,8 +3465,19 @@
     if (a.kind === "video") return '<video class="msg-video" controls preload="metadata" playsinline src="' + url + '"></video>';
     return '<a class="msg-file" href="' + url + '" target="_blank" rel="noopener noreferrer">' + ic("file", "ic-inline") + '<span><strong>' + esc(a.name) + "</strong><small>" + esc(fileSize(a.size)) + "</small></span></a>";
   };
-  const bubble = m => '<div class="msg' + (m.mine ? " mine" : "") + '" data-msg="' + esc(m.id) + '">' + (m.mine ? "" : '<strong class="msg-author">' + esc(m.author) + "</strong>") +
-    (m.deleted ? '<em class="muted">' + esc(t("messages.deleted")) + "</em>" : (m.attachments || []).map(attachHtml).join("") + (m.body ? "<p>" + linkify(m.body) + "</p>" : "")) + '<small>' + esc(new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })) + "</small></div>";
+  let chatDirect = false, chatPeerRead = null, chatLastDay = "";
+  const chatDayKey = v => { const d = new Date(v); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
+  const chatDayLabel = v => {
+    const d = new Date(v), now = new Date(), yest = new Date(now.getTime() - 86400000);
+    if (chatDayKey(d) === chatDayKey(now)) return t("chat.today");
+    if (chatDayKey(d) === chatDayKey(yest)) return t("chat.yesterday");
+    return d.toLocaleDateString([], { day: "numeric", month: "long", ...(d.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}) });
+  };
+  const tickHtml = m => chatDirect && m.mine && !m.deleted ? '<span class="tick' + (chatPeerRead && new Date(chatPeerRead) >= new Date(m.created_at) ? " read" : "") + '" data-t="' + esc(m.created_at) + '" role="img" aria-label="' + esc(t(chatPeerRead && new Date(chatPeerRead) >= new Date(m.created_at) ? "chat.read" : "chat.sent")) + '">' + (chatPeerRead && new Date(chatPeerRead) >= new Date(m.created_at) ? "\u2713\u2713" : "\u2713") + "</span>" : "";
+  const bubble = m => '<div class="msg' + (m.mine ? " mine" : "") + '" data-msg="' + esc(m.id) + '">' + (m.mine || chatDirect ? "" : '<strong class="msg-author">' + esc(m.author) + "</strong>") +
+    (m.deleted ? '<em class="muted">' + esc(t("messages.deleted")) + "</em>" : (m.attachments || []).map(attachHtml).join("") + (m.body ? "<p>" + linkify(m.body) + "</p>" : "")) + '<small>' + esc(new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })) + tickHtml(m) + "</small></div>";
+  /** Bubbles with a date line ("Today", "Yesterday", a date) whenever the day changes. */
+  const bubblesWithDays = items => items.map(m => { const k = chatDayKey(m.created_at); const sep = k !== chatLastDay ? '<div class="msg-day"><span>' + esc(chatDayLabel(m.created_at)) + "</span></div>" : ""; chatLastDay = k; return sep + bubble(m); }).join("");
   const EMOJI = "😀 😁 😂 🤣 😊 😍 😘 😎 🤔 😅 😉 🙏 👍 👏 🙌 💪 🔥 ✨ 🎉 ❤️ 💯 ✅ 👌 🤝 🚀 💡 📈 💰 ☕ 🌟 😢 😮 🙈 🤷 👋 🎯 📌 📎 🏆 🎁".split(" ");
   /** Photos are shrunk on the phone before upload (max 1600 px), everything else goes as it is. */
   async function prepareUpload(file) {
@@ -3469,9 +3495,10 @@
     if (!chatRoom) { active = "messages"; setHeading("messages"); return messages(); }
     const d = await api("/v1/chats/" + encodeURIComponent(chatRoom) + "/messages");
     const r = d.room;
+    chatDirect = r.room_type === "direct"; chatPeerRead = r.peer_read_at || null; chatLastDay = "";
     chatLastId = d.items.length ? d.items.at(-1).id : null;
     content.innerHTML = '<div class="chat-head"><h2>' + esc(r.name) + "</h2>" + (r.description ? '<p class="muted">' + esc(r.description) + "</p>" : "") + "</div>" +
-      '<div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="' + esc(r.name) + '">' + (d.items.length ? d.items.map(bubble).join("") : '<p class="muted">' + esc(t("messages.first")) + "</p>") + "</div>" +
+      '<div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="' + esc(r.name) + '">' + (d.items.length ? bubblesWithDays(d.items) : '<p class="muted">' + esc(t("messages.first")) + "</p>") + "</div>" +
       (r.can_post ? '<div id="chat-pending" class="chat-pending" hidden></div><div id="emoji-panel" class="emoji-panel" hidden>' + EMOJI.map(e => '<button type="button" data-emoji="' + e + '">' + e + "</button>").join("") + '</div><form id="chat-form" class="chat-form"><input type="file" id="chat-file" hidden multiple accept="image/*,video/mp4,video/quicktime,application/pdf,.docx,.xlsx,.pptx"><button type="button" class="icon-button" id="chat-attach" aria-label="' + esc(t("chat.attach")) + '">' + ic("attach") + '</button><button type="button" class="icon-button" id="chat-emoji" aria-label="' + esc(t("chat.emoji")) + '">' + ic("smile") + '</button><label class="sr-only" for="chat-input">' + esc(t("messages.write")) + '</label><textarea id="chat-input" name="body" rows="1" maxlength="2000" placeholder="' + esc(t("messages.write")) + '"></textarea><button class="primary-button">' + esc(t("messages.send")) + "</button></form>"
         : r.can_join ? '<button type="button" class="primary-button" id="chat-join">' + esc(t("messages.join")) + "</button>"
         : '<p class="muted chat-readonly">' + esc(t(r.status === "active" ? "messages.readOnlyPolicy" : "messages.readOnly")) + "</p>");
@@ -3516,10 +3543,14 @@
     const log = document.querySelector("#chat-log");
     if (!log || !chatRoom) return;
     const d = await api("/v1/chats/" + encodeURIComponent(chatRoom) + "/messages" + (chatLastId ? "?after_id=" + encodeURIComponent(chatLastId) : ""));
+    if (d.room && chatDirect && d.room.peer_read_at !== chatPeerRead) {
+      chatPeerRead = d.room.peer_read_at || null;
+      log.querySelectorAll(".tick[data-t]").forEach(el => { if (chatPeerRead && new Date(chatPeerRead) >= new Date(el.dataset.t)) { el.classList.add("read"); el.textContent = "\u2713\u2713"; el.setAttribute("aria-label", t("chat.read")); } });
+    }
     if (!d.items.length) return;
     if (!chatLastId) log.innerHTML = "";
     const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
-    log.insertAdjacentHTML("beforeend", d.items.filter(m => !log.querySelector('[data-msg="' + m.id + '"]')).map(bubble).join(""));
+    log.insertAdjacentHTML("beforeend", bubblesWithDays(d.items.filter(m => !log.querySelector('[data-msg="' + m.id + '"]'))));
     chatLastId = d.items.at(-1).id;
     if (atBottom) log.scrollTop = log.scrollHeight;
   }
@@ -3821,10 +3852,13 @@
       '<section class="lesson-box member-head"><div class="member-avatar big" aria-hidden="true">' + esc((c.display_name || "?").slice(0, 1)) + "</div><div><h2>" + esc(c.display_name) + "</h2><p class=\"muted\">" + esc([c.headline, c.city_name].filter(Boolean).join(" · ")) + "</p></div></section>") +
       panel(t("trust.title"), t("trust.text"), trustSummary(c)) +
       panel(t("trust.reviews"), "", reviewList(c, false)) +
-      '<div class="receipt-actions member-deal"><button type="button" class="primary-button" id="propose-deal">' + ic("deal", "ic-inline") + ' ' + esc(t("deals.proposeTo")) + "</button></div>" +
+      '<div class="receipt-actions member-deal"><button type="button" class="primary-button" id="message-member">' + ic("chat", "ic-inline") + ' ' + esc(t("chat.message")) + '</button> <button type="button" class="outline-button" id="propose-deal">' + ic("deal", "ic-inline") + ' ' + esc(t("deals.proposeTo")) + "</button></div>" +
       panel(t("trust.leaveTitle"), t("trust.leaveText"), mine && mine.status !== "rejected" ? '<p class="demo-note">' + esc(t(mine.status === "pending" ? "trust.minePending" : "trust.mineDone")) + "</p>" :
         '<form id="review-form" class="app-form"><fieldset class="rating-pick"><legend>' + esc(t("trust.yourRating")) + "</legend>" + [5, 4, 3, 2, 1].map(n => '<label><input type="radio" name="rating" value="' + n + '" required> <span>' + "★".repeat(n) + "</span></label>").join("") + "</fieldset>" +
         area(t("trust.reviewText"), "body") + '<button class="primary-button">' + esc(t("trust.send")) + "</button></form>");
+    document.querySelector("#message-member")?.addEventListener("click", async () => {
+      try { const r = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: c.user_id }) }); chatRoom = r.room_id; render("chat"); } catch (x) { status(x.message, true); }
+    });
     document.querySelector("#propose-deal")?.addEventListener("click", () => { dealId = null; dealDraftFor = { id: c.user_id, name: c.display_name }; render("deal"); });
     const f = document.querySelector("#review-form");
     if (f) {

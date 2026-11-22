@@ -3426,7 +3426,53 @@
       badge.setAttribute("aria-label", t("messages.unread", { n: total }));
     } catch { /* badge is optional */ }
   }
+  // ---- Stories: a strip of circles on top of Messages; tap to watch, 24 hours ----
+  async function loadStories() { try { return await api("/v1/stories"); } catch { return { can_post: false, items: [] }; } }
+  const storyAvatar = g => g.photo_url ? '<img alt="" src="' + esc(apiBase + g.photo_url) + '">' : '<span aria-hidden="true">' + esc(String(g.name || "?").slice(0, 1).toUpperCase()) + "</span>";
+  function storiesStrip(d) {
+    if (!d || (!d.items.length && !d.can_post)) return "";
+    return '<div class="stories" role="list">' + (d.can_post ? '<label class="story story-add" role="listitem"><input type="file" accept="image/*" data-story-add hidden><span class="story-ring add" aria-hidden="true"><span>+</span></span><small>' + esc(t("stories.add")) + "</small></label>" : "") +
+      d.items.map((g, i) => '<button type="button" class="story" role="listitem" data-story="' + i + '"><span class="story-ring' + (g.unseen ? " new" : "") + '">' + storyAvatar(g) + "</span><small>" + esc(String(g.name || "").split(" ")[0]) + "</small></button>").join("") + "</div>";
+  }
+  function openStories(d, start) {
+    let gi = start, si = 0, timer = null;
+    const box = document.createElement("div"); box.className = "story-view"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", t("stories.title"));
+    document.body.appendChild(box);
+    const close = () => { clearTimeout(timer); box.remove(); document.removeEventListener("keydown", onKey); messages().catch(() => undefined); };
+    const onKey = e => { if (e.key === "Escape") close(); if (e.key === "ArrowRight") next(); if (e.key === "ArrowLeft") prev(); };
+    document.addEventListener("keydown", onKey);
+    function show() {
+      clearTimeout(timer);
+      const g = d.items[gi]; if (!g) return close();
+      const st = g.stories[si]; if (!st) return next();
+      box.innerHTML = '<div class="story-bars">' + g.stories.map((x, k) => '<i class="' + (k < si ? "done" : k === si ? "run" : "") + '"></i>').join("") + '</div>' +
+        '<div class="story-head"><span class="story-ring sm">' + storyAvatar(g) + '</span><b>' + esc(g.name) + '</b><button type="button" class="icon-button" data-sv-close aria-label="' + esc(t("stories.close")) + '">\u00d7</button></div>' +
+        '<img class="story-img" alt="" src="' + esc(apiBase + st.url) + '">' + (st.caption ? '<p class="story-cap">' + esc(st.caption) + "</p>" : "") +
+        '<button type="button" class="story-tap prev" data-sv-prev aria-label="' + esc(t("stories.prev")) + '"></button><button type="button" class="story-tap next" data-sv-next aria-label="' + esc(t("stories.next")) + '"></button>' +
+        (st.mine ? '<button type="button" class="story-del" data-sv-del>' + esc(t("stories.delete")) + "</button>" : "");
+      box.querySelector("[data-sv-close]").addEventListener("click", close);
+      box.querySelector("[data-sv-next]").addEventListener("click", next);
+      box.querySelector("[data-sv-prev]").addEventListener("click", prev);
+      box.querySelector("[data-sv-del]")?.addEventListener("click", async () => { if (!confirm(t("stories.deleteAsk"))) return; try { await api("/v1/stories/" + st.id, { method: "DELETE" }); } catch (x) { status(x.message, true); } close(); });
+      if (!st.seen) { st.seen = true; api("/v1/stories/" + st.id + "/view", { method: "POST", body: "{}" }).catch(() => undefined); }
+      timer = setTimeout(next, 5000);
+    }
+    function next() { const g = d.items[gi]; if (g && si < g.stories.length - 1) { si++; show(); } else if (gi < d.items.length - 1) { gi++; si = 0; show(); } else close(); }
+    function prev() { if (si > 0) { si--; show(); } else if (gi > 0) { gi--; si = 0; show(); } }
+    show();
+  }
+  async function pickStory(file) {
+    const resize = async f => {
+      if (!/^image\/(jpeg|png|webp)$/.test(f.type) || !window.createImageBitmap) return f;
+      try { const bmp = await createImageBitmap(f); const k = Math.min(1, 1280 / Math.max(bmp.width, bmp.height)); const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.85)); return blob ? new File([blob], "story.jpg", { type: "image/jpeg" }) : f; } catch { return f; }
+    };
+    const cap = (prompt(t("stories.captionPrompt")) || "").trim().slice(0, 140);
+    try { const small = await resize(file); const fd = new FormData(); fd.append("file", small, small.name);
+      await api("/v1/stories" + (cap ? "?caption=" + encodeURIComponent(cap) : ""), { method: "POST", body: fd }); status(t("stories.posted")); await messages(); } catch (x) { status(x.message, true); }
+  }
   async function messages() {
+    const stories = await loadStories();
     const d = await api("/v1/chats");
     const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
@@ -3440,13 +3486,15 @@
     const groups = [["news", r => r.room_type === "advertising"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports"].includes(r.room_type)]];
     const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
       : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
-    content.innerHTML = quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+    content.innerHTML = storiesStrip(stories) + quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
       (direct.length ? panel(t("messages.group.direct"), "", '<div class="chat-list">' + direct.map(row).join("") + "</div>") : "") +
       groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
         return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
     bindSupport();
+    content.querySelectorAll("[data-story]").forEach(b => b.addEventListener("click", () => openStories(stories, Number(b.dataset.story))));
+    content.querySelector("[data-story-add]")?.addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) pickStory(f); });
   }
   /** Opens (creating on first use) the private dialogue with the Friends team. */
   function bindSupport() {

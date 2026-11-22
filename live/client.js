@@ -428,7 +428,7 @@
   function authBar() {
     const el = document.querySelector(".topbar-right");
     if (!el) return;
-    const chatBtn = token() && APP !== "admin" && !(APP === "pilot" && pilotMode() === "admin") ? '<button type="button" class="icon-button topbar-chat" data-view="messages" aria-label="' + esc(t("nav.messages")) + '">' + ic("chat") + "<span class=\"topbar-chat-label\">" + esc(t("nav.messages")) + '</span><span class="nav-badge" id="msg-badge" hidden></span></button>' : "";
+    const chatBtn = "";
     el.classList.toggle("signed-in", !!token());
     el.innerHTML = chatBtn + themeButton() + I18N.switcherHtml() + (token()
       ? '<span class="status-dot" aria-hidden="true"></span><span id="user-label">' + esc(user?.email || t("auth.signedInLabel")) + '</span><button class="outline-button" id="logout-button">' + esc(t("auth.logout")) + "</button>"
@@ -492,7 +492,7 @@
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
   // ---------- «Назад» как в Kaspi: всегда в одном месте — слева вверху, на всех внутренних экранах ----------
-  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events", profile: "me", companies: "me", trust: "me", membership: "me", team: "me" };
+  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events", business: "me", profile: "me", companies: "me", trust: "me", membership: "me", team: "me" };
   const ROOT_ADMIN = "admin-stats";
   const isRoot = v => isPrimary(v) || v === ROOT_ADMIN || (APP === "admin" && v !== "chat");
   const parentOf = v => PARENT[v] || (BLOCK_OF[v] && BLOCK_OF[v] !== v ? BLOCK_OF[v] : (APP === "admin" || (APP === "pilot" && pilotMode() === "admin") ? ROOT_ADMIN : "overview"));
@@ -3312,7 +3312,7 @@
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
   // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
   const ME_GROUPS = [
-    ["me.groupAccount", [["my-card", "star", "card.myTitle"], ["profile", "user", "nav.account"]]],
+    ["me.groupAccount", [["my-card", "star", "card.myTitle"], ["business", "business", "nav.business"], ["profile", "user", "nav.account"]]],
     ["me.groupCommunity", [["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
     ["me.groupApp", [["settings", "gear"]]]
   ];

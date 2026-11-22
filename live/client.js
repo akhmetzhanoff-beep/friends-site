@@ -3352,7 +3352,7 @@
     const mem = await api("/v1/me/membership").catch(() => ({ membership: null }));
     const m = mem.membership;
     const hasPartner = APP === "admin" ? false : await api("/v1/me/partner").then(() => true, () => false);
-    const listed = new Set(ME_GROUPS.flatMap(g => g[1].map(x => x[0])).concat(["overview", "business", "card", "learn", "me", "services", "events", "experts", "members", "announcements", "tests", "deals", "discounts", "partner"]));
+    const listed = new Set(ME_GROUPS.flatMap(g => g[1].map(x => x[0])).concat(["overview", "business", "card", "learn", "me", "services", "events", "experts", "members", "announcements", "tests", "deals", "discounts", "partner", "messages"].concat(Object.values(BLOCK_TABS).flat()))); // views reachable through a block tab are not repeated under "More"
     const extra = [...document.querySelectorAll(".sidebar nav .nav-item[data-view]:not([hidden]), .sidebar nav a[data-crm-link]")].filter(el => !listed.has(el.dataset.view) && !(APP === "pilot" && el.hasAttribute("data-admin-item")));
     const row = (view, icon, label) => '<button type="button" class="me-row" data-view="' + view + '"><span class="me-ic">' + ic(icon) + "</span><span>" + esc(t(label || "nav." + view)) + '</span><span class="me-go">' + ic("chevron") + "</span></button>";
     const name = profile?.display_name || user?.email || "";

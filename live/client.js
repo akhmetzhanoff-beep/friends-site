@@ -36,6 +36,10 @@
     box.innerHTML = '<img class="story-img" alt="" src="' + b.dataset.galSrc.replace(/"/g, "&quot;") + '"><button type="button" class="icon-button photo-close" aria-label="' + esc(t("stories.close")) + '">\u00d7</button>';
     const close = () => { box.remove(); document.removeEventListener("keydown", onKey); }; const onKey = ev => { if (ev.key === "Escape") close(); };
     document.addEventListener("keydown", onKey); box.addEventListener("click", close); document.body.appendChild(box); box.querySelector("button").focus(); });
+  // Resident page tabs (Photos, Videos, Businesses, About) and the round shortcuts under the header.
+  document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-cv-tab]"); if (!b) return; const cv = b.closest(".cv"); if (!cv) return; const k = b.dataset.cvTab;
+    cv.querySelectorAll(".cv-pane").forEach(x => { x.hidden = x.dataset.pane !== k; }); cv.querySelectorAll(".cv-tab").forEach(x => { const on = x.dataset.cvTab === k; x.classList.toggle("active", on); x.setAttribute("aria-selected", String(on)); });
+    if (b.classList.contains("cv-hl-item")) cv.querySelector(".cv-tabs")?.scrollIntoView({ block: "start", behavior: "smooth" }); });
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
@@ -3949,34 +3953,48 @@
       return '<a class="cv-link' + (id ? " has-thumb" : "") + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + (id ? '<img class="cv-thumb" alt="" loading="lazy" src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg">' : "") + "<span>" + esc(/^(https?:\/\/|www\.)/i.test(l.title) ? (id ? t("card.ytTitle") : hostOf(l.url) || l.title) : l.title) + "</span><small>" + esc(hostOf(l.url)) + "</small></a>"; }).join("") + "</section>" : "";
   }
   function cardView(d) {
-    const p = d.person || {}, c = d.card || {}, biz = d.businesses || [];
+    const p = d.person || {}, c = d.card || {}, biz = d.businesses || [], gal = d.gallery || [], links = d.links || [];
     const stats = [];
     if (c.years_in_business != null) stats.push([String(c.years_in_business), t("card.statYears")]);
     if (c.branches != null) stats.push([String(c.branches), t("card.statBranches")]);
     if (c.employees != null) stats.push([String(c.employees), t("card.statStaff")]);
     if (c.revenue_range) stats.push([t("card.rev." + c.revenue_range), t("card.statRevenue")]);
     const since = p.member_since ? new Date(p.member_since).getFullYear() : "";
+    if (!stats.length && since) stats.push([String(since), t("card.sinceShort")]);
     const social = CARD_SOCIALS.filter(k => c.socials && c.socials[k]).map(k => '<a class="cv-chip" href="' + safeHref(c.socials[k]) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + k)) + "</a>").join("");
     const coverStyle = p.cover_url ? ' style="background-image:url(\'' + esc(apiBase + p.cover_url) + '\')"' : "";
-    return '<article class="cv"><div class="cv-cover' + (p.cover_url ? " has-img" : "") + '" aria-hidden="true"' + coverStyle + '></div><div class="cv-top">' +
-      (p.photo_url ? '<img class="cv-av cv-av-img" alt="" data-fb="' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '" src="' + esc(apiBase + p.photo_url) + '">' : '<div class="cv-av" aria-hidden="true">' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '</div>') +
-      '<div class="cv-badges">' + (p.badges && p.badges.face ? '<span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + "</div>" +
-      "<h2>" + esc(p.display_name || "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
-      (stats.length ? '<div class="cv-stats">' + stats.map(s => '<div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>").join("") + "</div>" : "") +
-      cardLinksView(d.links || [], "video", "card.videos") +
-      (c.about ? '<section class="cv-box cv-about"><h3>' + esc(t("card.about")) + "</h3><p>" + esc(c.about) + "</p>" + ((c.tags || []).length ? '<div class="cv-tags">' + c.tags.map(x => "<span>" + esc(x) + "</span>").join("") + "</div>" : "") + "</section>" : "") +
+    const initial = String(p.display_name || "?").slice(0, 1).toUpperCase();
+    const av = p.photo_url ? '<img class="cv-av cv-av-img" alt="" data-fb="' + esc(initial) + '" src="' + esc(apiBase + p.photo_url) + '">' : '<div class="cv-av" aria-hidden="true">' + esc(initial) + "</div>";
+    const vids = links.filter(l => l.kind === "video"), press = links.filter(l => l.kind === "press");
+    const ytThumb = l => { const id = ytId(l.url); return id ? "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg" : null; };
+    const linkLabel = l => /^(https?:\/\/|www\.)/i.test(l.title) ? (ytId(l.url) ? t("card.ytTitle") : hostOf(l.url) || l.title) : l.title;
+    const vidHtml = vids.length ? '<div class="cv-vids">' + vids.map(l => { const th = ytThumb(l);
+      return '<a class="cv-vid' + (th ? "" : " plain") + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + (th ? '<span class="cv-vthumb"><img alt="" loading="lazy" data-fb="" src="' + th + '"><i class="cv-play" aria-hidden="true"></i></span>' : "") + "<strong>" + esc(linkLabel(l)) + "</strong><small>" + esc(hostOf(l.url)) + "</small></a>"; }).join("") + "</div>" : "";
+    const pressHtml = press.length ? "<h3>" + esc(t("card.press")) + "</h3>" + press.map(l => '<a class="cv-link" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow"><span>' + esc(linkLabel(l)) + "</span><small>" + esc(hostOf(l.url)) + "</small></a>").join("") : "";
+    const aboutHtml = (c.about ? '<section class="cv-box cv-about"><h3>' + esc(t("card.about")) + "</h3><p>" + esc(c.about) + "</p>" + ((c.tags || []).length ? '<div class="cv-tags">' + c.tags.map(x => "<span>" + esc(x) + "</span>").join("") + "</div>" : "") + "</section>" : "") +
       (c.seeking || c.offering ? '<section class="cv-box"><h3>' + esc(t("card.seekOffer")) + '</h3><div class="cv-two">' +
         (c.seeking ? '<div class="cv-seek"><b>' + esc(t("card.seeking")) + "</b>" + esc(c.seeking) + "</div>" : "") +
         (c.offering ? '<div class="cv-offer"><b>' + esc(t("card.offering")) + "</b>" + esc(c.offering) + "</div>" : "") + "</div></section>" : "") +
-      ((d.gallery || []).length ? '<section class="cv-box"><h3>' + esc(t("card.gallery")) + '</h3><div class="cv-gal">' + d.gallery.map((g, i) => '<button type="button" class="cv-gal-item" data-gal-src="' + esc(apiBase + g.url) + '"><img alt="" loading="lazy" data-fb="" src="' + esc(apiBase + g.url) + '"></button>').join("") + "</div></section>" : "") +
-      (biz.length ? '<section class="cv-box"><h3>' + esc(t("card.businesses")) + "</h3>" + biz.map(b =>
-        '<div class="cv-biz"><div class="cv-biz-head"><div class="cv-logo" aria-hidden="true">' + esc(String(b.name || "?").slice(0, 1).toUpperCase()) + "</div><div><strong>" + esc(b.name) + '</strong><small>' + esc([b.kind, b.city].filter(Boolean).join(" · ")) + "</small></div></div>" +
-        (b.description ? "<p>" + esc(b.description) + "</p>" : "") +
-        ((b.links || []).length ? '<div class="cv-links">' + b.links.map(l => '<a class="cv-chip ' + esc(l.type) + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + l.type)) + "</a>").join("") + "</div>" : "") +
-        (b.offer_text ? '<div class="cv-deal"><b>' + esc(t("card.forResidents")) + "</b> " + esc(b.offer_text) + "</div>" : "") + "</div>").join("") + "</section>" : "") +
-      cardLinksView(d.links || [], "press", "card.press") +
       ((d.achievements || []).length ? '<section class="cv-box"><h3>' + esc(t("card.path")) + '</h3><ol class="cv-path">' + d.achievements.map(a => "<li><b>" + esc(a.year || "") + "</b> " + esc(a.title) + "</li>").join("") + "</ol></section>" : "") +
-      (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "") + "</article>";
+      (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "");
+    const bizHtml = biz.map(b =>
+      '<div class="cv-biz"><div class="cv-biz-head"><div class="cv-logo" aria-hidden="true">' + esc(String(b.name || "?").slice(0, 1).toUpperCase()) + "</div><div><strong>" + esc(b.name) + '</strong><small>' + esc([b.kind, b.city].filter(Boolean).join(" · ")) + "</small></div></div>" +
+      (b.description ? "<p>" + esc(b.description) + "</p>" : "") +
+      ((b.links || []).length ? '<div class="cv-links">' + b.links.map(l => '<a class="cv-chip ' + esc(l.type) + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + l.type)) + "</a>").join("") + "</div>" : "") +
+      (b.offer_text ? '<div class="cv-deal"><b>' + esc(t("card.forResidents")) + "</b> " + esc(b.offer_text) + "</div>" : "") + "</div>").join("");
+    const photoHtml = gal.length ? '<div class="cv-ph">' + gal.map(g => '<button type="button" class="cv-ph-item" data-gal-src="' + esc(apiBase + g.url) + '"><img alt="" loading="lazy" data-fb="" src="' + esc(apiBase + g.url) + '"></button>').join("") + "</div>" : "";
+    const hasAbout = !!(aboutHtml);
+    const tabs = [["photos", gal.length, t("card.gallery"), photoHtml, gal[0] ? '<img alt="" data-fb="" src="' + esc(apiBase + gal[0].url) + '">' : ""],
+      ["videos", vids.length || press.length, t("card.tabVideo"), vidHtml + pressHtml, ytThumb(vids[0] || {}) ? '<img alt="" data-fb="" src="' + ytThumb(vids[0]) + '">' : ""],
+      ["biz", biz.length, t("card.businesses"), bizHtml, biz[0] ? "<span>" + esc(String(biz[0].name || "?").slice(0, 1).toUpperCase()) + "</span>" : ""],
+      ["about", hasAbout, t("card.about"), aboutHtml, p.photo_url ? '<img alt="" data-fb="' + esc(initial) + '" src="' + esc(apiBase + p.photo_url) + '">' : "<span>" + esc(initial) + "</span>"]].filter(x => x[1]);
+    const first = tabs[0] && tabs[0][0];
+    return '<article class="cv"><div class="cv-cover' + (p.cover_url ? " has-img" : "") + '" aria-hidden="true"' + coverStyle + '></div><div class="cv-ig">' + av +
+      '<div class="cv-stats">' + stats.slice(0, 3).map(x => '<div><b>' + esc(x[0]) + "</b><span>" + esc(x[1]) + "</span></div>").join("") + "</div></div>" +
+      '<div class="cv-id"><h2>' + esc(p.display_name || "") + (p.badges && p.badges.face ? ' <span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
+      (tabs.length ? '<div class="cv-hl">' + tabs.map(x => '<button type="button" class="cv-hl-item" data-cv-tab="' + x[0] + '"><span class="cv-hl-ring">' + (x[4] || "<span>" + esc(x[2].slice(0, 1)) + "</span>") + "</span><small>" + esc(x[2]) + "</small></button>").join("") + "</div>" +
+        '<div class="cv-tabs" role="tablist">' + tabs.map(x => '<button type="button" role="tab" class="cv-tab' + (x[0] === first ? " active" : "") + '" aria-selected="' + (x[0] === first) + '" data-cv-tab="' + x[0] + '">' + esc(x[2]) + "</button>").join("") + "</div>" +
+        tabs.map(x => '<div class="cv-pane" role="tabpanel" data-pane="' + x[0] + '"' + (x[0] === first ? "" : " hidden") + ">" + x[3] + "</div>").join("") : "") + "</article>";
   }
   const linkRow = (l) => '<div class="cv-row"><input name="lu" type="url" inputmode="url" maxlength="400" placeholder="' + esc(t("card.rowUrl")) + '" value="' + esc(l ? l.url : "") + '"><input name="lt" maxlength="120" placeholder="' + esc(t("card.rowTitle")) + '" value="' + esc(l ? l.title : "") + '"><button type="button" class="icon-button" data-row-del aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>';
   const achRow = a => { const y0 = new Date().getFullYear(); let opts = '<option value="">' + esc(t("card.year")) + "</option>"; for (let y = y0; y >= 1990; y--) opts += '<option value="' + y + '"' + (a && Number(a.year) === y ? " selected" : "") + ">" + y + "</option>";

@@ -203,6 +203,7 @@
       const dlg = authDialog('<h3>' + esc(t("auth.phoneTitle")) + '</h3><p class="muted">' + esc(t(wa ? "auth.phoneHintWa" : "auth.phoneHint")) + '</p>' +
         '<input class="auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 700 000 00 00" value="+7 " aria-label="' + esc(t("auth.phoneTitle")) + '">' +
         '<p class="muted auth-other">' + esc(t("auth.phoneOther")) + '</p>' +
+        (/iPhone|iPad/.test(navigator.userAgent || "") && !navigator.standalone && isIosSafari() ? '<p class="muted auth-other">' + esc(t("auth.iosFirst")) + '</p>' : "") +
         '<p class="auth-error" hidden></p><div class="auth-actions auth-actions-col">' +
         // SMS first: most members have Kazakhstan numbers. WhatsApp is the second option (and the default abroad).
         '<button type="button" class="primary-button" data-ok>' + esc(t(wa ? "auth.viaSms" : "auth.sendCode")) + '</button>' +

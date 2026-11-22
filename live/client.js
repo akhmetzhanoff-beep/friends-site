@@ -31,6 +31,11 @@
   const content = document.querySelector("#view-content");
   // A picture that fails to load (expired link, missing file) falls back to the person's initial instead of a broken-image icon.
   document.addEventListener("error", e => { const im = e.target; if (im && im.tagName === "IMG" && im.dataset && im.dataset.fb !== undefined) { const sp = document.createElement("span"); sp.className = im.className; sp.setAttribute("aria-hidden", "true"); sp.textContent = im.dataset.fb; im.replaceWith(sp); } }, true);
+  // Photo gallery: tap a picture to see it large; tap anywhere to close.
+  document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-gal-src]"); if (!b) return; const box = document.createElement("div"); box.className = "story-view photo-view"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
+    box.innerHTML = '<img class="story-img" alt="" src="' + b.dataset.galSrc.replace(/"/g, "&quot;") + '"><button type="button" class="icon-button photo-close" aria-label="' + esc(t("stories.close")) + '">\u00d7</button>';
+    const close = () => { box.remove(); document.removeEventListener("keydown", onKey); }; const onKey = ev => { if (ev.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey); box.addEventListener("click", close); document.body.appendChild(box); box.querySelector("button").focus(); });
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
@@ -3948,16 +3953,18 @@
       '<div class="cv-badges">' + (p.badges && p.badges.face ? '<span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + "</div>" +
       "<h2>" + esc(p.display_name || "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
       (stats.length ? '<div class="cv-stats">' + stats.map(s => '<div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>").join("") + "</div>" : "") +
-      (c.about ? '<section class="cv-box"><h3>' + esc(t("card.about")) + "</h3><p>" + esc(c.about) + "</p>" + ((c.tags || []).length ? '<div class="cv-tags">' + c.tags.map(x => "<span>" + esc(x) + "</span>").join("") + "</div>" : "") + "</section>" : "") +
+      cardLinksView(d.links || [], "video", "card.videos") +
+      (c.about ? '<section class="cv-box cv-about"><h3>' + esc(t("card.about")) + "</h3><p>" + esc(c.about) + "</p>" + ((c.tags || []).length ? '<div class="cv-tags">' + c.tags.map(x => "<span>" + esc(x) + "</span>").join("") + "</div>" : "") + "</section>" : "") +
       (c.seeking || c.offering ? '<section class="cv-box"><h3>' + esc(t("card.seekOffer")) + '</h3><div class="cv-two">' +
         (c.seeking ? '<div class="cv-seek"><b>' + esc(t("card.seeking")) + "</b>" + esc(c.seeking) + "</div>" : "") +
         (c.offering ? '<div class="cv-offer"><b>' + esc(t("card.offering")) + "</b>" + esc(c.offering) + "</div>" : "") + "</div></section>" : "") +
+      ((d.gallery || []).length ? '<section class="cv-box"><h3>' + esc(t("card.gallery")) + '</h3><div class="cv-gal">' + d.gallery.map((g, i) => '<button type="button" class="cv-gal-item" data-gal-src="' + esc(apiBase + g.url) + '"><img alt="" loading="lazy" data-fb="" src="' + esc(apiBase + g.url) + '"></button>').join("") + "</div></section>" : "") +
       (biz.length ? '<section class="cv-box"><h3>' + esc(t("card.businesses")) + "</h3>" + biz.map(b =>
         '<div class="cv-biz"><div class="cv-biz-head"><div class="cv-logo" aria-hidden="true">' + esc(String(b.name || "?").slice(0, 1).toUpperCase()) + "</div><div><strong>" + esc(b.name) + '</strong><small>' + esc([b.kind, b.city].filter(Boolean).join(" · ")) + "</small></div></div>" +
         (b.description ? "<p>" + esc(b.description) + "</p>" : "") +
         ((b.links || []).length ? '<div class="cv-links">' + b.links.map(l => '<a class="cv-chip ' + esc(l.type) + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + l.type)) + "</a>").join("") + "</div>" : "") +
         (b.offer_text ? '<div class="cv-deal"><b>' + esc(t("card.forResidents")) + "</b> " + esc(b.offer_text) + "</div>" : "") + "</div>").join("") + "</section>" : "") +
-      cardLinksView(d.links || [], "video", "card.videos") + cardLinksView(d.links || [], "press", "card.press") +
+      cardLinksView(d.links || [], "press", "card.press") +
       ((d.achievements || []).length ? '<section class="cv-box"><h3>' + esc(t("card.path")) + '</h3><ol class="cv-path">' + d.achievements.map(a => "<li><b>" + esc(a.year || "") + "</b> " + esc(a.title) + "</li>").join("") + "</ol></section>" : "") +
       (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "") + "</article>";
   }
@@ -3986,8 +3993,10 @@
         '<form id="links-form" class="app-form">' +
         linkRows("video", t("card.videos"), (d.links || []).filter(l => l.kind === "video")) +
         linkRows("press", t("card.press"), (d.links || []).filter(l => l.kind === "press")) +
-        achRows(d.achievements || []) +
         '<button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
+      panel(t("card.galleryTitle"), t("card.galleryText"),
+        '<div class="gal-edit">' + (d.gallery || []).map(g => '<div class="gal-item"><img alt="" loading="lazy" data-fb="" src="' + esc(apiBase + g.url) + '"><button type="button" class="icon-button" data-gal-del="' + esc(g.id) + '" aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>').join("") +
+        ((d.gallery || []).length < 12 ? '<label class="gal-add"><input type="file" accept="image/*" multiple data-gal-add hidden><span>+</span><small>' + esc(t("card.galleryAdd")) + "</small></label>" : "") + "</div>") +
       panel(t("card.editTitle"), t("card.editText"),
         '<form id="card-form" class="app-form">' +
         "<h4>" + esc(t("card.socials")) + "</h4>" + CARD_SOCIALS.map(k => field(t("card.link." + k), "soc_" + k, n(so[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
@@ -3997,7 +4006,7 @@
         '<label class="field"><span>' + esc(t("card.statRevenue")) + '</span><select name="revenue_range">' + option("", t("card.rev.none"), !c.revenue_range) + CARD_REV.map(r => option(r, t("card.rev." + r), c.revenue_range === r)).join("") + "</select></label>" +
         '<label class="check"><input type="checkbox" name="revenue_visible"' + (c.revenue_visible ? " checked" : "") + "> " + esc(t("card.revShow")) + "</label>" +
         area(t("card.about"), "about", n(c.about)) + area(t("card.seeking"), "seeking", n(c.seeking)) + area(t("card.offering"), "offering", n(c.offering)) +
-        field(t("card.tags"), "tags", (c.tags || []).join(", "), "text", 'maxlength="250"') + "</details>" +
+        field(t("card.tags"), "tags", (c.tags || []).join(", "), "text", 'maxlength="250"') + achRows(d.achievements || []) + "</details>" +
         '<button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
       panel(t("card.businesses"), t("card.bizText"), (d.businesses || []).map(bizForm).join("") + '<button type="button" class="outline-button" id="biz-add">' + esc(t("card.bizAdd")) + "</button>");
     const resizeImage = async (file, max) => {
@@ -4023,6 +4032,16 @@
     document.querySelectorAll("[data-media-del]").forEach(b => b.addEventListener("click", async () => {
       try { await api("/v1/me/card/media/" + b.dataset.mediaDel, { method: "DELETE" }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
     }));
+    document.querySelector("[data-gal-add]")?.addEventListener("change", async e => {
+      const files = [...(e.target.files || [])].slice(0, 12); if (!files.length) return;
+      try {
+        for (const f of files) { const small = await resizeImage(f, 1600); const fd = new FormData(); fd.append("file", small, small.name); await api("/v1/me/card/gallery", { method: "POST", body: fd }); }
+        status(t("card.saved")); await myCard();
+      } catch (x) { status(x.message, true); await myCard(); }
+    });
+    document.querySelectorAll("[data-gal-del]").forEach(b => b.addEventListener("click", async () => {
+      try { await api("/v1/me/card/gallery/" + b.dataset.galDel, { method: "DELETE" }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
+    }));
     document.querySelector("#links-form")?.addEventListener("submit", async e => {
       e.preventDefault(); const f = new FormData(e.currentTarget);
       const lines = k => String(f.get(k) || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
@@ -4037,10 +4056,8 @@
         return { kind, title: line.slice(0, i).trim(), url: line.slice(i + 1).trim() };
       };
       const items = rowItems("video").concat(rowItems("press"));
-      const ach = [...document.querySelectorAll('.cv-rows[data-kind="ach"] .cv-row')].map(r => { const ti = r.querySelector('[name="at"]').value.trim(), y = r.querySelector('[name="ay"]').value; return ti ? { year: y ? Number(y) : null, title: ti } : null; }).filter(Boolean);
       try {
         const saved = await api("/v1/me/card/links", { method: "PUT", body: JSON.stringify({ items }) });
-        await api("/v1/me/card/achievements", { method: "PUT", body: JSON.stringify({ items: ach }) });
         if (saved && typeof saved.saved === "number" && saved.saved < items.length) { status(t("card.linksDropped", { n: items.length - saved.saved }), true); return; }
         status(t("card.saved")); await myCard();
       } catch (x) { status(x.message, true); }
@@ -4059,7 +4076,8 @@
       const body = { years_in_business: f.get("years_in_business") || null, branches: f.get("branches") || null, employees: f.get("employees") || null, revenue_range: f.get("revenue_range") || null,
         revenue_visible: form.elements.revenue_visible.checked, about: f.get("about"), seeking: f.get("seeking"), offering: f.get("offering"),
         tags: String(f.get("tags") || "").split(",").map(x => x.trim()).filter(Boolean), socials: Object.fromEntries(CARD_SOCIALS.map(k => [k, f.get("soc_" + k)])) };
-      try { await api("/v1/me/card", { method: "PUT", body: JSON.stringify(body) }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
+      const ach = [...document.querySelectorAll('.cv-rows[data-kind="ach"] .cv-row')].map(r => { const ti = r.querySelector('[name="at"]').value.trim(), y = r.querySelector('[name="ay"]').value; return ti ? { year: y ? Number(y) : null, title: ti } : null; }).filter(Boolean);
+      try { await api("/v1/me/card", { method: "PUT", body: JSON.stringify(body) }); await api("/v1/me/card/achievements", { method: "PUT", body: JSON.stringify({ items: ach }) }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
     });
     document.querySelectorAll("form[data-biz]").forEach(bf => bf.addEventListener("submit", async e => {
       e.preventDefault();

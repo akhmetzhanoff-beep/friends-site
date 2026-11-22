@@ -556,15 +556,36 @@
     try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch { return false; }
   }
   function installDismissed() { try { return localStorage.getItem("friends.install.dismissed") === "1"; } catch { return false; } }
+  const isIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent || "");
+  const isIosSafari = () => /safari/i.test(navigator.userAgent || "") && !/(crios|fxios|edgios|opios|instagram|fban|fbav|line\/|gsa\/|twitter|telegram|whatsapp)/i.test(navigator.userAgent || "");
   function installCard() {
     if (isInstalled() || installDismissed()) return "";
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
-    return '<aside class="install-card" aria-labelledby="install-title"><div><h3 id="install-title">' + esc(t("install.title")) + "</h3><p>" + esc(t(ios ? "install.ios" : "install.android")) + '</p></div><div class="install-actions"><button type="button" class="primary-button" data-install-now' + (deferredInstall ? "" : " hidden") + ">" + esc(t("install.button")) + '</button><button type="button" class="text-button" data-install-dismiss>' + esc(t("install.dismiss")) + "</button></div></aside>";
+    const ios = isIos();
+    return '<aside class="install-card" aria-labelledby="install-title"><div><h3 id="install-title">' + esc(t("install.title")) + "</h3><p>" + esc(t(ios ? "install.iosShort" : "install.android")) + '</p></div><div class="install-actions"><button type="button" class="primary-button" ' + (ios ? "data-install-ios" : "data-install-now" + (deferredInstall ? "" : " hidden")) + ">" + esc(t("install.button")) + '</button><button type="button" class="text-button" data-install-dismiss>' + esc(t("install.dismiss")) + "</button></div></aside>";
+  }
+  // iPhone cannot install with one tap: show two clear steps with a picture and an arrow to the Safari bar.
+  function showIosInstall() {
+    document.querySelector("#ios-install")?.remove();
+    const safari = isIosSafari();
+    const bar = '<svg class="ios-bar" viewBox="0 0 320 64" role="img" aria-label="' + esc(t("install.barAlt")) + '"><rect x="6" y="10" width="308" height="46" rx="23" fill="#f2f2f7" stroke="#d1d1d6"/><rect x="40" y="22" width="190" height="22" rx="11" fill="#e5e5ea"/><circle cx="262" cy="33" r="17" fill="#2457d6"/><g fill="#fff"><circle cx="254" cy="33" r="2.2"/><circle cx="262" cy="33" r="2.2"/><circle cx="270" cy="33" r="2.2"/></g><path d="M20 33l8-7v14z" fill="#8e8e93"/></svg>';
+    const html = safari
+      ? '<h3>' + esc(t("install.sheetTitle")) + '</h3><ol class="ios-steps"><li><b>1</b><div><p>' + esc(t("install.step1")) + "</p>" + bar + '<div class="ios-arrow" aria-hidden="true">&#8595;</div></div></li><li><b>2</b><div><p>' + esc(t("install.step2")) + '</p><div class="ios-row" aria-hidden="true"><span class="ios-ico">&#9633;&#8593;</span><span>' + esc(t("install.homeScreen")) + "</span><span class=\"ios-plus\">+</span></div></div></li></ol>"
+      : '<h3>' + esc(t("install.openSafari")) + "</h3><p>" + esc(t("install.openSafariText")) + '</p><button type="button" class="primary-button" data-ios-copy>' + esc(t("install.copyLink")) + "</button>";
+    const el = document.createElement("div");
+    el.id = "ios-install"; el.className = "ios-install"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
+    el.innerHTML = '<div class="ios-sheet">' + html + '<button type="button" class="outline-button" data-ios-close>' + esc(t("install.gotIt")) + "</button></div>";
+    document.body.appendChild(el);
   }
   document.addEventListener("click", async e => {
     if (e.target.closest("[data-install-dismiss]")) {
       try { localStorage.setItem("friends.install.dismissed", "1"); } catch { /* storage may be blocked */ }
       e.target.closest(".install-card")?.remove();
+    } else if (e.target.closest("[data-install-ios]")) {
+      showIosInstall();
+    } else if (e.target.closest("[data-ios-close]")) {
+      document.querySelector("#ios-install")?.remove();
+    } else if (e.target.closest("[data-ios-copy]")) {
+      try { await navigator.clipboard.writeText(location.href.split("#")[0]); status(t("tests.copied")); } catch { /* copy by hand */ }
     } else if (e.target.closest("[data-install-now]") && deferredInstall) {
       deferredInstall.prompt();
       try { await deferredInstall.userChoice; } catch { /* ignore */ }

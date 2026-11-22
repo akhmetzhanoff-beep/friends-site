@@ -3833,7 +3833,7 @@
       '<div class="trust-facts"><span>' + esc(t("trust.years", { n: c.member_years || 0 })) + "</span><span>" + esc(t("trust.events", { n: c.events_year || 0 })) + "</span><span>" + esc(t("trust.lessons", { n: c.lessons_done || 0 })) + "</span></div></div>";
   }
   function reviewList(c, canReply) {
-    return (c.reviews || []).length ? c.reviews.map(r => '<article class="review"><div class="review-top"><strong>' + esc(r.reviewer) + "</strong>" + stars(r.rating) + "</div><p>" + esc(r.body) + '</p><small class="muted">' + esc(day(r.created_at)) + "</small>" +
+    return (c.reviews || []).length ? c.reviews.map(r => '<article class="review"><div class="review-top"><strong>' + esc(r.reviewer) + "</strong>" + stars(r.rating) + "</div>" + (r.body ? "<p>" + esc(r.body) + "</p>" : "") + '<small class="muted">' + esc(day(r.created_at)) + "</small>" +
       (r.reply ? '<p class="review-reply"><strong>' + esc(t("trust.reply")) + ":</strong> " + esc(r.reply) + "</p>" : canReply ? '<form class="inline-form" data-reply="' + esc(r.id) + '"><label class="field"><span>' + esc(t("trust.replyLabel")) + '</span><input name="reply" maxlength="1000" required></label><button class="outline-button">' + esc(t("trust.replySend")) + "</button></form>" : "") + "</article>").join("")
       : '<p class="muted">' + esc(t("trust.noReviews")) + "</p>";
   }
@@ -3858,9 +3858,7 @@
     document.querySelector("#propose-deal")?.addEventListener("click", () => { dealId = null; dealDraftFor = { id: c.user_id, name: c.display_name }; render("deal"); });
     const f = document.querySelector("#review-form");
     if (f) {
-      f.querySelector("textarea").setAttribute("minlength", "10");
       f.querySelector("textarea").setAttribute("maxlength", "1000");
-      f.querySelector("textarea").required = true;
       f.addEventListener("submit", async e => {
         e.preventDefault();
         const d = new FormData(f);

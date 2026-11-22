@@ -29,6 +29,8 @@
   }
   const KEY = "friends.access_token", REFRESH = "friends.refresh_token", IDTOKEN = "friends.id_token";
   const content = document.querySelector("#view-content");
+  // A picture that fails to load (expired link, missing file) falls back to the person's initial instead of a broken-image icon.
+  document.addEventListener("error", e => { const im = e.target; if (im && im.tagName === "IMG" && im.dataset && im.dataset.fb !== undefined) { const sp = document.createElement("span"); sp.className = im.className; sp.setAttribute("aria-hidden", "true"); sp.textContent = im.dataset.fb; im.replaceWith(sp); } }, true);
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
@@ -551,6 +553,8 @@
     const key = VIEW_KEYS[view] || "overview";
     title.textContent = t("view." + key + ".title");
     subtitle.textContent = t("view." + key + ".subtitle");
+    // Messages start straight with the stories strip: the big title card stays for screen readers only.
+    document.querySelector(".welcome")?.classList.toggle("is-compact", view === "messages");
   }
 
   // Install as an app from the website (PWA): shown only in a regular browser tab.
@@ -842,7 +846,7 @@
       try {
         const d = await api("/v1/members?limit=50" + (q ? "&q=" + encodeURIComponent(q) : ""));
         target.innerHTML = d.items.length
-          ? d.items.map(m => '<button type="button" class="member-result member-open" data-member="' + esc(m.user_id) + '">' + (m.photo_url ? '<img class="member-avatar member-photo" alt="" loading="lazy" src="' + esc(apiBase + m.photo_url) + '">' : '<div class="member-avatar" aria-hidden="true">' + esc((m.display_name || "?").slice(0, 1)) + '</div>') + '<div class="member-copy"><strong>' + esc(m.display_name) + "</strong><span>" + esc(m.headline || t("members.defaultHeadline")) + (m.city_name ? " · " + esc(m.city_name) : "") + "</span>" +
+          ? d.items.map(m => '<button type="button" class="member-result member-open" data-member="' + esc(m.user_id) + '">' + (m.photo_url ? '<img class="member-avatar member-photo" alt="" loading="lazy" data-fb="' + esc(String(m.display_name || "?").slice(0, 1)) + '" src="' + esc(apiBase + m.photo_url) + '">' : '<div class="member-avatar" aria-hidden="true">' + esc((m.display_name || "?").slice(0, 1)) + '</div>') + '<div class="member-copy"><strong>' + esc(m.display_name) + "</strong><span>" + esc(m.headline || t("members.defaultHeadline")) + (m.city_name ? " · " + esc(m.city_name) : "") + "</span>" +
               ((m.reviews_count || (m.badges || []).length) ? '<span class="member-trust">' + (m.reviews_count ? stars(m.rating) + " (" + m.reviews_count + ")" : "") + (m.badges || []).map(b => ' <span class="mini-badge" title="' + esc(t("trust.badge." + b)) + '">' + ({ tax_clear: ic("receipt", "ic-inline"), credit_history: ic("bank", "ic-inline"), company: ic("building", "ic-inline") }[b] || "✓") + '<span class="sr-only">' + esc(t("trust.badge." + b)) + "</span></span>").join("") + "</span>" : "") + "</div></button>").join("")
           : '<p class="muted">' + esc(t("members.empty")) + "</p>";
         target.querySelectorAll("[data-member]").forEach(b => b.addEventListener("click", () => { memberId = b.dataset.member; render("member"); }));
@@ -3429,7 +3433,7 @@
   }
   // ---- Stories: a strip of circles on top of Messages; tap to watch, 24 hours ----
   async function loadStories() { try { return await api("/v1/stories"); } catch { return { can_post: false, items: [] }; } }
-  const storyAvatar = g => g.photo_url ? '<img alt="" src="' + esc(apiBase + g.photo_url) + '">' : '<span aria-hidden="true">' + esc(String(g.name || "?").slice(0, 1).toUpperCase()) + "</span>";
+  const storyAvatar = g => g.photo_url ? '<img alt="" data-fb="' + esc(String(g.name || "?").slice(0, 1).toUpperCase()) + '" src="' + esc(apiBase + g.photo_url) + '">' : '<span aria-hidden="true">' + esc(String(g.name || "?").slice(0, 1).toUpperCase()) + "</span>";
   function storiesStrip(d) {
     if (!d || (!d.items.length && !d.can_post)) return "";
     return '<div class="stories" role="list">' + (d.can_post ? '<label class="story story-add" role="listitem"><input type="file" accept="image/*" data-story-add hidden><span class="story-ring add" aria-hidden="true"><span>+</span></span><small>' + esc(t("stories.add")) + "</small></label>" : "") +
@@ -3940,7 +3944,7 @@
     const social = CARD_SOCIALS.filter(k => c.socials && c.socials[k]).map(k => '<a class="cv-chip" href="' + safeHref(c.socials[k]) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + k)) + "</a>").join("");
     const coverStyle = p.cover_url ? ' style="background-image:url(\'' + esc(apiBase + p.cover_url) + '\')"' : "";
     return '<article class="cv"><div class="cv-cover' + (p.cover_url ? " has-img" : "") + '" aria-hidden="true"' + coverStyle + '></div><div class="cv-top">' +
-      (p.photo_url ? '<img class="cv-av cv-av-img" alt="" src="' + esc(apiBase + p.photo_url) + '">' : '<div class="cv-av" aria-hidden="true">' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '</div>') +
+      (p.photo_url ? '<img class="cv-av cv-av-img" alt="" data-fb="' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '" src="' + esc(apiBase + p.photo_url) + '">' : '<div class="cv-av" aria-hidden="true">' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '</div>') +
       '<div class="cv-badges">' + (p.badges && p.badges.face ? '<span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + "</div>" +
       "<h2>" + esc(p.display_name || "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
       (stats.length ? '<div class="cv-stats">' + stats.map(s => '<div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>").join("") + "</div>" : "") +

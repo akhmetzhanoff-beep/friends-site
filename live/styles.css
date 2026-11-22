@@ -799,3 +799,6 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .story-tap{position:absolute;top:70px;bottom:90px;width:40%;border:0;background:none;z-index:2}.story-tap.prev{left:0}.story-tap.next{right:0}
 .story-del{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:4;border:0;border-radius:10px;padding:8px 12px;background:rgba(255,255,255,.2);color:#fff}
 @media (prefers-reduced-motion:reduce){.story-bars i.run::after{animation:none;transform:none}}
+
+.welcome.is-compact{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0}
+.stories{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.stories .story{scroll-snap-align:start}

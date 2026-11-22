@@ -4026,7 +4026,8 @@
       const rowItems = kind => [...document.querySelectorAll('.cv-rows[data-kind="' + kind + '"] .cv-row')].map(r => { let u = r.querySelector('[name="lu"]').value.trim(), ti = r.querySelector('[name="lt"]').value.trim();
         if (!u && /^(https?:\/\/|www\.|youtu)/i.test(ti)) { u = ti; ti = ""; } // a link pasted into the title field still counts
         if (!u) return null; if (!/^https?:/i.test(u)) u = "https://" + u;
-        return { kind, title: ti || (ytId(u) ? t("card.ytTitle") : hostOf(u) || u), url: u }; }).filter(Boolean);
+        const yid = ytId(u); if (yid) u = "https://www.youtube.com/watch?v=" + yid; // drop tracking parameters (si, list, feature)
+        return { kind, title: ti || (yid ? t("card.ytTitle") : hostOf(u) || u), url: u }; }).filter(Boolean);
       const parseLink = (kind, line) => {
         const i = line.indexOf("|");
         if (i < 0) return { kind, title: hostOf(/^https?:/i.test(line) ? line : "https://" + line) || line, url: line };
@@ -4035,8 +4036,9 @@
       const items = rowItems("video").concat(rowItems("press"));
       const ach = lines("ach").map(l => { const m = /^(\d{4})\s*[|:\-]?\s*(.+)$/.exec(l); return m ? { year: Number(m[1]), title: m[2].trim() } : { year: null, title: l }; });
       try {
-        await api("/v1/me/card/links", { method: "PUT", body: JSON.stringify({ items }) });
+        const saved = await api("/v1/me/card/links", { method: "PUT", body: JSON.stringify({ items }) });
         await api("/v1/me/card/achievements", { method: "PUT", body: JSON.stringify({ items: ach }) });
+        if (saved && typeof saved.saved === "number" && saved.saved < items.length) { status(t("card.linksDropped", { n: items.length - saved.saved }), true); return; }
         status(t("card.saved")); await myCard();
       } catch (x) { status(x.message, true); }
     });

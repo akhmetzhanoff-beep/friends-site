@@ -31,6 +31,11 @@
   const content = document.querySelector("#view-content");
   // A picture that fails to load (expired link, missing file) falls back to the person's initial instead of a broken-image icon.
   document.addEventListener("error", e => { const im = e.target; if (im && im.tagName === "IMG" && im.dataset && im.dataset.fb !== undefined) { const sp = document.createElement("span"); sp.className = im.className; sp.setAttribute("aria-hidden", "true"); sp.textContent = im.dataset.fb; im.replaceWith(sp); } }, true);
+  // YouTube videos play inside the app (YouTube embed, no cost for us); the link out stays as a fallback.
+  document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a[data-yt]"); if (!a || e.metaKey || e.ctrlKey) return; e.preventDefault(); const id = a.dataset.yt; const box = document.createElement("div"); box.className = "story-view video-view"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
+    box.innerHTML = '<div class="yt-frame"><iframe src="https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&playsinline=1&rel=0" title="YouTube" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div><a class="yt-out" href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener noreferrer">' + esc(t("video.openYoutube")) + '</a><button type="button" class="icon-button photo-close" aria-label="' + esc(t("stories.close")) + '">\u00d7</button>';
+    const close = () => { box.remove(); document.removeEventListener("keydown", onKey); }; const onKey = ev => { if (ev.key === "Escape") close(); };
+    document.addEventListener("keydown", onKey); box.querySelector("button").addEventListener("click", close); document.body.appendChild(box); box.querySelector("button").focus(); });
   // Photo gallery: tap a picture to see it large; tap anywhere to close.
   document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-gal-src]"); if (!b) return; const box = document.createElement("div"); box.className = "story-view photo-view"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
     box.innerHTML = '<img class="story-img" alt="" src="' + b.dataset.galSrc.replace(/"/g, "&quot;") + '"><button type="button" class="icon-button photo-close" aria-label="' + esc(t("stories.close")) + '">\u00d7</button>';
@@ -190,12 +195,29 @@
     document.body.appendChild(wrap);
     return { root: wrap, q: sel => wrap.querySelector(sel), close: () => wrap.remove() };
   }
+  const PAY_URL = "https://friendscommunity.kz/#pay";
+  let entCache = null;
+  /** What this account may do: free-tier switch, paid or not, expired (no membership at all). Cached for a minute. */
+  async function entitlements() {
+    if (entCache && entCache.tk === token() && Date.now() - entCache.at < 60000) return entCache.v;
+    let v = { free_tier_limits: false, paid: true, expired: false };
+    try { v = await api("/v1/me/entitlements"); } catch { /* keep the permissive default */ }
+    entCache = { tk: token(), at: Date.now(), v };
+    return v;
+  }
+  const payButton = () => '<a class="primary-button pay-btn" href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + "</a>";
+  function renderExpired() {
+    content.innerHTML = '<section class="expired"><h2>' + esc(t("pay.expiredTitle")) + "</h2><p>" + esc(t("pay.expiredText")) + "</p>" + payButton() +
+      '<button type="button" class="outline-button" data-support>' + esc(t("support.write")) + '</button><button type="button" class="text-button" id="exp-logout">' + esc(t("auth.logout")) + "</button></section>";
+    bindSupport();
+    document.querySelector("#exp-logout")?.addEventListener("click", logout);
+  }
   /** The locked-feature sheet: what is open for free, what the subscription adds, one button to see it. */
   function showPaywall() {
     if (document.querySelector(".paywall")) return;
-    const dlg = authDialog('<div class="paywall"><h3>' + esc(t("paywall.title")) + "</h3><p>" + esc(t("paywall.text")) + '</p><div class="auth-actions auth-actions-col"><button type="button" class="primary-button" data-pw-go>' + esc(t("paywall.go")) + '</button><button type="button" class="text-button" data-pw-x>' + esc(t("paywall.later")) + "</button></div></div>");
+    const dlg = authDialog('<div class="paywall"><h3>' + esc(t("paywall.title")) + "</h3><p>" + esc(t("paywall.text")) + '</p><div class="auth-actions auth-actions-col"><a class="primary-button" data-pw-go href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + '</a><button type="button" class="text-button" data-pw-x>' + esc(t("paywall.later")) + "</button></div></div>");
     dlg.q("[data-pw-x]").addEventListener("click", dlg.close);
-    dlg.q("[data-pw-go]").addEventListener("click", () => { dlg.close(); render("membership"); });
+    dlg.q("[data-pw-go]").addEventListener("click", () => dlg.close());
   }
   const digitsOf = v => String(v).replace(/\D/g, "");
   function maskPhone(v) {
@@ -732,7 +754,9 @@
     const due = (inv.items || []).find(i => i.status !== "paid");
     const recent = (n.items || []).map(x => '<div class="list-row"><div><strong>' + esc(x.title) + "</strong><p>" + esc(x.body) + "</p><small>" + esc(date(x.created_at)) + '</small></div><span class="pill">' + esc(x.read_at ? t("status.read") : t("status.new")) + "</span></div>").join("")
       || '<p class="muted">' + esc(t("notifications.empty")) + "</p>";
-    content.innerHTML =
+    const entO = await entitlements();
+    const freeBanner = entO.free_tier_limits && !entO.paid ? '<section class="free-banner"><div><b>' + esc(t("pay.freeTitle")) + "</b><p>" + esc(t("pay.freeText")) + "</p></div>" + payButton() + "</section>" : "";
+    content.innerHTML = freeBanner +
       '<div class="block-tiles">' + ["discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
       (due ? '<div class="stats-grid"><article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(money(due.amount_kzt)) + "</strong><small>" + esc(due.invoice_number) + "</small></article></div>" : "") +
       fbHtml + bdayHtml + newsHtml + installCard() +
@@ -3980,7 +4004,7 @@
     const ytThumb = l => { const id = ytId(l.url); return id ? "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg" : null; };
     const linkLabel = l => /^(https?:\/\/|www\.)/i.test(l.title) ? (ytId(l.url) ? t("card.ytTitle") : hostOf(l.url) || l.title) : l.title;
     const vidHtml = vids.length ? '<div class="cv-vids">' + vids.map(l => { const th = ytThumb(l);
-      return '<a class="cv-vid' + (th ? "" : " plain") + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + (th ? '<span class="cv-vthumb"><img alt="" loading="lazy" data-fb="" src="' + th + '"><i class="cv-play" aria-hidden="true"></i></span>' : "") + "<strong>" + esc(linkLabel(l)) + "</strong><small>" + esc(hostOf(l.url)) + "</small></a>"; }).join("") + "</div>" : "";
+      return '<a class="cv-vid' + (th ? "" : " plain") + '"' + (ytId(l.url) ? ' data-yt="' + ytId(l.url) + '"' : "") + ' href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + (th ? '<span class="cv-vthumb"><img alt="" loading="lazy" data-fb="" src="' + th + '"><i class="cv-play" aria-hidden="true"></i></span>' : "") + "<strong>" + esc(linkLabel(l)) + "</strong><small>" + esc(hostOf(l.url)) + "</small></a>"; }).join("") + "</div>" : "";
     const pressHtml = press.length ? "<h3>" + esc(t("card.press")) + "</h3>" + press.map(l => '<a class="cv-link" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow"><span>' + esc(linkLabel(l)) + "</span><small>" + esc(hostOf(l.url)) + "</small></a>").join("") : "";
     const aboutHtml = (c.about ? '<section class="cv-box cv-about"><h3>' + esc(t("card.about")) + "</h3><p>" + esc(c.about) + "</p>" + ((c.tags || []).length ? '<div class="cv-tags">' + c.tags.map(x => "<span>" + esc(x) + "</span>").join("") + "</div>" : "") + "</section>" : "") +
       (c.seeking || c.offering ? '<section class="cv-box"><h3>' + esc(t("card.seekOffer")) + '</h3><div class="cv-two">' +
@@ -4306,6 +4330,7 @@
     if (!token()) { signedOut(); return; }
     authBar();
     if (APP === "admin" && !isStaff(await loadRoles())) { noAdminAccess(); return; }
+    if (APP === "resident" && view !== "settings") { const ent = await entitlements(); if (ent.expired) { document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active")); setHeading("overview"); renderExpired(); return; } }
     const navActive = navBlock(active);
     document.querySelectorAll(".nav-item").forEach(b => {
       const on = b.dataset.view === navActive;

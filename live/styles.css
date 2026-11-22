@@ -848,3 +848,9 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .cv-biz-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:2px 12px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.cv-biz-row::-webkit-scrollbar{display:none}
 .cv-biz-row .cv-biz{flex:0 0 82%;scroll-snap-align:start;margin:0;box-sizing:border-box}.cv-biz-row .cv-biz p{font-size:14.5px;line-height:1.45}.cv-biz-row:has(.cv-biz:only-child) .cv-biz{flex-basis:100%}
 .paywall h3{margin:0 0 8px}.paywall p{margin:0 0 14px;line-height:1.5}
+
+.free-banner{display:flex;align-items:center;gap:14px;justify-content:space-between;padding:14px 16px;margin-bottom:14px;border-radius:18px;background:linear-gradient(135deg,var(--fb-blue-soft),var(--fb-card,#fff));border:1px solid var(--fb-line)}.free-banner p{margin:2px 0 0;font-size:13.5px;color:var(--fb-text-2)}.free-banner .pay-btn{flex:0 0 auto;white-space:nowrap}
+.pay-btn{display:inline-block;text-align:center;text-decoration:none}
+.expired{padding:28px 18px;display:grid;gap:14px;max-width:520px;margin:0 auto;text-align:center}.expired h2{margin:0}.expired p{margin:0;line-height:1.55}
+.video-view{background:#000;display:grid;place-items:center;align-content:center;gap:14px}.yt-frame{width:100%;max-width:900px;aspect-ratio:16/9}.yt-frame iframe{width:100%;height:100%;border:0}.yt-out{color:#fff;opacity:.8}
+@media (max-width:480px){.free-banner{flex-direction:column;align-items:stretch}}

@@ -190,6 +190,13 @@
     document.body.appendChild(wrap);
     return { root: wrap, q: sel => wrap.querySelector(sel), close: () => wrap.remove() };
   }
+  /** The locked-feature sheet: what is open for free, what the subscription adds, one button to see it. */
+  function showPaywall() {
+    if (document.querySelector(".paywall")) return;
+    const dlg = authDialog('<div class="paywall"><h3>' + esc(t("paywall.title")) + "</h3><p>" + esc(t("paywall.text")) + '</p><div class="auth-actions auth-actions-col"><button type="button" class="primary-button" data-pw-go>' + esc(t("paywall.go")) + '</button><button type="button" class="text-button" data-pw-x>' + esc(t("paywall.later")) + "</button></div></div>");
+    dlg.q("[data-pw-x]").addEventListener("click", dlg.close);
+    dlg.q("[data-pw-go]").addEventListener("click", () => { dlg.close(); render("membership"); });
+  }
   const digitsOf = v => String(v).replace(/\D/g, "");
   function maskPhone(v) {
     let d = digitsOf(v);
@@ -405,6 +412,7 @@
     const d = ct.includes("application/json") ? await r.json() : await r.text();
     if (!r.ok) {
       const c = d && d.error;
+      if (c === "paid_required") showPaywall();
       const e = Error(I18N.apiError(c, r.status));
       e.status = r.status;
       e.code = c;
@@ -2241,13 +2249,16 @@
     const rows = d.items.map(r => "<tr><td>" + esc(r.name || "—") + "<br><small class=\"muted\">" + esc(r.phone || "") + "</small></td><td>" + esc(t("subs.seg." + r.segment)) + "</td><td>" + (r.ends_at ? esc(day(r.ends_at)) + (r.days_left != null ? "<br><small class=\"muted\">" + esc(t("subs.daysLeft", { n: r.days_left })) + "</small>" : "") : (r.segment === "friend" ? esc(t("subs.forever")) : "—")) + '</td><td class="num">' + r.paid_count + "</td><td>" + (r.last_paid_at ? esc(day(r.last_paid_at)) : "—") + "</td><td>" + esc(r.partner || "") + "</td></tr>").join("");
     const faceList = faces.granted.map(f => "<li>" + esc(f.name || f.phone || "") + ' <small class="muted">' + esc(f.phone || "") + '</small> <button type="button" class="text-button" data-face-del="' + esc(f.phone || "") + '">' + esc(t("subs.faceRemove")) + "</button></li>").join("") +
       faces.waiting.map(f => "<li>" + esc(f.name || f.phone) + ' <small class="muted">' + esc(f.phone) + " · " + esc(t("subs.faceWaiting")) + '</small> <button type="button" class="text-button" data-face-del="' + esc(f.phone) + '">' + esc(t("subs.faceRemove")) + "</button></li>").join("");
-    content.innerHTML = panel(t("subs.title"), t("subs.text"), chips +
+    let ft = null; try { ft = (await api("/v1/admin/flags")).free_tier_limits; } catch { /* not an admin */ }
+    const ftBox = ft === null ? "" : '<div class="empty-panel"><b>' + esc(t("subs.freeTier")) + "</b><p class=\"muted\">" + esc(t("subs.freeTierText")) + '</p><button type="button" class="' + (ft ? "primary-button" : "outline-button") + '" id="ft-toggle">' + esc(t(ft ? "subs.freeTierOn" : "subs.freeTierOff")) + "</button></div>";
+    content.innerHTML = ftBox + panel(t("subs.title"), t("subs.text"), chips +
       '<div class="learn-tools"><input type="search" id="subs-q" placeholder="' + esc(t("subs.search")) + '" value="' + esc(subQuery) + '"></div>' +
       '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("subs.status")) + "</th><th>" + esc(t("subs.until")) + '</th><th class="num">' + esc(t("subs.paid")) + "</th><th>" + esc(t("subs.lastPaid")) + "</th><th>" + esc(t("signups.source")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>") +
       panel(t("subs.facesTitle"), t("subs.facesText"), '<ul class="plain-list">' + (faceList || "<li class=\"muted\">" + esc(t("act.empty")) + "</li>") + "</ul>" +
         '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>") +
       panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div><div class="receipt-actions"><button type="button" class="outline-button" id="sms-check">' + esc(t("subs.smsCheck")) + '</button></div><div id="sms-out" class="demo-note" hidden></div>') +
       panel(t("subs.waTitle"), t("subs.waText"), '<p class="muted" id="wa-state">' + esc(t("subs.waChecking")) + '</p><form id="wa-form" class="app-form"><label class="field"><span>' + esc(t("subs.waKey")) + '</span><input name="key" type="password" autocomplete="off" required maxlength="300" placeholder="bk_us1_..."></label><button class="primary-button">' + esc(t("subs.waSave")) + "</button></form>");
+    document.querySelector("#ft-toggle")?.addEventListener("click", async () => { try { await api("/v1/admin/flags/free-tier", { method: "PUT", body: JSON.stringify({ on: !ft }) }); status(t("card.saved")); await adminSubscriptions(); } catch (x) { status(x.message, true); } });
     content.querySelectorAll("[data-seg]").forEach(b => b.addEventListener("click", () => { subSegment = b.dataset.seg; adminSubscriptions(); }));
     const q = content.querySelector("#subs-q"); q.addEventListener("keydown", e => { if (e.key === "Enter") { subQuery = q.value.trim(); adminSubscriptions(); } });
     api("/v1/admin/bird-key").then(r => { content.querySelector("#wa-state").textContent = r.set ? t("subs.waOn", { last4: r.last4 }) : t("subs.waOff"); }).catch(() => { const el = content.querySelector("#wa-state"); if (el) el.textContent = t("subs.waOff"); });

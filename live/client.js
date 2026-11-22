@@ -3908,7 +3908,7 @@
       ((d.achievements || []).length ? '<section class="cv-box"><h3>' + esc(t("card.path")) + '</h3><ol class="cv-path">' + d.achievements.map(a => "<li><b>" + esc(a.year || "") + "</b> " + esc(a.title) + "</li>").join("") + "</ol></section>" : "") +
       (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "") + "</article>";
   }
-  const linkRow = (l) => '<div class="cv-row"><input name="lt" maxlength="120" placeholder="' + esc(t("card.rowTitle")) + '" value="' + esc(l ? l.title : "") + '"><input name="lu" type="url" inputmode="url" maxlength="400" placeholder="https://" value="' + esc(l ? l.url : "") + '"><button type="button" class="icon-button" data-row-del aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>';
+  const linkRow = (l) => '<div class="cv-row"><input name="lu" type="url" inputmode="url" maxlength="400" placeholder="' + esc(t("card.rowUrl")) + '" value="' + esc(l ? l.url : "") + '"><input name="lt" maxlength="120" placeholder="' + esc(t("card.rowTitle")) + '" value="' + esc(l ? l.title : "") + '"><button type="button" class="icon-button" data-row-del aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>';
   const linkRows = (kind, label, list) => '<div class="cv-rows" data-kind="' + kind + '"><b>' + esc(label) + "</b><div>" + (list.length ? list.map(linkRow).join("") : linkRow(null)) + '</div><button type="button" class="outline-button" data-row-add>+ ' + esc(t("card.rowAdd")) + "</button></div>";
   async function myCard() {
     const d = await api("/v1/me/card");
@@ -3933,13 +3933,15 @@
         area(t("card.path"), "ach", (d.achievements || []).map(a => (a.year ? a.year + " | " : "") + a.title).join("\n")) +
         '<p class="muted">' + esc(t("card.linesHint")) + '</p><button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
       panel(t("card.editTitle"), t("card.editText"),
-        '<form id="card-form" class="app-form"><div class="app-grid">' +
+        '<form id="card-form" class="app-form">' +
+        "<h4>" + esc(t("card.socials")) + "</h4>" + CARD_SOCIALS.map(k => field(t("card.link." + k), "soc_" + k, n(so[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
+        '<details class="cv-edit cv-story"><summary>' + esc(t("card.storyBtn")) + "</summary>" +
+        '<div class="app-grid">' +
         field(t("card.statYears"), "years_in_business", n(c.years_in_business), "number", 'min="0" max="80"') + field(t("card.statBranches"), "branches", n(c.branches), "number", 'min="0" max="500"') + field(t("card.statStaff"), "employees", n(c.employees), "number", 'min="0" max="100000"') + "</div>" +
         '<label class="field"><span>' + esc(t("card.statRevenue")) + '</span><select name="revenue_range">' + option("", t("card.rev.none"), !c.revenue_range) + CARD_REV.map(r => option(r, t("card.rev." + r), c.revenue_range === r)).join("") + "</select></label>" +
         '<label class="check"><input type="checkbox" name="revenue_visible"' + (c.revenue_visible ? " checked" : "") + "> " + esc(t("card.revShow")) + "</label>" +
         area(t("card.about"), "about", n(c.about)) + area(t("card.seeking"), "seeking", n(c.seeking)) + area(t("card.offering"), "offering", n(c.offering)) +
-        field(t("card.tags"), "tags", (c.tags || []).join(", "), "text", 'maxlength="250"') +
-        "<h4>" + esc(t("card.socials")) + "</h4>" + CARD_SOCIALS.map(k => field(t("card.link." + k), "soc_" + k, n(so[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
+        field(t("card.tags"), "tags", (c.tags || []).join(", "), "text", 'maxlength="250"') + "</details>" +
         '<button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
       panel(t("card.businesses"), t("card.bizText"), (d.businesses || []).map(bizForm).join("") + '<button type="button" class="outline-button" id="biz-add">' + esc(t("card.bizAdd")) + "</button>");
     const resizeImage = async (file, max) => {
@@ -3968,7 +3970,10 @@
     document.querySelector("#links-form")?.addEventListener("submit", async e => {
       e.preventDefault(); const f = new FormData(e.currentTarget);
       const lines = k => String(f.get(k) || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
-      const rowItems = kind => [...document.querySelectorAll('.cv-rows[data-kind="' + kind + '"] .cv-row')].map(r => { const u = r.querySelector('[name="lu"]').value.trim(), ti = r.querySelector('[name="lt"]').value.trim(); return u ? { kind, title: ti || hostOf(/^https?:/i.test(u) ? u : "https://" + u) || u, url: /^https?:/i.test(u) ? u : "https://" + u } : null; }).filter(Boolean);
+      const rowItems = kind => [...document.querySelectorAll('.cv-rows[data-kind="' + kind + '"] .cv-row')].map(r => { let u = r.querySelector('[name="lu"]').value.trim(), ti = r.querySelector('[name="lt"]').value.trim();
+        if (!u && /^(https?:\/\/|www\.|youtu)/i.test(ti)) { u = ti; ti = ""; } // a link pasted into the title field still counts
+        if (!u) return null; if (!/^https?:/i.test(u)) u = "https://" + u;
+        return { kind, title: ti || (ytId(u) ? t("card.ytTitle") : hostOf(u) || u), url: u }; }).filter(Boolean);
       const parseLink = (kind, line) => {
         const i = line.indexOf("|");
         if (i < 0) return { kind, title: hostOf(/^https?:/i.test(line) ? line : "https://" + line) || line, url: line };

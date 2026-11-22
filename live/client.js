@@ -206,7 +206,9 @@
     return v;
   }
   const payButton = () => '<a class="primary-button pay-btn" href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + "</a>";
+  document.addEventListener("click", e => { if (e.target.closest && e.target.closest("a.pay-btn, a[data-pw-go]")) trackSend({ view: "pay-click", hit: true }); });
   function renderExpired() {
+    trackSend({ view: "expired", hit: true });
     content.innerHTML = '<section class="expired"><h2>' + esc(t("pay.expiredTitle")) + "</h2><p>" + esc(t("pay.expiredText")) + "</p>" + payButton() +
       '<button type="button" class="outline-button" data-support>' + esc(t("support.write")) + '</button><button type="button" class="text-button" id="exp-logout">' + esc(t("auth.logout")) + "</button></section>";
     bindSupport();
@@ -215,6 +217,7 @@
   /** The locked-feature sheet: what is open for free, what the subscription adds, one button to see it. */
   function showPaywall() {
     if (document.querySelector(".paywall")) return;
+    trackSend({ view: "paywall", hit: true }); // how often the locked feature is tapped; shown in the admin activity report
     const dlg = authDialog('<div class="paywall"><h3>' + esc(t("paywall.title")) + "</h3><p>" + esc(t("paywall.text")) + '</p><div class="auth-actions auth-actions-col"><a class="primary-button" data-pw-go href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + '</a><button type="button" class="text-button" data-pw-x>' + esc(t("paywall.later")) + "</button></div></div>");
     dlg.q("[data-pw-x]").addEventListener("click", dlg.close);
     dlg.q("[data-pw-go]").addEventListener("click", () => dlg.close());
@@ -3588,13 +3591,22 @@
     const groups = [["news", r => r.room_type === "advertising"], ["meetup", r => r.room_type === "meetup"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports", "meetup"].includes(r.room_type)]];
     const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
       : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
-    content.innerHTML = storiesStrip(stories) + quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+    content.innerHTML = storiesStrip(stories) + '<button type="button" class="outline-button new-msg" id="new-msg">+ ' + esc(t("newmsg.title")) + "</button>" + quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
       (direct.length ? panel(t("messages.group.direct"), "", '<div class="chat-list">' + direct.map(row).join("") + "</div>") : "") +
       groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
         return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
     bindSupport();
+    document.querySelector("#new-msg")?.addEventListener("click", () => {
+      const dlg = authDialog('<h3>' + esc(t("newmsg.title")) + '</h3><input class="auth-input" type="search" id="nm-q" placeholder="' + esc(t("newmsg.search")) + '" autocomplete="off"><div id="nm-res" class="nm-res"></div><div class="auth-actions auth-actions-col"><button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div>");
+      dlg.q("[data-x]").addEventListener("click", dlg.close);
+      let tm = null; const box = dlg.q("#nm-res");
+      const run = async () => { const q = dlg.q("#nm-q").value.trim(); try { const r = await api("/v1/members?limit=15" + (q ? "&q=" + encodeURIComponent(q) : ""));
+        box.innerHTML = r.items.length ? r.items.map(m => '<button type="button" class="member-result member-open" data-nm="' + esc(m.user_id) + '">' + (m.photo_url ? '<img class="member-avatar member-photo" alt="" data-fb="' + esc(String(m.display_name || "?").slice(0, 1)) + '" src="' + esc(apiBase + m.photo_url) + '">' : '<div class="member-avatar" aria-hidden="true">' + esc(String(m.display_name || "?").slice(0, 1)) + "</div>") + '<div class="member-copy"><strong>' + esc(m.display_name) + "</strong><span>" + esc(m.headline || "") + "</span></div></button>").join("") : '<p class="muted">' + esc(t("newmsg.none")) + "</p>";
+        box.querySelectorAll("[data-nm]").forEach(b => b.addEventListener("click", async () => { try { const d = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: b.dataset.nm }) }); dlg.close(); chatRoom = d.room_id; render("chat"); } catch (x) { dlg.close(); status(x.message, true); } })); } catch (x) { box.innerHTML = '<p class="auth-error">' + esc(x.message) + "</p>"; } };
+      dlg.q("#nm-q").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(run, 250); }); run(); dlg.q("#nm-q").focus();
+    });
     bindStories(content, stories);
   }
   /** Opens (creating on first use) the private dialogue with the Friends team. */

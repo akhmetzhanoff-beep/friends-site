@@ -863,3 +863,5 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .needs-card{padding:16px;margin-bottom:14px;border-radius:18px;background:var(--fb-card,#fff);border:1px solid var(--fb-line)}.needs-card h3{margin:0 0 4px}.needs-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
 .needs-chip{display:inline-flex}.needs-chip input{position:absolute;opacity:0;pointer-events:none}.needs-chip span{padding:9px 14px;border-radius:999px;border:1px solid var(--fb-line);background:var(--fb-hover);cursor:pointer;font-weight:600;font-size:14px}.needs-chip input:checked+span{background:var(--fb-blue);color:#fff;border-color:var(--fb-blue)}.needs-chip input:focus-visible+span{outline:2px solid var(--fb-blue);outline-offset:2px}
 .needs-card input[name=note]{width:100%;box-sizing:border-box;margin-bottom:10px}
+
+.new-msg{width:100%;margin:0 0 12px}.nm-res{max-height:50vh;overflow:auto;display:grid;gap:4px;margin:10px 0}

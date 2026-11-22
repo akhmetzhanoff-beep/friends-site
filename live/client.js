@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity", "admin-subscriptions"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -32,7 +32,7 @@
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
-    overview: "overview", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
+    overview: "overview", support: "messages", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
@@ -490,8 +490,8 @@
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
-    notifications: "messages", chat: "messages", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications"] };
+    notifications: "messages", support: "messages", chat: "messages", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications", "support"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -3358,7 +3358,6 @@
     const sub = !m ? t("settings.subNone") : m.active ? (m.ends_at ? t("me.subUntil", { date: day(m.ends_at) }) : t("settings.subActive")) : t("settings.subExpired", { date: m.ends_at ? day(m.ends_at) : "—" });
     content.innerHTML = '<section class="me-head"><div class="member-avatar big" aria-hidden="true">' + esc((name || "?").slice(0, 1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p class="muted">' + esc(user?.email || "") + '</p><span class="pill">' + esc(sub) + "</span></div></section>" +
       (APP === "pilot" ? pilotModeCard() : "") +
-      (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-support><span class="me-ic">' + ic("chat") + "</span><span>" + esc(t("support.write")) + '</span><span class="me-go">›</span></button></div></section>') +
       (hasPartner ? '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="blogger"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("blogger.title")) + '</span><span class="me-go">›</span></button></div></section>' : (APP === "admin" ? "" : '<section class="me-group"><div class="me-list"><button type="button" class="me-row" data-view="partner-apply"><span class="me-ic">' + ic("megaphone") + "</span><span>" + esc(t("partnerApply.tile")) + '</span><span class="me-go">›</span></button></div></section>')) +
       ME_GROUPS.map(([title, list]) => '<section class="me-group"><h3>' + esc(t(title)) + '</h3><div class="me-list">' + list.map(([v, i, l]) => row(v, i, l)).join("") + "</div></section>").join("") +
       (extra.length ? '<section class="me-group"><h3>' + esc(t("services.more")) + '</h3><div class="me-list" id="me-extra"></div></section>' : "") +
@@ -3437,13 +3436,10 @@
     const mineSupport = r => r.room_type === "support" && r.name === "Friends \u2014 \u043a\u043e\u043c\u0430\u043d\u0434\u0430";
     const supportRows = d.items.filter(r => r.room_type === "support" && !mineSupport(r));
     const rest = d.items.filter(r => r.room_type !== "main" && r.room_type !== "direct" && r.room_type !== "support");
-    const mySupport = d.items.find(mineSupport);
-    const supportRow = '<button type="button" class="chat-row" data-support><span class="chat-avatar" aria-hidden="true">F</span><span class="chat-main"><strong>' + esc(t("support.title")) + "</strong><small>" +
-      esc(mySupport && mySupport.last_message && mySupport.last_message.body ? mySupport.last_message.body : t("support.hint")) + "</small></span>" + (mySupport && mySupport.unread ? '<span class="chat-unread">' + mySupport.unread + "</span>" : "") + "</button>";
     const groups = [["news", r => r.room_type === "advertising"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports"].includes(r.room_type)]];
     const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
       : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
-    content.innerHTML = quota + '<div class="chat-list chat-pinned">' + supportRow + "</div>" + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+    content.innerHTML = quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
       (direct.length ? panel(t("messages.group.direct"), "", '<div class="chat-list">' + direct.map(row).join("") + "</div>") : "") +
       groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
         return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
@@ -4151,7 +4147,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
+  const RENDERERS = { support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

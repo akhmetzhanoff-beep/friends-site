@@ -3582,7 +3582,7 @@
     const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
       esc(r.last_message && r.last_message.body ? (r.last_message.author ? r.last_message.author + ": " : "") + r.last_message.body : (r.description || t("messages.noMessages"))) + "</small></span>" +
-      (r.unread ? '<span class="chat-unread">' + r.unread + "</span>" : !r.joined && r.can_join ? '<span class="pill">' + esc(t("messages.open")) + "</span>" : "") + "</button>";
+      (r.room_type === "support" && r.waiting ? '<span class="pill">' + esc(t("support.waiting")) + "</span>" : r.unread ? '<span class="chat-unread">' + r.unread + "</span>" : !r.joined && r.can_join ? '<span class="pill">' + esc(t("messages.open")) + "</span>" : "") + "</button>";
     const pinned = d.items.filter(r => r.room_type === "main");
     const direct = d.items.filter(r => r.room_type === "direct");
     const mineSupport = r => r.room_type === "support" && r.name === "Friends \u2014 \u043a\u043e\u043c\u0430\u043d\u0434\u0430";

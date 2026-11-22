@@ -162,9 +162,13 @@
       el.setAttribute("role", "status");
       document.querySelector(".main").prepend(el);
     }
-    el.textContent = message;
+    // Fixed toast above the tab bar: visible wherever the page is scrolled. Green = saved, red = error.
+    el.textContent = message ? (error ? "\u2715 " : "\u2713 ") + message : "";
     el.hidden = !message;
     el.classList.toggle("error", error);
+    el.onclick = () => { el.hidden = true; };
+    clearTimeout(status.timer);
+    if (message) status.timer = setTimeout(() => { el.hidden = true; }, error ? 9000 : 4000);
   }
 
   // ---------- Own sign-in dialogs: phone with a mask, code that fills itself from the SMS ----------

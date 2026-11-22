@@ -540,6 +540,7 @@
     row.setAttribute("aria-label", t("nav." + block));
     row.innerHTML = tabs.map(v => '<button type="button" class="chip-tab' + (v === active ? " active" : "") + '" data-view="' + v + '"' + (v === active ? ' aria-current="page"' : "") + ">" + esc(t("nav." + v)) + "</button>").join("");
     content.insertBefore(row, content.firstChild);
+    if (active === "notifications") mountStories(row);
   }
 
   // The phone stays signed in after the first SMS code (session kept on the device and refreshed automatically).
@@ -559,7 +560,7 @@
     title.textContent = t("view." + key + ".title");
     subtitle.textContent = t("view." + key + ".subtitle");
     // Messages start straight with the stories strip: the big title card stays for screen readers only.
-    document.querySelector(".welcome")?.classList.toggle("is-compact", view === "messages");
+    document.querySelector(".welcome")?.classList.toggle("is-compact", ["messages", "notifications", "support"].includes(view));
   }
 
   // Install as an app from the website (PWA): shown only in a regular browser tab.
@@ -3448,7 +3449,7 @@
     let gi = start, si = 0, timer = null;
     const box = document.createElement("div"); box.className = "story-view"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", t("stories.title"));
     document.body.appendChild(box);
-    const close = () => { clearTimeout(timer); box.remove(); document.removeEventListener("keydown", onKey); messages().catch(() => undefined); };
+    const close = () => { clearTimeout(timer); box.remove(); document.removeEventListener("keydown", onKey); render(active).catch(() => undefined); };
     const onKey = e => { if (e.key === "Escape") close(); if (e.key === "ArrowRight") next(); if (e.key === "ArrowLeft") prev(); };
     document.addEventListener("keydown", onKey);
     function show() {
@@ -3479,7 +3480,17 @@
     };
     const cap = (prompt(t("stories.captionPrompt")) || "").trim().slice(0, 140);
     try { const small = await resize(file); const fd = new FormData(); fd.append("file", small, small.name);
-      await api("/v1/stories" + (cap ? "?caption=" + encodeURIComponent(cap) : ""), { method: "POST", body: fd }); status(t("stories.posted")); await messages(); } catch (x) { status(x.message, true); }
+      await api("/v1/stories" + (cap ? "?caption=" + encodeURIComponent(cap) : ""), { method: "POST", body: fd }); status(t("stories.posted")); await render(active); } catch (x) { status(x.message, true); }
+  }
+  function bindStories(root, d) {
+    root.querySelectorAll("[data-story]").forEach(b => b.addEventListener("click", () => openStories(d, Number(b.dataset.story))));
+    root.querySelector("[data-story-add]")?.addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) pickStory(f); });
+  }
+  /** The stories strip stays on top of every tab of the Messages block. */
+  async function mountStories(row) {
+    const d = await loadStories(); const html = storiesStrip(d);
+    if (!html || !row.isConnected || row.nextElementSibling?.classList.contains("stories")) return;
+    row.insertAdjacentHTML("afterend", html); bindStories(row.parentElement, d);
   }
   async function messages() {
     const stories = await loadStories();
@@ -3503,8 +3514,7 @@
       (d.items.length ? "" : panel(t("nav.messages"), t("messages.empty"), ""));
     content.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => { chatRoom = b.dataset.chat; render("chat"); }));
     bindSupport();
-    content.querySelectorAll("[data-story]").forEach(b => b.addEventListener("click", () => openStories(stories, Number(b.dataset.story))));
-    content.querySelector("[data-story-add]")?.addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) pickStory(f); });
+    bindStories(content, stories);
   }
   /** Opens (creating on first use) the private dialogue with the Friends team. */
   function bindSupport() {

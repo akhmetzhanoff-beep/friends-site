@@ -816,3 +816,6 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .gal-add{display:grid;place-items:center;align-content:center;gap:4px;aspect-ratio:3/4;border:2px dashed var(--fb-line);border-radius:12px;color:var(--fb-blue);cursor:pointer}.gal-add span{font-size:30px;line-height:1}.gal-add small{font-size:12px}
 .photo-view{cursor:zoom-out}.photo-close{position:absolute;top:14px;right:14px;color:#fff;background:rgba(0,0,0,.5);font-size:26px}
 .app-form>*,.cv-rows,.cv-rows>div,.cv-row,.cv-story{min-width:0;max-width:100%;box-sizing:border-box}.cv-row{width:100%}.cv-row input,.cv-row select{font-size:16px}
+
+.stories{gap:18px;padding:6px 2px 18px}.story{width:104px}.story small{font-size:14px;max-width:104px;font-weight:600}
+.story-ring{width:100px;height:100px;padding:4px}.story-ring.add span{font-size:40px}.story-ring>span{font-size:34px}.story-ring.sm{width:36px;height:36px;padding:2px}.story-ring.sm>span{font-size:16px}

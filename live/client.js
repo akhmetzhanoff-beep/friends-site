@@ -3832,8 +3832,9 @@
     if (c.revenue_range) stats.push([t("card.rev." + c.revenue_range), t("card.statRevenue")]);
     const since = p.member_since ? new Date(p.member_since).getFullYear() : "";
     const social = CARD_SOCIALS.filter(k => c.socials && c.socials[k]).map(k => '<a class="cv-chip" href="' + safeHref(c.socials[k]) + '" target="_blank" rel="noopener noreferrer nofollow">' + esc(t("card.link." + k)) + "</a>").join("");
-    return '<article class="cv"><div class="cv-cover" aria-hidden="true"></div><div class="cv-top">' +
-      '<div class="cv-av" aria-hidden="true">' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '</div>' +
+    const coverStyle = p.cover_url ? ' style="background-image:url(\'' + esc(apiBase + p.cover_url) + '\')"' : "";
+    return '<article class="cv"><div class="cv-cover' + (p.cover_url ? " has-img" : "") + '" aria-hidden="true"' + coverStyle + '></div><div class="cv-top">' +
+      (p.photo_url ? '<img class="cv-av cv-av-img" alt="" src="' + esc(apiBase + p.photo_url) + '">' : '<div class="cv-av" aria-hidden="true">' + esc(String(p.display_name || "?").slice(0, 1).toUpperCase()) + '</div>') +
       '<div class="cv-badges">' + (p.badges && p.badges.face ? '<span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + "</div>" +
       "<h2>" + esc(p.display_name || "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
       (stats.length ? '<div class="cv-stats">' + stats.map(s => '<div><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>").join("") + "</div>" : "") +
@@ -3861,6 +3862,9 @@
         '<div class="receipt-actions"><button class="primary-button">' + esc(t("card.save")) + '</button><button type="button" class="outline-button" data-biz-del="' + esc(b.id) + '">' + esc(t("card.bizDelete")) + "</button></div></form></details>";
     };
     content.innerHTML = '<p class="muted">' + esc(t("card.previewHint")) + "</p>" + cardView(d) +
+      panel(t("card.photoTitle"), t("card.photoText"),
+        '<div class="cv-pick"><div><b>' + esc(t("card.photo")) + '</b><label class="outline-button cv-file"><input type="file" accept="image/*" data-media="photo" hidden>' + esc(t("card.pickGallery")) + '</label>' + (d.person.photo_url ? '<button type="button" class="text-button" data-media-del="photo">' + esc(t("card.photoDelete")) + "</button>" : "") + '</div>' +
+        '<div><b>' + esc(t("card.cover")) + '</b><label class="outline-button cv-file"><input type="file" accept="image/*" data-media="cover" hidden>' + esc(t("card.pickGallery")) + '</label>' + (d.person.cover_url ? '<button type="button" class="text-button" data-media-del="cover">' + esc(t("card.photoDelete")) + "</button>" : "") + "</div></div>") +
       panel(t("card.editTitle"), t("card.editText"),
         '<form id="card-form" class="app-form"><div class="app-grid">' +
         field(t("card.statYears"), "years_in_business", n(c.years_in_business), "number", 'min="0" max="80"') + field(t("card.statBranches"), "branches", n(c.branches), "number", 'min="0" max="500"') + field(t("card.statStaff"), "employees", n(c.employees), "number", 'min="0" max="100000"') + "</div>" +
@@ -3871,6 +3875,29 @@
         "<h4>" + esc(t("card.socials")) + "</h4>" + CARD_SOCIALS.map(k => field(t("card.link." + k), "soc_" + k, n(so[k]), "text", 'maxlength="300" placeholder="' + esc(t("card.linkHint")) + '"')).join("") +
         '<button class="primary-button">' + esc(t("card.save")) + "</button></form>") +
       panel(t("card.businesses"), t("card.bizText"), (d.businesses || []).map(bizForm).join("") + '<button type="button" class="outline-button" id="biz-add">' + esc(t("card.bizAdd")) + "</button>");
+    const resizeImage = async (file, max) => {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type) || !window.createImageBitmap) return file;
+      try {
+        const bmp = await createImageBitmap(file);
+        const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+        const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+        const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
+        return blob ? new File([blob], "photo.jpg", { type: "image/jpeg" }) : file;
+      } catch { return file; }
+    };
+    document.querySelectorAll("input[data-media]").forEach(inp => inp.addEventListener("change", async () => {
+      const f = inp.files && inp.files[0]; if (!f) return;
+      try {
+        const small = await resizeImage(f, inp.dataset.media === "cover" ? 1600 : 900);
+        const fd = new FormData(); fd.append("file", small, small.name);
+        await api("/v1/me/card/media/" + inp.dataset.media, { method: "POST", body: fd });
+        status(t("card.saved")); await myCard();
+      } catch (x) { status(x.message, true); }
+    }));
+    document.querySelectorAll("[data-media-del]").forEach(b => b.addEventListener("click", async () => {
+      try { await api("/v1/me/card/media/" + b.dataset.mediaDel, { method: "DELETE" }); status(t("card.saved")); await myCard(); } catch (x) { status(x.message, true); }
+    }));
     const form = document.querySelector("#card-form");
     form.addEventListener("submit", async e => {
       e.preventDefault();

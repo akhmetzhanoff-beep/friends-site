@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity", "admin-subscriptions"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "together", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "together", "journal", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -48,7 +48,7 @@
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
-    overview: "overview", support: "messages", together: "together", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
+    overview: "overview", support: "messages", together: "together", journal: "journal", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
@@ -533,10 +533,10 @@
   }
   // Which bottom-bar block a screen belongs to, and the sub-sections shown as tabs inside a block.
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
-  const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
+  const BLOCK_OF = { events: "overview", journal: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
     notifications: "messages", together: "messages", support: "messages", chat: "messages", "my-card": "account", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "together", "notifications", "support"] };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements", "journal"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "together", "notifications", "support"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -3540,6 +3540,30 @@
     root.querySelectorAll("[data-story]").forEach(b => b.addEventListener("click", () => openStories(d, Number(b.dataset.story))));
     root.querySelector("[data-story-add]")?.addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) pickStory(f); });
   }
+  // ---- Journal: articles by the team and experts ----
+  let journalId = null;
+  async function journal() {
+    if (journalId) {
+      const a = await api("/v1/journal/" + encodeURIComponent(journalId)).catch(() => null);
+      if (!a) { journalId = null; return journal(); }
+      content.innerHTML = '<button type="button" class="text-button" id="j-back">\u2039 ' + esc(t("journal.back")) + '</button><article class="j-article"><h2>' + esc(a.title) + '</h2><p class="muted">' + esc(a.author) + " \u00b7 " + esc(date(a.created_at)) + "</p>" +
+        a.body.split(/\n{2,}/).map(par => "<p>" + esc(par).replace(/\n/g, "<br>") + "</p>").join("") + (a.mine ? '<button type="button" class="text-button" id="j-del">' + esc(t("stories.delete")) + "</button>" : "") + "</article>";
+      document.querySelector("#j-back").addEventListener("click", () => { journalId = null; journal(); });
+      document.querySelector("#j-del")?.addEventListener("click", async () => { if (!confirm(t("journal.deleteAsk"))) return; try { await api("/v1/journal/" + a.id, { method: "DELETE" }); journalId = null; await journal(); } catch (x) { status(x.message, true); } });
+      return;
+    }
+    const d = await api("/v1/journal");
+    content.innerHTML = (d.can_write ? '<button type="button" class="primary-button mt-new" id="j-new">+ ' + esc(t("journal.write")) + "</button>" : "") +
+      (d.items.length ? '<div class="mt-list">' + d.items.map(x => '<button type="button" class="mt-card j-card" data-j="' + esc(x.id) + '"><h3>' + esc(x.title) + '</h3><p class="muted">' + esc(x.excerpt) + "\u2026</p><small>" + esc(x.author) + " \u00b7 " + esc(date(x.created_at)) + "</small></button>").join("") + "</div>" : '<p class="muted">' + esc(t("journal.empty")) + "</p>");
+    content.querySelectorAll("[data-j]").forEach(b => b.addEventListener("click", () => { journalId = b.dataset.j; journal(); }));
+    document.querySelector("#j-new")?.addEventListener("click", () => {
+      const dlg = authDialog('<h3>' + esc(t("journal.write")) + '</h3><form class="app-form" id="j-form">' + field(t("journal.title"), "title", "", "text", 'required minlength="3" maxlength="140"') + area(t("journal.body"), "body") +
+        '<div class="auth-actions auth-actions-col"><button class="primary-button">' + esc(t("together.publish")) + '</button><button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div></form>");
+      dlg.q("[data-x]").addEventListener("click", dlg.close); dlg.q("textarea").setAttribute("minlength", "20"); dlg.q("textarea").setAttribute("maxlength", "8000"); dlg.q("textarea").required = true; dlg.q("textarea").rows = 8;
+      dlg.q("#j-form").addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget);
+        try { await api("/v1/journal", { method: "POST", body: JSON.stringify({ title: String(f.get("title")).trim(), body: String(f.get("body")).trim() }) }); dlg.close(); status(t("together.published")); await journal(); } catch (x) { dlg.close(); status(x.message, true); } });
+    });
+  }
   // ---- Together: coffee, sport, a concert, a trip: propose, join, a chat opens ----
   const MEETUP_KINDS = ["coffee", "sport", "concert", "trip", "online", "other"];
   async function together() {
@@ -4356,7 +4380,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { together, support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
+  const RENDERERS = { journal, together, support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

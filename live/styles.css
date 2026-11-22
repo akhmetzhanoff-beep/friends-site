@@ -865,3 +865,4 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .needs-card input[name=note]{width:100%;box-sizing:border-box;margin-bottom:10px}
 
 .new-msg{width:100%;margin:0 0 12px}.nm-res{max-height:50vh;overflow:auto;display:grid;gap:4px;margin:10px 0}
+.how-list{margin:0;padding-left:20px;display:grid;gap:8px;line-height:1.5}

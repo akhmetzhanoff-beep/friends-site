@@ -3995,7 +3995,7 @@
       '<div class="trust-facts"><span>' + esc(t("trust.years", { n: c.member_years || 0 })) + "</span><span>" + esc(t("trust.events", { n: c.events_year || 0 })) + "</span><span>" + esc(t("trust.lessons", { n: c.lessons_done || 0 })) + "</span></div></div>";
   }
   function reviewList(c, canReply) {
-    return (c.reviews || []).length ? c.reviews.map(r => '<article class="review"><div class="review-top"><strong>' + esc(r.reviewer) + "</strong>" + stars(r.rating) + "</div>" + (r.body ? "<p>" + esc(r.body) + "</p>" : "") + '<small class="muted">' + esc(day(r.created_at)) + "</small>" +
+    return (c.reviews || []).length ? c.reviews.map(r => '<article class="review"><div class="review-top"><strong>' + esc(r.reviewer) + "</strong>" + (r.by_team ? ' <span class="pill">' + esc(t("trust.byTeam")) + "</span>" : "") + stars(r.rating) + "</div>" + (r.body ? "<p>" + esc(r.body) + "</p>" : "") + '<small class="muted">' + esc(day(r.created_at)) + "</small>" +
       (r.reply ? '<p class="review-reply"><strong>' + esc(t("trust.reply")) + ":</strong> " + esc(r.reply) + "</p>" : canReply ? '<form class="inline-form" data-reply="' + esc(r.id) + '"><label class="field"><span>' + esc(t("trust.replyLabel")) + '</span><input name="reply" maxlength="1000" required></label><button class="outline-button">' + esc(t("trust.replySend")) + "</button></form>" : "") + "</article>").join("")
       : '<p class="muted">' + esc(t("trust.noReviews")) + "</p>";
   }
@@ -4011,6 +4011,7 @@
       panel(t("trust.title"), t("trust.text"), trustSummary(c)) +
       panel(t("trust.reviews"), "", reviewList(c, false)) +
       '<div class="receipt-actions member-deal"><button type="button" class="primary-button" id="message-member">' + ic("chat", "ic-inline") + ' ' + esc(t("chat.message")) + '</button> <button type="button" class="outline-button" id="propose-deal">' + ic("deal", "ic-inline") + ' ' + esc(t("deals.proposeTo")) + "</button></div>" +
+      (isStaff(await loadRoles()) ? panel(t("trust.teamTitle"), t("trust.teamText"), '<form id="team-form" class="app-form"><fieldset class="rating-pick"><legend>' + esc(t("trust.yourRating")) + "</legend>" + [5, 4, 3, 2, 1].map(n => '<label><input type="radio" name="trating" value="' + n + '" required> <span>' + "\u2605".repeat(n) + "</span></label>").join("") + '</fieldset><label class="field"><span>' + esc(t("trust.teamNote")) + '</span><input name="tnote" maxlength="300"></label><button class="primary-button">' + esc(t("trust.teamSend")) + "</button></form>") : "") +
       panel(t("trust.leaveTitle"), t("trust.leaveText"), mine && mine.status !== "rejected" ? '<p class="demo-note">' + esc(t(mine.status === "pending" ? "trust.minePending" : "trust.mineDone")) + "</p>" :
         '<form id="review-form" class="app-form"><fieldset class="rating-pick"><legend>' + esc(t("trust.yourRating")) + "</legend>" + [5, 4, 3, 2, 1].map(n => '<label><input type="radio" name="rating" value="' + n + '" required> <span>' + "★".repeat(n) + "</span></label>").join("") + "</fieldset>" +
         area(t("trust.reviewText"), "body") + '<button class="primary-button">' + esc(t("trust.send")) + "</button></form>");
@@ -4018,6 +4019,8 @@
       try { const r = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: c.user_id }) }); chatRoom = r.room_id; render("chat"); } catch (x) { status(x.message, true); }
     });
     document.querySelector("#propose-deal")?.addEventListener("click", () => { dealId = null; dealDraftFor = { id: c.user_id, name: c.display_name }; render("deal"); });
+    document.querySelector("#team-form")?.addEventListener("submit", async e => { e.preventDefault(); const f2 = new FormData(e.currentTarget);
+      try { await api("/v1/admin/members/" + encodeURIComponent(c.user_id) + "/team-rating", { method: "POST", body: JSON.stringify({ rating: Number(f2.get("trating")), body: String(f2.get("tnote") || "") }) }); status(t("card.saved")); await member(); } catch (x) { status(x.message, true); } });
     const f = document.querySelector("#review-form");
     if (f) {
       f.querySelector("textarea").setAttribute("maxlength", "1000");
@@ -4218,7 +4221,8 @@
     };
     content.innerHTML = panel(t("trust.myTitle"), t("trust.myText"), trustSummary(c) + (c.reviews_pending_about_me ? '<p class="demo-note">' + esc(t("trust.pendingAboutMe", { n: c.reviews_pending_about_me })) + "</p>" : "")) +
       panel(t("trust.verifyTitle"), t("trust.verifyText"), ["tax_clear", "credit_history", "company"].map(vbox).join("")) +
-      panel(t("trust.reviews"), "", reviewList(c, true));
+      panel(t("trust.reviews"), "", reviewList(c, true)) +
+      panel(t("trust.howTitle"), t("trust.howText"), '<ol class="how-list">' + [1, 2, 3, 4, 5, 6].map(i => "<li>" + esc(t("trust.how" + i)) + "</li>").join("") + "</ol>");
     content.querySelectorAll("[data-verify]").forEach(form => form.addEventListener("submit", async e => {
       e.preventDefault();
       const d = new FormData(form);

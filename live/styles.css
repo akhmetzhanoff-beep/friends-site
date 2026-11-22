@@ -839,3 +839,8 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .cv-edit-btn{width:100%;margin:2px 0 14px}.cv-savebar{position:sticky;bottom:calc(96px + env(safe-area-inset-bottom));z-index:6;display:flex;gap:10px;padding:12px;margin-top:14px;background:var(--fb-card,#fff);border:1px solid var(--fb-line);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.14)}.cv-savebar[hidden]{display:none}.cv-savebar .primary-button{flex:1}
 .cv-body{padding:4px 12px 12px}.cv-media .cv-ph{margin:0 -12px}.cv-media .cv-vids{margin-bottom:0}.cv-vids .cv-vid:first-child:nth-last-child(odd){grid-column:1/-1}
 #card-edit[hidden]{display:none}
+
+.cv-social{margin-top:10px}
+.cv-about p{font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;font-size:16.5px;line-height:1.55;font-weight:400;letter-spacing:.005em}
+.cv-about{padding:16px 16px 14px}.cv-about .cv-tags{margin-top:12px}
+.cv-two{display:grid;grid-template-columns:1fr;gap:10px}.cv-two>div{padding:14px 16px;border-radius:16px}.cv-two b{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.cv-two{font-size:15.5px;line-height:1.5}

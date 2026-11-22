@@ -3975,8 +3975,7 @@
       (c.seeking || c.offering ? '<section class="cv-box"><h3>' + esc(t("card.seekOffer")) + '</h3><div class="cv-two">' +
         (c.seeking ? '<div class="cv-seek"><b>' + esc(t("card.seeking")) + "</b>" + esc(c.seeking) + "</div>" : "") +
         (c.offering ? '<div class="cv-offer"><b>' + esc(t("card.offering")) + "</b>" + esc(c.offering) + "</div>" : "") + "</div></section>" : "") +
-      ((d.achievements || []).length ? '<section class="cv-box"><h3>' + esc(t("card.path")) + '</h3><ol class="cv-path">' + d.achievements.map(a => "<li><b>" + esc(a.year || "") + "</b> " + esc(a.title) + "</li>").join("") + "</ol></section>" : "") +
-      (social ? '<section class="cv-box"><h3>' + esc(t("card.socials")) + '</h3><div class="cv-links">' + social + "</div></section>" : "");
+      ((d.achievements || []).length ? '<section class="cv-box"><h3>' + esc(t("card.path")) + '</h3><ol class="cv-path">' + d.achievements.map(a => "<li><b>" + esc(a.year || "") + "</b> " + esc(a.title) + "</li>").join("") + "</ol></section>" : "");
     const bizHtml = biz.map(b =>
       '<div class="cv-biz"><div class="cv-biz-head"><div class="cv-logo" aria-hidden="true">' + esc(String(b.name || "?").slice(0, 1).toUpperCase()) + "</div><div><strong>" + esc(b.name) + '</strong><small>' + esc([b.kind, b.city].filter(Boolean).join(" · ")) + "</small></div></div>" +
       (b.description ? "<p>" + esc(b.description) + "</p>" : "") +
@@ -3987,7 +3986,7 @@
       (gal.length ? '<section class="cv-box cv-media"><h3>' + esc(t("card.gallery")) + "</h3>" + photoHtml + "</section>" : "");
     return '<article class="cv"><div class="cv-cover' + (p.cover_url ? " has-img" : "") + '" aria-hidden="true"' + coverStyle + '></div><div class="cv-ig">' + av +
       '<div class="cv-stats">' + stats.slice(0, 3).map(x => '<div><b>' + esc(x[0]) + "</b><span>" + esc(x[1]) + "</span></div>").join("") + "</div></div>" +
-      '<div class="cv-id"><h2>' + esc(p.display_name || "") + (p.badges && p.badges.face ? ' <span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p></div>" +
+      '<div class="cv-id"><h2>' + esc(p.display_name || "") + (p.badges && p.badges.face ? ' <span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p>" + (social ? '<div class="cv-links cv-social">' + social + "</div>" : "") + "</div>" +
       '<div class="cv-body">' + mediaTop + aboutHtml +
       (biz.length ? '<section class="cv-box"><h3>' + esc(t("card.businesses")) + "</h3>" + bizHtml + "</section>" : "") +
       (press.length ? '<section class="cv-box">' + pressHtml + "</section>" : "") + "</div></article>";

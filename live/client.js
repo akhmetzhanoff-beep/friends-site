@@ -493,13 +493,13 @@
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
     "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
-    notifications: "messages", support: "messages", chat: "messages", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications", "support"] };
+    notifications: "messages", support: "messages", chat: "messages", "my-card": "account", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "notifications", "support"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
   // ---------- «Назад» как в Kaspi: всегда в одном месте — слева вверху, на всех внутренних экранах ----------
-  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events", business: "me", profile: "me", companies: "me", trust: "me", membership: "me", team: "me" };
+  const PARENT = { course: "learn", lesson: "course", certificate: "course", test: "tests", member: "members", deal: "deals", chat: "messages", host: "events", business: "me", "my-card": "me", profile: "me", companies: "me", trust: "me", membership: "me", team: "me" };
   const ROOT_ADMIN = "admin-stats";
   const isRoot = v => isPrimary(v) || v === ROOT_ADMIN || (APP === "admin" && v !== "chat");
   const parentOf = v => PARENT[v] || (BLOCK_OF[v] && BLOCK_OF[v] !== v ? BLOCK_OF[v] : (APP === "admin" || (APP === "pilot" && pilotMode() === "admin") ? ROOT_ADMIN : "overview"));
@@ -3317,7 +3317,7 @@
   // ---------- Сервисы: every section as a tile grid (Kaspi-style) ----------
   // ---------- Профиль: everything personal in one place (5th bottom tab) ----------
   const ME_GROUPS = [
-    ["me.groupAccount", [["my-card", "star", "card.myTitle"], ["business", "business", "nav.business"], ["profile", "user", "nav.account"]]],
+    ["me.groupAccount", [["my-card", "star", "card.myTitle"], ["business", "business", "nav.business"]]],
     ["me.groupCommunity", [["notifications", "bell"], ["checkin", "pen"], ["polls", "help"]]],
     ["me.groupApp", [["settings", "gear"]]]
   ];

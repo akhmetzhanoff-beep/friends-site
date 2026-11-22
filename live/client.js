@@ -710,16 +710,11 @@
     const recent = (n.items || []).map(x => '<div class="list-row"><div><strong>' + esc(x.title) + "</strong><p>" + esc(x.body) + "</p><small>" + esc(date(x.created_at)) + '</small></div><span class="pill">' + esc(x.read_at ? t("status.read") : t("status.new")) + "</span></div>").join("")
       || '<p class="muted">' + esc(t("notifications.empty")) + "</p>";
     content.innerHTML =
-      '<div class="block-tiles">' + ["events", "learn", "business", "experts", "discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
-      '<div class="stats-grid">' +
-      '<article class="stat-card"><span class="stat-icon blue" aria-hidden="true">◎</span><p>' + esc(t("overview.profile")) + '</p><strong class="active-text">' + esc(p ? t("overview.profileDone") : t("overview.profileTodo")) + "</strong><small>" + esc(t("overview.profileHint")) + "</small></article>" +
-      '<article class="stat-card"><span class="stat-icon violet" aria-hidden="true">' + ic("bell") + '</span><p>' + esc(t("overview.notifications")) + "</p><strong>" + Number(n.unread_count || 0) + "</strong><small>" + esc(t("overview.unread")) + "</small></article>" +
-      '<article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(due ? money(due.amount_kzt) : t("common.none")) + "</strong><small>" + esc(due ? due.invoice_number : t("overview.noUnpaid")) + "</small></article>" +
-      "</div>" + fbHtml + bdayHtml + newsHtml + installCard() +
-      '<div class="section-heading"><div><h2>' + esc(t("overview.hello", { name: p?.display_name || user?.email || t("overview.participant") })) + '</h2><p class="muted">' + esc(t("overview.helloText")) + '</p></div><button class="text-button" data-view="profile">' + esc(t("overview.myProfile")) + "</button></div>" +
-      '<div class="section-heading"><div><h2>' + esc(t("overview.recent")) + '</h2></div><button class="text-button" data-view="notifications">' + esc(t("overview.allNotifications")) + "</button></div>" +
-      '<div class="empty-panel">' + recent + "</div>" +
-      '<div class="section-heading"><div><h2>' + esc(t("overview.eventsTitle")) + '</h2><p class="muted">' + esc(t("overview.eventsText")) + '</p></div><button class="text-button" data-view="events">' + esc(t("overview.allEvents")) + "</button></div>";
+      '<div class="block-tiles">' + ["events", "experts", "discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
+      (due ? '<div class="stats-grid"><article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(money(due.amount_kzt)) + "</strong><small>" + esc(due.invoice_number) + "</small></article></div>" : "") +
+      fbHtml + bdayHtml + newsHtml + installCard() +
+      '<div class="section-heading"><div><h2>' + esc(t("overview.hello", { name: p?.display_name || user?.email || t("overview.participant") })) + '</h2><p class="muted">' + esc(t("overview.helloText")) + '</p></div></div>' +
+      ((n.items || []).length ? '<div class="section-heading"><div><h2>' + esc(t("overview.recent")) + '</h2></div></div><div class="empty-panel">' + recent + "</div>" : "");
   }
 
   // Two-step confirmation, then server-side deletion and local sign-out.

@@ -844,3 +844,6 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .cv-about p{font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;font-size:16.5px;line-height:1.55;font-weight:400;letter-spacing:.005em}
 .cv-about{padding:16px 16px 14px}.cv-about .cv-tags{margin-top:12px}
 .cv-two{display:grid;grid-template-columns:1fr;gap:10px}.cv-two>div{padding:14px 16px;border-radius:16px}.cv-two b{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.cv-two{font-size:15.5px;line-height:1.5}
+
+.cv-biz-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:2px 12px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.cv-biz-row::-webkit-scrollbar{display:none}
+.cv-biz-row .cv-biz{flex:0 0 82%;scroll-snap-align:start;margin:0;box-sizing:border-box}.cv-biz-row .cv-biz p{font-size:14.5px;line-height:1.45}.cv-biz-row:has(.cv-biz:only-child) .cv-biz{flex-basis:100%}

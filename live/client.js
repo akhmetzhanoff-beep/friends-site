@@ -3988,7 +3988,7 @@
       '<div class="cv-stats">' + stats.slice(0, 3).map(x => '<div><b>' + esc(x[0]) + "</b><span>" + esc(x[1]) + "</span></div>").join("") + "</div></div>" +
       '<div class="cv-id"><h2>' + esc(p.display_name || "") + (p.badges && p.badges.face ? ' <span class="cv-badge gold">★ ' + esc(t("card.badgeFace")) + "</span>" : "") + '</h2><p class="cv-role">' + esc(p.headline || "") + '</p><p class="cv-city">' + esc([p.city_name, since ? t("card.since", { year: since }) : ""].filter(Boolean).join(" · ")) + "</p>" + (social ? '<div class="cv-links cv-social">' + social + "</div>" : "") + "</div>" +
       '<div class="cv-body">' + mediaTop + aboutHtml +
-      (biz.length ? '<section class="cv-box"><h3>' + esc(t("card.businesses")) + "</h3>" + bizHtml + "</section>" : "") +
+      (biz.length ? '<section class="cv-box"><h3>' + esc(t("card.businesses")) + '</h3><div class="cv-biz-row">' + bizHtml + "</div></section>" : "") +
       (press.length ? '<section class="cv-box">' + pressHtml + "</section>" : "") + "</div></article>";
   }
   const linkRow = (l) => '<div class="cv-row"><input name="lu" type="url" inputmode="url" maxlength="400" placeholder="' + esc(t("card.rowUrl")) + '" value="' + esc(l ? l.url : "") + '"><input name="lt" maxlength="120" placeholder="' + esc(t("card.rowTitle")) + '" value="' + esc(l ? l.title : "") + '"><button type="button" class="icon-button" data-row-del aria-label="' + esc(t("card.rowDelete")) + '">\u00d7</button></div>';

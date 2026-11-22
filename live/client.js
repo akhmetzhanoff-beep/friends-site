@@ -3931,7 +3931,7 @@
   function cardLinksView(links, kind, titleKey) {
     const list = links.filter(l => l.kind === kind);
     return list.length ? '<section class="cv-box"><h3>' + esc(t(titleKey)) + '</h3>' + list.map(l => { const id = ytId(l.url);
-      return '<a class="cv-link' + (id ? " has-thumb" : "") + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + (id ? '<img class="cv-thumb" alt="" loading="lazy" src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg">' : "") + "<span>" + esc(l.title) + "</span><small>" + esc(hostOf(l.url)) + "</small></a>"; }).join("") + "</section>" : "";
+      return '<a class="cv-link' + (id ? " has-thumb" : "") + '" href="' + safeHref(l.url) + '" target="_blank" rel="noopener noreferrer nofollow">' + (id ? '<img class="cv-thumb" alt="" loading="lazy" src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg">' : "") + "<span>" + esc(/^(https?:\/\/|www\.)/i.test(l.title) ? (id ? t("card.ytTitle") : hostOf(l.url) || l.title) : l.title) + "</span><small>" + esc(hostOf(l.url)) + "</small></a>"; }).join("") + "</section>" : "";
   }
   function cardView(d) {
     const p = d.person || {}, c = d.card || {}, biz = d.businesses || [];

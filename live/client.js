@@ -727,6 +727,7 @@
     return '<div class="section-heading"><div><h2>' + esc(h) + '</h2><p class="muted">' + esc(desc || "") + '</p></div></div><div class="empty-panel">' + body + "</div>";
   }
 
+  const NEED_TOPICS = ["clients", "partners", "money", "team", "knowledge", "contacts", "promotion", "community"];
   async function overview() {
     let p = null, n = { items: [], unread_count: 0 }, inv = { items: [] };
     try { p = await api("/v1/me/profile"); } catch (e) { if (e.status !== 404) throw e; }
@@ -754,14 +755,21 @@
     const due = (inv.items || []).find(i => i.status !== "paid");
     const recent = (n.items || []).map(x => '<div class="list-row"><div><strong>' + esc(x.title) + "</strong><p>" + esc(x.body) + "</p><small>" + esc(date(x.created_at)) + '</small></div><span class="pill">' + esc(x.read_at ? t("status.read") : t("status.new")) + "</span></div>").join("")
       || '<p class="muted">' + esc(t("notifications.empty")) + "</p>";
+    let needs = null; try { needs = await api("/v1/me/needs"); } catch { /* optional */ }
+    let needsSkipped = false; try { needsSkipped = Number(localStorage.getItem("friends.needsSkip") || 0) > Date.now(); } catch { /* storage may be unavailable */ }
+    const needsCard = needs && !needs.answered && !needsSkipped ? '<section class="needs-card"><h3>' + esc(t("needs.title")) + '</h3><p class="muted">' + esc(t("needs.text")) + '</p><form id="needs-form"><div class="needs-chips">' +
+      NEED_TOPICS.map(k => '<label class="needs-chip"><input type="checkbox" name="topic" value="' + k + '"><span>' + esc(t("needs.topic." + k)) + "</span></label>").join("") + '</div><input name="note" maxlength="300" placeholder="' + esc(t("needs.note")) + '"><div class="receipt-actions"><button class="primary-button">' + esc(t("needs.save")) + '</button><button type="button" class="text-button" id="needs-skip">' + esc(t("needs.later")) + "</button></div></form></section>" : "";
     const entO = await entitlements();
     const freeBanner = entO.free_tier_limits && !entO.paid ? '<section class="free-banner"><div><b>' + esc(t("pay.freeTitle")) + "</b><p>" + esc(t("pay.freeText")) + "</p></div>" + payButton() + "</section>" : "";
-    content.innerHTML = freeBanner +
+    content.innerHTML = freeBanner + needsCard +
       '<div class="block-tiles">' + ["discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
       (due ? '<div class="stats-grid"><article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(money(due.amount_kzt)) + "</strong><small>" + esc(due.invoice_number) + "</small></article></div>" : "") +
       fbHtml + bdayHtml + newsHtml + installCard() +
       '<div class="section-heading"><div><h2>' + esc(t("overview.hello", { name: p?.display_name || user?.email || t("overview.participant") })) + '</h2><p class="muted">' + esc(t("overview.helloText")) + '</p></div></div>' +
       ((n.items || []).length ? '<div class="section-heading"><div><h2>' + esc(t("overview.recent")) + '</h2></div></div><div class="empty-panel">' + recent + "</div>" : "");
+    document.querySelector("#needs-skip")?.addEventListener("click", () => { try { localStorage.setItem("friends.needsSkip", String(Date.now() + 7 * 86400000)); } catch { /* ignore */ } document.querySelector(".needs-card")?.remove(); });
+    document.querySelector("#needs-form")?.addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget);
+      try { await api("/v1/me/needs", { method: "PUT", body: JSON.stringify({ topics: f.getAll("topic"), note: String(f.get("note") || "") }) }); document.querySelector(".needs-card")?.remove(); status(t("needs.thanks")); } catch (x) { status(x.message, true); } });
   }
 
   // Two-step confirmation, then server-side deletion and local sign-out.
@@ -2246,6 +2254,10 @@
     let d;
     try { d = await api("/v1/admin/activity?days=" + days + (inactive ? "&inactive=" + inactive : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("act.title"), t("act.noAccess"), ""); return; } throw e; }
     const books = await api("/v1/admin/book-ratings").then(x => x.items).catch(() => []);
+    const needsRep = await api("/v1/admin/needs").catch(() => null);
+    const needsHtml = needsRep ? "<h3>" + esc(t("needs.admin")) + '</h3><p class="muted">' + esc(t("needs.adminText", { n: needsRep.total })) + '</p><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.fillField")) + "</th><th>" + esc(t("act.people")) + "</th></tr></thead><tbody>" +
+      needsRep.counts.map(c => "<tr><td>" + esc(t("needs.topic." + c.topic)) + "</td><td>" + c.n + "</td></tr>").join("") + '</tbody></table></div><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("signups.phone")) + "</th><th>" + esc(t("needs.admin")) + "</th></tr></thead><tbody>" +
+      needsRep.people.map(p => "<tr><td>" + esc(p.name || "\u2014") + "</td><td>" + esc(p.phone || "") + "</td><td>" + esc((p.topics || []).map(k => t("needs.topic." + k)).join(", ")) + (p.note ? " \u00b7 " + esc(p.note) : "") + "</td></tr>").join("") + "</tbody></table></div>" : "";
     const k = d.kpi;
     const kpi = [["act.dau", k.dau], ["act.wau", k.wau], ["act.mau", k.mau], ["act.total", k.total], ["act.avgMin", k.minutes_per_visit_day], ["act.avgDays", k.days_per_person]].map(([l, v]) => '<div class="kpi"><strong>' + esc(String(v)) + "</strong><span>" + esc(t(l)) + "</span></div>").join("");
     const vrows = d.views.map(v => "<tr><td>" + esc(v.view) + "</td><td>" + v.people + "</td><td>" + v.hits + "</td><td>" + v.minutes + "</td></tr>").join("");
@@ -2255,7 +2267,7 @@
       '<div class="kpi-row">' + kpi + "</div>" +
       '<div class="app-form"><label>' + esc(t("act.period")) + sel("act-days", [[7, "7"], [30, "30"], [90, "90"]], days) + "</label><label>" + esc(t("act.filter")) + sel("act-inactive", [[0, t("act.all")], [7, t("act.inactive", { n: 7 })], [14, t("act.inactive", { n: 14 })], [30, t("act.inactive", { n: 30 })]], inactive) + "</label></div>" +
       "<h3>" + esc(t("act.fill")) + '</h3><p class="muted">' + esc(t("act.fillText")) + '</p><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.fillField")) + "</th><th>" + esc(t("act.fillDone")) + "</th><th>%</th><th>" + esc(t("act.fillMissing")) + "</th></tr></thead><tbody>" + (d.fill || []).map(x => "<tr><td>" + esc(t("act.fill." + x.key)) + "</td><td>" + x.filled + "</td><td>" + x.pct + "%</td><td>" + x.missing + "</td></tr>").join("") + "</tbody></table></div>" +
-      "<h3>" + esc(t("act.sections")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.view")) + "</th><th>" + esc(t("act.people")) + "</th><th>" + esc(t("act.opens")) + "</th><th>" + esc(t("act.minutes")) + "</th></tr></thead><tbody>" + (vrows || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
+      needsHtml + "<h3>" + esc(t("act.sections")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.view")) + "</th><th>" + esc(t("act.people")) + "</th><th>" + esc(t("act.opens")) + "</th><th>" + esc(t("act.minutes")) + "</th></tr></thead><tbody>" + (vrows || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
       "<h3>" + esc(t("bookRate.admin")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("bookRate.book")) + "</th><th>" + esc(t("bookRate.score")) + "</th><th>" + esc(t("bookRate.votes")) + "</th><th>" + esc(t("bookRate.voiceCol")) + "</th></tr></thead><tbody>" + (books.filter(b => b.count || b.voice_count).map(b => "<tr><td>" + esc(b.title) + "</td><td>" + (b.avg == null ? "—" : b.avg) + "</td><td>" + b.count + "</td><td>" + (b.voice_avg == null ? "—" : b.voice_avg + " (" + b.voice_count + ")") + "</td></tr>").join("") || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
       "<h3>" + esc(t("act.persons")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("act.city")) + "</th><th>" + esc(t("signups.phone")) + "</th><th>" + esc(t("act.last")) + "</th><th>" + esc(t("act.days")) + "</th><th>" + esc(t("act.minutes")) + "</th><th>" + esc(t("act.top")) + "</th><th>" + esc(t("profile.kinds")) + "</th><th>" + esc(t("act.member")) + "</th></tr></thead><tbody>" + (prows || '<tr><td colspan="9">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>");
     content.querySelectorAll("#act-days, #act-inactive").forEach(el => el.addEventListener("change", () => adminActivity()));

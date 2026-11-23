@@ -19,6 +19,11 @@
   const LANGUAGE_SHORT = { ru: "РУС", kk: "ҚАЗ", en: "ENG" };
 
   const ru = {
+    "push.text": "Включите уведомления, чтобы не пропускать новых резидентов, сообщения и события.",
+    "push.enable": "Включить уведомления",
+    "push.install": "Чтобы получать уведомления на iPhone, добавьте приложение на экран «Домой»: нажмите «Поделиться» и выберите «На экран Домой», затем откройте его оттуда.",
+    "push.denied": "Уведомления отключены в настройках телефона. Включите их для Friends в настройках.",
+    "push.done": "Уведомления включены",
     "today.title": "Знакомимся сегодня",
     "today.page": "Страница",
     "today.write": "Написать",
@@ -2688,6 +2693,11 @@
   };
 
   const kk = {
+    "push.text": "Жаңа резиденттерді, хабарламалар мен іс-шараларды жіберіп алмау үшін хабарландыруларды қосыңыз.",
+    "push.enable": "Хабарландыруларды қосу",
+    "push.install": "iPhone-да хабарландыру алу үшін қосымшаны «Басты экранға» қосыңыз: «Бөлісу» түймесін басып, «Басты экранға» таңдаңыз да, содан ашыңыз.",
+    "push.denied": "Хабарландырулар телефон баптауларында өшірулі. Friends үшін оларды баптаудан қосыңыз.",
+    "push.done": "Хабарландырулар қосылды",
     "today.title": "Бүгін танысамыз",
     "today.page": "Парақша",
     "today.write": "Жазу",
@@ -5357,6 +5367,11 @@
   };
 
   const en = {
+    "push.text": "Turn on notifications so you don't miss new residents, messages and events.",
+    "push.enable": "Turn on notifications",
+    "push.install": "To get notifications on iPhone, add the app to your Home Screen: tap Share, choose Add to Home Screen, then open it from there.",
+    "push.denied": "Notifications are blocked in your phone settings. Allow them for Friends in Settings.",
+    "push.done": "Notifications are on",
     "today.title": "Meet today",
     "today.page": "Page",
     "today.write": "Message",

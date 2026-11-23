@@ -3621,6 +3621,34 @@
         try { await api("/v1/meetups", { method: "POST", body: JSON.stringify(body) }); dlg.close(); status(t("together.published")); await together(); } catch (x) { dlg.close(); status(x.message, true); } });
     });
   }
+  /** Push: a button on top of Messages; on iPhone it works only for the app added to the Home Screen. */
+  const b64 = v => { const p = "=".repeat((4 - v.length % 4) % 4); const r = atob((v + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
+  async function pushState() {
+    const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return ios && !standalone ? "install" : "none";
+    if (Notification.permission === "denied") return "denied";
+    try { const reg = await navigator.serviceWorker.ready; if (await reg.pushManager.getSubscription()) return "on"; } catch { return "none"; }
+    return "off";
+  }
+  async function pushBlock() {
+    const st = await pushState();
+    if (st === "on" || st === "none") return "";
+    const text = st === "install" ? t("push.install") : st === "denied" ? t("push.denied") : t("push.text");
+    return '<div class="push-box"><p>' + esc(text) + "</p>" + (st === "off" ? '<button type="button" class="primary-button" id="push-on">' + esc(t("push.enable")) + "</button>" : "") + "</div>";
+  }
+  function bindPush(root) {
+    root.querySelector("#push-on")?.addEventListener("click", async () => {
+      try {
+        if ((await Notification.requestPermission()) !== "granted") { status(t("push.denied"), true); return; }
+        const reg = await navigator.serviceWorker.ready;
+        const { key } = await api("/v1/push/key");
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(key) });
+        await api("/v1/push/subscribe", { method: "POST", body: JSON.stringify(sub.toJSON()) });
+        status(t("push.done")); root.querySelector(".push-box")?.remove();
+      } catch (x) { status(x.message, true); }
+    });
+  }
   /** "Meet today": three residents present themselves; shown on top of Messages. */
   async function todayBlock() {
     let d; try { d = await api("/v1/today"); } catch { return ""; }
@@ -3643,7 +3671,7 @@
   }
   async function messages() {
     const stories = await loadStories();
-    const todayHtml = await todayBlock();
+    const todayHtml = (await pushBlock()) + (await todayBlock());
     const d = await api("/v1/chats");
     const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
@@ -3673,7 +3701,7 @@
         box.querySelectorAll("[data-nm]").forEach(b => b.addEventListener("click", async () => { try { const d = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: b.dataset.nm }) }); dlg.close(); chatRoom = d.room_id; render("chat"); } catch (x) { dlg.close(); status(x.message, true); } })); } catch (x) { box.innerHTML = '<p class="auth-error">' + esc(x.message) + "</p>"; } };
       dlg.q("#nm-q").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(run, 250); }); run(); dlg.q("#nm-q").focus();
     });
-    bindStories(content, stories); bindToday(content);
+    bindStories(content, stories); bindToday(content); bindPush(content);
   }
   /** Opens (creating on first use) the private dialogue with the Friends team. */
   function bindSupport() {

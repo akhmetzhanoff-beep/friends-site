@@ -218,7 +218,7 @@
   }
   function renderExpired() {
     trackSend({ view: "expired", hit: true });
-    content.innerHTML = '<section class="expired"><h2>' + esc(t("pay.expiredTitle")) + "</h2><p>" + esc(t("pay.expiredText")) + "</p>" + payButton() +
+    content.innerHTML = '<section class="expired"><h2>' + esc(t("pay.expiredTitle")) + "</h2><p>" + esc(t("pay.expiredText")) + "</p><p class=\"muted\">" + esc(t("pay.guarantee")) + "</p>" + payButton() +
       '<button type="button" class="outline-button" data-support>' + esc(t("support.write")) + '</button><button type="button" class="text-button" id="exp-logout">' + esc(t("auth.logout")) + "</button></section>";
     bindSupport();
     document.querySelector("#exp-logout")?.addEventListener("click", logout);
@@ -227,7 +227,7 @@
   function showPaywall() {
     if (document.querySelector(".paywall")) return;
     trackSend({ view: "paywall", hit: true }); // how often the locked feature is tapped; shown in the admin activity report
-    const dlg = authDialog('<div class="paywall"><h3>' + esc(t("paywall.title")) + "</h3><p>" + esc(t("paywall.text")) + '</p><div class="auth-actions auth-actions-col"><a class="primary-button" data-pw-go href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + '</a><button type="button" class="text-button" data-pw-x>' + esc(t("paywall.later")) + "</button></div></div>");
+    const dlg = authDialog('<div class="paywall"><h3>' + esc(t("paywall.title")) + "</h3><p>" + esc(t("paywall.text")) + '</p><p class="muted">' + esc(t("pay.guarantee")) + '</p><div class="auth-actions auth-actions-col"><a class="primary-button" data-pw-go href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + '</a><button type="button" class="text-button" data-pw-x>' + esc(t("paywall.later")) + "</button></div></div>");
     dlg.q("[data-pw-x]").addEventListener("click", dlg.close);
     dlg.q("[data-pw-go]").addEventListener("click", () => dlg.close());
   }
@@ -771,14 +771,17 @@
     let needsSkipped = false; try { needsSkipped = Number(localStorage.getItem("friends.needsSkip") || 0) > Date.now(); } catch { /* storage may be unavailable */ }
     const needsCard = needs && !needs.answered && !needsSkipped ? '<section class="needs-card"><h3>' + esc(t("needs.title")) + '</h3><p class="muted">' + esc(t("needs.text")) + '</p><form id="needs-form"><div class="needs-chips">' +
       NEED_TOPICS.map(k => '<label class="needs-chip"><input type="checkbox" name="topic" value="' + k + '"><span>' + esc(t("needs.topic." + k)) + "</span></label>").join("") + '</div><input name="note" maxlength="300" placeholder="' + esc(t("needs.note")) + '"><div class="receipt-actions"><button class="primary-button">' + esc(t("needs.save")) + '</button><button type="button" class="text-button" id="needs-skip">' + esc(t("needs.later")) + "</button></div></form></section>" : "";
+    let sum = null; try { sum = await api("/v1/members/summary"); } catch { /* optional */ }
+    const cityCard = sum && sum.my_city && sum.in_my_city > 0 ? '<button type="button" class="city-card" id="city-card"><b>' + esc(t("members.inCity", { n: sum.in_my_city, city: sum.my_city })) + "</b><small>" + esc(t("members.inCityHint", { total: sum.total })) + "</small></button>" : "";
     const entO = await entitlements();
-    const freeBanner = entO.free_tier_limits && !entO.paid ? '<section class="free-banner"><div><b>' + esc(t("pay.freeTitle")) + "</b><p>" + esc(t("pay.freeText")) + "</p></div>" + payButton() + "</section>" : "";
-    content.innerHTML = freeBanner + needsCard +
+    const freeBanner = entO.free_tier_limits && !entO.paid ? '<section class="free-banner"><div><b>' + esc(t("pay.freeTitle")) + "</b><p>" + esc(t("pay.freeText")) + " " + esc(t("pay.guarantee")) + "</p></div>" + payButton() + "</section>" : "";
+    content.innerHTML = freeBanner + cityCard + needsCard +
       '<div class="block-tiles">' + ["discounts"].map(v => '<button type="button" class="block-tile" data-view="' + v + '"><span class="block-ic" aria-hidden="true">' + BLOCK_ICONS[v] + "</span><strong>" + esc(t("blocks." + v + ".title")) + "</strong><small>" + esc(t("blocks." + v + ".text")) + "</small></button>").join("") + "</div>" +
       (due ? '<div class="stats-grid"><article class="stat-card"><span class="stat-icon green" aria-hidden="true">◇</span><p>' + esc(t("overview.invoicesDue")) + "</p><strong>" + esc(money(due.amount_kzt)) + "</strong><small>" + esc(due.invoice_number) + "</small></article></div>" : "") +
       fbHtml + bdayHtml + newsHtml + installCard() +
       '<div class="section-heading"><div><h2>' + esc(t("overview.hello", { name: p?.display_name || user?.email || t("overview.participant") })) + '</h2><p class="muted">' + esc(t("overview.helloText")) + '</p></div></div>' +
       ((n.items || []).length ? '<div class="section-heading"><div><h2>' + esc(t("overview.recent")) + '</h2></div></div><div class="empty-panel">' + recent + "</div>" : "");
+    document.querySelector("#city-card")?.addEventListener("click", () => { memberCity = sum.my_city_id || ""; render("members"); });
     document.querySelector("#needs-skip")?.addEventListener("click", () => { try { localStorage.setItem("friends.needsSkip", String(Date.now() + 7 * 86400000)); } catch { /* ignore */ } document.querySelector(".needs-card")?.remove(); });
     document.querySelector("#needs-form")?.addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget);
       try { await api("/v1/me/needs", { method: "PUT", body: JSON.stringify({ topics: f.getAll("topic"), note: String(f.get("note") || "") }) }); document.querySelector(".needs-card")?.remove(); status(t("needs.thanks")); } catch (x) { status(x.message, true); } });
@@ -898,15 +901,18 @@
     });
   }
 
+  let memberCity = "";
   async function members() {
+    let cityList = []; try { cityList = (await api("/v1/members/summary")).cities || []; } catch { /* optional */ }
     content.innerHTML = panel(t("members.section"), t("members.sectionText"),
+      (cityList.length ? '<label class="field"><span>' + esc(t("members.city")) + '</span><select id="city-filter"><option value="">' + esc(t("members.allCities")) + "</option>" + cityList.map(c => '<option value="' + esc(c.id) + '"' + (c.id === memberCity ? " selected" : "") + ">" + esc(c.name) + " (" + c.n + ")</option>").join("") + "</select></label>" : "") +
       '<form id="search-form" class="search-form" role="search"><input name="q" maxlength="100" placeholder="' + esc(t("members.placeholder")) + '" aria-label="' + esc(t("members.searchLabel")) + '"><button class="primary-button">' + esc(t("members.search")) +
       '</button></form><div id="results" class="data-list" aria-live="polite">' + esc(t("common.loadingShort")) + "</div>");
     const load = async q => {
       const target = document.querySelector("#results");
       target.textContent = t("common.loadingShort");
       try {
-        const d = await api("/v1/members?limit=50" + (q ? "&q=" + encodeURIComponent(q) : ""));
+        const d = await api("/v1/members?limit=50" + (q ? "&q=" + encodeURIComponent(q) : "") + (memberCity ? "&city_id=" + encodeURIComponent(memberCity) : ""));
         target.innerHTML = d.items.length
           ? d.items.map(m => '<button type="button" class="member-result member-open" data-member="' + esc(m.user_id) + '">' + (m.photo_url ? '<img class="member-avatar member-photo" alt="" loading="lazy" data-fb="' + esc(String(m.display_name || "?").slice(0, 1)) + '" src="' + esc(apiBase + m.photo_url) + '">' : '<div class="member-avatar" aria-hidden="true">' + esc((m.display_name || "?").slice(0, 1)) + '</div>') + '<div class="member-copy"><strong>' + esc(m.display_name) + "</strong><span>" + esc(m.headline || t("members.defaultHeadline")) + (m.city_name ? " · " + esc(m.city_name) : "") + "</span>" +
               ((m.reviews_count || (m.badges || []).length) ? '<span class="member-trust">' + (m.reviews_count ? stars(m.rating) + " (" + m.reviews_count + ")" : "") + (m.badges || []).map(b => ' <span class="mini-badge" title="' + esc(t("trust.badge." + b)) + '">' + ({ tax_clear: ic("receipt", "ic-inline"), credit_history: ic("bank", "ic-inline"), company: ic("building", "ic-inline") }[b] || "✓") + '<span class="sr-only">' + esc(t("trust.badge." + b)) + "</span></span>").join("") + "</span>" : "") + "</div></button>").join("")
@@ -917,6 +923,7 @@
       }
     };
     document.querySelector("#search-form").addEventListener("submit", e => { e.preventDefault(); load(String(new FormData(e.currentTarget).get("q") || "").trim()); });
+    document.querySelector("#city-filter")?.addEventListener("change", e => { memberCity = e.target.value; load(String(document.querySelector("#search-form [name=q]").value || "").trim()); });
     await load("");
   }
 
@@ -2266,6 +2273,9 @@
     let d;
     try { d = await api("/v1/admin/activity?days=" + days + (inactive ? "&inactive=" + inactive : "")); } catch (e) { if (e.status === 403) { content.innerHTML = panel(t("act.title"), t("act.noAccess"), ""); return; } throw e; }
     const books = await api("/v1/admin/book-ratings").then(x => x.items).catch(() => []);
+    const newcomers = await api("/v1/admin/newcomers").then(x => x.items).catch(() => null);
+    const introHtml = newcomers ? "<h3>" + esc(t("intro.title")) + '</h3><p class="muted">' + esc(t("intro.text")) + '</p><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("act.city")) + "</th><th>" + esc(t("needs.admin")) + "</th><th>" + esc(t("intro.match")) + "</th><th></th></tr></thead><tbody>" +
+      newcomers.map((r, i) => "<tr><td>" + esc(r.name || "\u2014") + '<br><small class="muted">' + esc(r.phone || "") + "</small></td><td>" + esc(r.city || "") + "</td><td>" + esc(((r.topics || []).map(k => t("needs.topic." + k)).join(", ")) + (r.note ? " \u00b7 " + r.note : "")) + "</td><td>" + esc((r.matches || []).map(m => m.name + (m.headline ? " (" + m.headline + ")" : "")).join("; ")) + '</td><td><button type="button" class="outline-button" data-intro="' + i + '">' + esc(t("intro.write")) + "</button></td></tr>").join("") + "</tbody></table></div>" : "";
     const needsRep = await api("/v1/admin/needs").catch(() => null);
     const needsHtml = needsRep ? "<h3>" + esc(t("needs.admin")) + '</h3><p class="muted">' + esc(t("needs.adminText", { n: needsRep.total })) + '</p><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.fillField")) + "</th><th>" + esc(t("act.people")) + "</th></tr></thead><tbody>" +
       needsRep.counts.map(c => "<tr><td>" + esc(t("needs.topic." + c.topic)) + "</td><td>" + c.n + "</td></tr>").join("") + '</tbody></table></div><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("signups.phone")) + "</th><th>" + esc(t("needs.admin")) + "</th></tr></thead><tbody>" +
@@ -2279,9 +2289,17 @@
       '<div class="kpi-row">' + kpi + "</div>" +
       '<div class="app-form"><label>' + esc(t("act.period")) + sel("act-days", [[7, "7"], [30, "30"], [90, "90"]], days) + "</label><label>" + esc(t("act.filter")) + sel("act-inactive", [[0, t("act.all")], [7, t("act.inactive", { n: 7 })], [14, t("act.inactive", { n: 14 })], [30, t("act.inactive", { n: 30 })]], inactive) + "</label></div>" +
       "<h3>" + esc(t("act.fill")) + '</h3><p class="muted">' + esc(t("act.fillText")) + '</p><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.fillField")) + "</th><th>" + esc(t("act.fillDone")) + "</th><th>%</th><th>" + esc(t("act.fillMissing")) + "</th></tr></thead><tbody>" + (d.fill || []).map(x => "<tr><td>" + esc(t("act.fill." + x.key)) + "</td><td>" + x.filled + "</td><td>" + x.pct + "%</td><td>" + x.missing + "</td></tr>").join("") + "</tbody></table></div>" +
-      needsHtml + "<h3>" + esc(t("act.sections")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.view")) + "</th><th>" + esc(t("act.people")) + "</th><th>" + esc(t("act.opens")) + "</th><th>" + esc(t("act.minutes")) + "</th></tr></thead><tbody>" + (vrows || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
+      introHtml + needsHtml + "<h3>" + esc(t("act.sections")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("act.view")) + "</th><th>" + esc(t("act.people")) + "</th><th>" + esc(t("act.opens")) + "</th><th>" + esc(t("act.minutes")) + "</th></tr></thead><tbody>" + (vrows || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
       "<h3>" + esc(t("bookRate.admin")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("bookRate.book")) + "</th><th>" + esc(t("bookRate.score")) + "</th><th>" + esc(t("bookRate.votes")) + "</th><th>" + esc(t("bookRate.voiceCol")) + "</th></tr></thead><tbody>" + (books.filter(b => b.count || b.voice_count).map(b => "<tr><td>" + esc(b.title) + "</td><td>" + (b.avg == null ? "—" : b.avg) + "</td><td>" + b.count + "</td><td>" + (b.voice_avg == null ? "—" : b.voice_avg + " (" + b.voice_count + ")") + "</td></tr>").join("") || '<tr><td colspan="4">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>" +
       "<h3>" + esc(t("act.persons")) + '</h3><div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("act.city")) + "</th><th>" + esc(t("signups.phone")) + "</th><th>" + esc(t("act.last")) + "</th><th>" + esc(t("act.days")) + "</th><th>" + esc(t("act.minutes")) + "</th><th>" + esc(t("act.top")) + "</th><th>" + esc(t("profile.kinds")) + "</th><th>" + esc(t("act.member")) + "</th></tr></thead><tbody>" + (prows || '<tr><td colspan="9">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>");
+    content.querySelectorAll("[data-intro]").forEach(b => b.addEventListener("click", async () => {
+      const r = newcomers[Number(b.dataset.intro)]; const first = String(r.name || "").split(" ")[0] || "";
+      const need = (r.topics || []).length ? t("intro.needs", { list: r.topics.map(k => t("needs.topic." + k).toLowerCase()).join(", ") }) : "";
+      const who = (r.matches || []).length ? t("intro.who", { list: r.matches.map(m => m.name).join(", ") }) : "";
+      const text = prompt(t("intro.edit"), t("intro.template", { name: first, city: r.city || "", need, who }));
+      if (!text || !text.trim()) return;
+      try { await api("/v1/admin/newcomers/" + encodeURIComponent(r.id) + "/intro", { method: "POST", body: JSON.stringify({ body: text.trim() }) }); status(t("intro.sent")); } catch (x) { status(x.message, true); }
+    }));
     content.querySelectorAll("#act-days, #act-inactive").forEach(el => el.addEventListener("change", () => adminActivity()));
   }
 

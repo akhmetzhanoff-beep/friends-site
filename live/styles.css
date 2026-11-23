@@ -869,3 +869,5 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 
 .j-card{text-align:left;width:100%;cursor:pointer;font:inherit;color:inherit}.j-card h3{margin:0 0 4px}.j-card small{color:var(--fb-text-2)}
 .j-article{max-width:680px}.j-article h2{margin:8px 0 2px}.j-article p{line-height:1.65;font-size:16.5px}
+
+.city-card{display:grid;gap:2px;width:100%;text-align:left;padding:14px 16px;margin-bottom:14px;border-radius:18px;border:1px solid var(--fb-line);background:linear-gradient(135deg,var(--fb-blue-soft),var(--fb-card,#fff));color:inherit;font:inherit;cursor:pointer}.city-card b{font-size:16px}.city-card small{color:var(--fb-text-2)}

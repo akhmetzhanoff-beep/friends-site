@@ -3621,6 +3621,7 @@
         try { await api("/v1/meetups", { method: "POST", body: JSON.stringify(body) }); dlg.close(); status(t("together.published")); await together(); } catch (x) { dlg.close(); status(x.message, true); } });
     });
   }
+  const withTimeout = (p, ms, fallback) => Promise.race([p.catch(() => fallback), new Promise(r => setTimeout(() => r(fallback), ms))]);
   /** Install card: Android gets a button (browser install prompt), iPhone gets the three steps (Safari has no button). */
   let installEvent = null;
   window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvent = e; });
@@ -3684,8 +3685,8 @@
     row.insertAdjacentHTML("afterend", html); bindStories(row.parentElement, d);
   }
   async function messages() {
-    const stories = await loadStories();
-    const todayHtml = installBlock() + (await pushBlock()) + (await todayBlock());
+    const stories = await withTimeout(loadStories(), 3000, { can_post: false, items: [] });
+    const todayHtml = installBlock() + (await Promise.all([withTimeout(pushBlock(), 1500, ""), withTimeout(todayBlock(), 2500, "")])).join("");
     const d = await api("/v1/chats");
     const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +

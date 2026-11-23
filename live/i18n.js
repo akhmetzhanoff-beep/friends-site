@@ -19,6 +19,18 @@
   const LANGUAGE_SHORT = { ru: "РУС", kk: "ҚАЗ", en: "ENG" };
 
   const ru = {
+    "reportTok.title": "Доступ для отчёта продаж",
+    "reportTok.text": "Ключ только для чтения: ассистент продаж видит коды источников, переходы, пробные, оплаты и суммы. Телефонов и имён нет. Ключ показывается один раз, в чат его не отправляйте: введите в защищённую форму.",
+    "reportTok.create": "Создать ключ",
+    "reportTok.label": "Сессия продаж",
+    "reportTok.once": "Ключ показан один раз. Скопируйте и введите в защищённую форму.",
+    "reportTok.copied": "Скопировано",
+    "reportTok.copyFail": "Не удалось скопировать, выделите и скопируйте вручную",
+    "reportTok.revoke": "Отозвать",
+    "reportTok.revoked": "Отозван",
+    "reportTok.notUsed": "Ещё не использовался",
+    "reportTok.lastUsed": "Последний раз: {d}",
+    "reportTok.revokeAsk": "Отозвать ключ? Отчёт для продаж перестанет работать.",
     "install.title": "Установите приложение на телефон",
     "install.ios1": "Нажмите «Поделиться» (квадрат со стрелкой внизу Safari).",
     "install.ios2": "Выберите «На экран Домой» и нажмите «Добавить».",
@@ -2700,6 +2712,18 @@
   };
 
   const kk = {
+    "reportTok.title": "Сатылым есебіне қолжетімділік",
+    "reportTok.text": "Тек оқуға арналған кілт: сатылым көмекшісі дереккөз кодтарын, өтулерді, сынақтарды, төлемдерді және сомаларды көреді. Телефон мен аты жоқ. Кілт бір рет көрсетіледі, чатқа жібермеңіз: қорғалған форманы пайдаланыңыз.",
+    "reportTok.create": "Кілт жасау",
+    "reportTok.label": "Сатылым сессиясы",
+    "reportTok.once": "Кілт бір рет көрсетілді. Көшіріп, қорғалған формаға енгізіңіз.",
+    "reportTok.copied": "Көшірілді",
+    "reportTok.copyFail": "Көшіру мүмкін болмады, қолмен көшіріңіз",
+    "reportTok.revoke": "Кері қайтару",
+    "reportTok.revoked": "Кері қайтарылған",
+    "reportTok.notUsed": "Әлі қолданылмаған",
+    "reportTok.lastUsed": "Соңғы рет: {d}",
+    "reportTok.revokeAsk": "Кілтті кері қайтарасыз ба? Сатылым есебі жұмыс істемейді.",
     "install.title": "Қосымшаны телефонға орнатыңыз",
     "install.ios1": "«Бөлісу» түймесін басыңыз (Safari төменіндегі көрсеткілі шаршы).",
     "install.ios2": "«Басты экранға» таңдап, «Қосу» түймесін басыңыз.",
@@ -5381,6 +5405,18 @@
   };
 
   const en = {
+    "reportTok.title": "Access for the sales report",
+    "reportTok.text": "A read-only key: the sales assistant sees source codes, visits, trials, payments and totals. No phones or names. The key is shown once; do not send it in chat, enter it in the secure form.",
+    "reportTok.create": "Create a key",
+    "reportTok.label": "Sales session",
+    "reportTok.once": "The key is shown once. Copy it and enter it in the secure form.",
+    "reportTok.copied": "Copied",
+    "reportTok.copyFail": "Could not copy, select and copy it manually",
+    "reportTok.revoke": "Revoke",
+    "reportTok.revoked": "Revoked",
+    "reportTok.notUsed": "Not used yet",
+    "reportTok.lastUsed": "Last used: {d}",
+    "reportTok.revokeAsk": "Revoke the key? The sales report will stop working.",
     "install.title": "Install the app on your phone",
     "install.ios1": "Tap Share (the square with an arrow at the bottom of Safari).",
     "install.ios2": "Choose Add to Home Screen, then Add.",

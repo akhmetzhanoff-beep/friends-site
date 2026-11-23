@@ -2424,6 +2424,20 @@
       panel(t("adminPartners.allLinks"), t("adminPartners.allLinksText"), allLinks) +
       panel(t("adminPartners.listTitle"), t("adminPartners.listText"), d.items.length ? d.items.map(card).join("") : '<p class="muted">' + esc(t("adminPartners.empty")) + "</p>") +
       panel(t("adminPartners.addTitle"), t("adminPartners.addText"), form);
+    if ((await loadRoles()).includes("admin")) {
+      content.insertAdjacentHTML("beforeend", panel(t("reportTok.title"), t("reportTok.text"), '<div id="rt-box"></div>'));
+      const rtBox = document.querySelector("#rt-box");
+      const rtLoad = async (fresh) => {
+        const r = await api("/v1/admin/report-tokens");
+        rtBox.innerHTML = (fresh ? '<div class="push-box"><strong>' + esc(t("reportTok.once")) + '</strong><div class="copy-row"><input readonly value="' + esc(fresh) + '" aria-label="token"><button type="button" class="outline-button" id="rt-copy">' + esc(t("adminPartners.copy")) + "</button></div></div>" : "") +
+          (r.items.length ? r.items.map(x => '<article class="invoice-card"><div class="invoice-top"><div><h3>' + esc(x.label) + "</h3><small>" + esc(x.revoked_at ? t("reportTok.revoked") : (x.last_used_at ? t("reportTok.lastUsed", { d: new Date(x.last_used_at).toLocaleString() }) : t("reportTok.notUsed"))) + "</small></div></div>" + (x.revoked_at ? "" : '<div class="receipt-actions"><button type="button" class="outline-button" data-rt-revoke="' + esc(x.id) + '">' + esc(t("reportTok.revoke")) + "</button></div>") + "</article>").join("") : "") +
+          '<div class="receipt-actions"><button type="button" class="primary-button" id="rt-new">' + esc(t("reportTok.create")) + "</button></div>";
+        rtBox.querySelector("#rt-copy")?.addEventListener("click", async () => { try { await navigator.clipboard.writeText(fresh); status(t("reportTok.copied")); } catch { status(t("reportTok.copyFail"), true); } });
+        rtBox.querySelector("#rt-new")?.addEventListener("click", async () => { try { const m = await api("/v1/admin/report-tokens", { method: "POST", body: JSON.stringify({ label: t("reportTok.label") }) }); await rtLoad(m.token); } catch (x) { status(x.message, true); } });
+        rtBox.querySelectorAll("[data-rt-revoke]").forEach(b => b.addEventListener("click", async () => { if (!confirm(t("reportTok.revokeAsk"))) return; try { await api("/v1/admin/report-tokens/" + b.dataset.rtRevoke, { method: "DELETE" }); await rtLoad(); } catch (x) { status(x.message, true); } }));
+      };
+      try { await rtLoad(); } catch { /* optional panel */ }
+    }
     // The code field accepts a pasted link too: only the last part is kept (friendscommunity.kz/assel -> assel).
     const codeInput = document.querySelector('#partner-form [name="code"]');
     if (codeInput) codeInput.addEventListener("input", () => {

@@ -195,7 +195,7 @@
     document.body.appendChild(wrap);
     return { root: wrap, q: sel => wrap.querySelector(sel), close: () => wrap.remove() };
   }
-  const PAY_URL = "https://friendscommunity.kz/#pay";
+  const PAY_URL = "https://pay.kaspi.kz/pay/0ygfmtdw"; // the Kaspi payment link: the button goes straight to payment
   let entCache = null;
   /** What this account may do: free-tier switch, paid or not, expired (no membership at all). Cached for a minute. */
   async function entitlements() {
@@ -206,7 +206,16 @@
     return v;
   }
   const payButton = () => '<a class="primary-button pay-btn" href="' + esc(PAY_URL) + '" target="_blank" rel="noopener noreferrer">' + esc(t("pay.become")) + "</a>";
-  document.addEventListener("click", e => { if (e.target.closest && e.target.closest("a.pay-btn, a[data-pw-go]")) trackSend({ view: "pay-click", hit: true }); });
+  document.addEventListener("click", e => { if (e.target.closest && e.target.closest("a.pay-btn, a[data-pw-go]")) { trackSend({ view: "pay-click", hit: true }); payNote(); } });
+  /** Tells the team who is paying: one message in the person's support chat (once a day), so the payment can be matched and access opened. */
+  async function payNote() {
+    try {
+      if (Number(localStorage.getItem("friends.payNote") || 0) > Date.now()) return;
+      const r = await api("/v1/chats/support", { method: "POST", body: "{}" });
+      await api("/v1/chats/" + r.room_id + "/messages", { method: "POST", body: JSON.stringify({ body: t("pay.note") }) });
+      localStorage.setItem("friends.payNote", String(Date.now() + 86400000));
+    } catch { /* the payment itself must never depend on this */ }
+  }
   function renderExpired() {
     trackSend({ view: "expired", hit: true });
     content.innerHTML = '<section class="expired"><h2>' + esc(t("pay.expiredTitle")) + "</h2><p>" + esc(t("pay.expiredText")) + "</p>" + payButton() +

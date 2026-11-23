@@ -19,6 +19,13 @@
   const LANGUAGE_SHORT = { ru: "РУС", kk: "ҚАЗ", en: "ENG" };
 
   const ru = {
+    "install.title": "Установите приложение на телефон",
+    "install.ios1": "Нажмите «Поделиться» (квадрат со стрелкой внизу Safari).",
+    "install.ios2": "Выберите «На экран Домой» и нажмите «Добавить».",
+    "install.ios3": "Откройте Friends с экрана «Домой»: так заработают уведомления.",
+    "install.androidText": "Приложение откроется с экрана телефона, как обычное, и сможет присылать уведомления.",
+    "install.androidMenu": "Откройте меню браузера (три точки) и выберите «Установить приложение» или «Добавить на главный экран».",
+    "install.button": "Установить приложение",
     "push.text": "Включите уведомления, чтобы не пропускать новых резидентов, сообщения и события.",
     "push.enable": "Включить уведомления",
     "push.install": "Чтобы получать уведомления на iPhone, добавьте приложение на экран «Домой»: нажмите «Поделиться» и выберите «На экран Домой», затем откройте его оттуда.",
@@ -2693,6 +2700,13 @@
   };
 
   const kk = {
+    "install.title": "Қосымшаны телефонға орнатыңыз",
+    "install.ios1": "«Бөлісу» түймесін басыңыз (Safari төменіндегі көрсеткілі шаршы).",
+    "install.ios2": "«Басты экранға» таңдап, «Қосу» түймесін басыңыз.",
+    "install.ios3": "Friends-ті «Басты экраннан» ашыңыз: сонда хабарландырулар жұмыс істейді.",
+    "install.androidText": "Қосымша телефон экранынан әдеттегідей ашылады және хабарландыру жібере алады.",
+    "install.androidMenu": "Браузер мәзірін (үш нүкте) ашып, «Қосымшаны орнату» немесе «Басты экранға қосу» таңдаңыз.",
+    "install.button": "Қосымшаны орнату",
     "push.text": "Жаңа резиденттерді, хабарламалар мен іс-шараларды жіберіп алмау үшін хабарландыруларды қосыңыз.",
     "push.enable": "Хабарландыруларды қосу",
     "push.install": "iPhone-да хабарландыру алу үшін қосымшаны «Басты экранға» қосыңыз: «Бөлісу» түймесін басып, «Басты экранға» таңдаңыз да, содан ашыңыз.",
@@ -5367,6 +5381,13 @@
   };
 
   const en = {
+    "install.title": "Install the app on your phone",
+    "install.ios1": "Tap Share (the square with an arrow at the bottom of Safari).",
+    "install.ios2": "Choose Add to Home Screen, then Add.",
+    "install.ios3": "Open Friends from the Home Screen: that is how notifications will work.",
+    "install.androidText": "The app opens from your phone like any other and can send notifications.",
+    "install.androidMenu": "Open the browser menu (three dots) and choose Install app or Add to Home screen.",
+    "install.button": "Install the app",
     "push.text": "Turn on notifications so you don't miss new residents, messages and events.",
     "push.enable": "Turn on notifications",
     "push.install": "To get notifications on iPhone, add the app to your Home Screen: tap Share, choose Add to Home Screen, then open it from there.",

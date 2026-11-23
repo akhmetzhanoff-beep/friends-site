@@ -3621,6 +3621,20 @@
         try { await api("/v1/meetups", { method: "POST", body: JSON.stringify(body) }); dlg.close(); status(t("together.published")); await together(); } catch (x) { dlg.close(); status(x.message, true); } });
     });
   }
+  /** Install card: Android gets a button (browser install prompt), iPhone gets the three steps (Safari has no button). */
+  let installEvent = null;
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvent = e; });
+  const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function installBlock() {
+    if (isStandalone()) return "";
+    const ua = navigator.userAgent, ios = /iphone|ipad|ipod/i.test(ua), android = /android/i.test(ua);
+    if (!ios && !android) return "";
+    if (ios) return '<div class="push-box"><strong>' + esc(t("install.title")) + "</strong><ol><li>" + esc(t("install.ios1")) + "</li><li>" + esc(t("install.ios2")) + "</li><li>" + esc(t("install.ios3")) + "</li></ol></div>";
+    return '<div class="push-box"><strong>' + esc(t("install.title")) + "</strong><p>" + esc(installEvent ? t("install.androidText") : t("install.androidMenu")) + "</p>" + (installEvent ? '<button type="button" class="primary-button" id="install-app">' + esc(t("install.button")) + "</button>" : "") + "</div>";
+  }
+  function bindInstall(root) {
+    root.querySelector("#install-app")?.addEventListener("click", async () => { if (!installEvent) return; installEvent.prompt(); try { await installEvent.userChoice; } catch { /* ignore */ } installEvent = null; root.querySelector("#install-app")?.closest(".push-box")?.remove(); });
+  }
   /** Push: a button on top of Messages; on iPhone it works only for the app added to the Home Screen. */
   const b64 = v => { const p = "=".repeat((4 - v.length % 4) % 4); const r = atob((v + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
   async function pushState() {
@@ -3633,7 +3647,7 @@
   }
   async function pushBlock() {
     const st = await pushState();
-    if (st === "on" || st === "none") return "";
+    if (st === "on" || st === "none" || st === "install") return "";
     const text = st === "install" ? t("push.install") : st === "denied" ? t("push.denied") : t("push.text");
     return '<div class="push-box"><p>' + esc(text) + "</p>" + (st === "off" ? '<button type="button" class="primary-button" id="push-on">' + esc(t("push.enable")) + "</button>" : "") + "</div>";
   }
@@ -3671,7 +3685,7 @@
   }
   async function messages() {
     const stories = await loadStories();
-    const todayHtml = (await pushBlock()) + (await todayBlock());
+    const todayHtml = installBlock() + (await pushBlock()) + (await todayBlock());
     const d = await api("/v1/chats");
     const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
@@ -3701,7 +3715,7 @@
         box.querySelectorAll("[data-nm]").forEach(b => b.addEventListener("click", async () => { try { const d = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: b.dataset.nm }) }); dlg.close(); chatRoom = d.room_id; render("chat"); } catch (x) { dlg.close(); status(x.message, true); } })); } catch (x) { box.innerHTML = '<p class="auth-error">' + esc(x.message) + "</p>"; } };
       dlg.q("#nm-q").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(run, 250); }); run(); dlg.q("#nm-q").focus();
     });
-    bindStories(content, stories); bindToday(content); bindPush(content);
+    bindStories(content, stories); bindToday(content); bindPush(content); bindInstall(content);
   }
   /** Opens (creating on first use) the private dialogue with the Friends team. */
   function bindSupport() {

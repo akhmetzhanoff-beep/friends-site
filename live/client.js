@@ -3621,6 +3621,20 @@
         try { await api("/v1/meetups", { method: "POST", body: JSON.stringify(body) }); dlg.close(); status(t("together.published")); await together(); } catch (x) { dlg.close(); status(x.message, true); } });
     });
   }
+  /** "Meet today": three residents present themselves; shown on top of Messages. */
+  async function todayBlock() {
+    let d; try { d = await api("/v1/today"); } catch { return ""; }
+    if (!d.items.length) return "";
+    return '<section class="today"><h3>' + esc(t("today.title")) + '</h3><div class="today-list">' + d.items.map(m =>
+      '<article class="today-card">' + (m.photo_url ? '<img class="today-photo" alt="" loading="lazy" src="' + esc(apiBase + m.photo_url) + '">' : '<div class="today-photo today-ph" aria-hidden="true">' + esc(String(m.name || "?").slice(0, 1)) + "</div>") +
+      '<div class="today-body"><strong>' + esc(m.name) + "</strong><small>" + esc((m.headline || "") + (m.city ? " \u00b7 " + m.city : "")) + "</small><p>" + esc(m.pitch) + "</p>" +
+      '<div class="receipt-actions"><button type="button" class="outline-button" data-today-open="' + esc(m.user_id) + '">' + esc(t("today.page")) + "</button>" +
+      (m.mine ? "" : '<button type="button" class="primary-button" data-today-write="' + esc(m.user_id) + '">' + esc(t("today.write")) + "</button>") + "</div></div></article>").join("") + "</div></section>";
+  }
+  function bindToday(root) {
+    root.querySelectorAll("[data-today-open]").forEach(b => b.addEventListener("click", () => { memberId = b.dataset.todayOpen; render("member"); }));
+    root.querySelectorAll("[data-today-write]").forEach(b => b.addEventListener("click", async () => { try { const r = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: b.dataset.todayWrite }) }); chatRoom = r.room_id; render("chat"); } catch (x) { status(x.message, true); } }));
+  }
   /** The stories strip stays on top of every tab of the Messages block. */
   async function mountStories(row) {
     const d = await loadStories(); const html = storiesStrip(d);
@@ -3629,6 +3643,7 @@
   }
   async function messages() {
     const stories = await loadStories();
+    const todayHtml = await todayBlock();
     const d = await api("/v1/chats");
     const q = d.quota || {};
     const row = r => '<button type="button" class="chat-row" data-chat="' + esc(r.id) + '"><span class="chat-avatar" aria-hidden="true">' + esc((r.name || "?").slice(0, 1)) + '</span><span class="chat-main"><strong>' + esc(r.name) + "</strong><small>" +
@@ -3642,7 +3657,7 @@
     const groups = [["news", r => r.room_type === "advertising"], ["meetup", r => r.room_type === "meetup"], ["city", r => r.room_type === "city"], ["sports", r => r.room_type === "sports"], ["topic", r => !["advertising", "city", "sports", "meetup"].includes(r.room_type)]];
     const quota = q.limit == null ? (q.plan === "premium" ? '<p class="demo-note">' + esc(t("messages.quotaPremium")) + "</p>" : "")
       : '<p class="demo-note">' + esc(t("messages.quota", { used: q.used, limit: q.limit })) + (q.limit < 3 ? " " + esc(t("messages.quotaUpgradeTrial")) : " " + esc(t("messages.quotaUpgrade"))) + "</p>";
-    content.innerHTML = storiesStrip(stories) + '<button type="button" class="outline-button new-msg" id="new-msg">+ ' + esc(t("newmsg.title")) + "</button>" + quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
+    content.innerHTML = storiesStrip(stories) + todayHtml + '<button type="button" class="outline-button new-msg" id="new-msg">+ ' + esc(t("newmsg.title")) + "</button>" + quota + (supportRows.length ? panel(t("messages.group.support"), "", '<div class="chat-list">' + supportRows.map(row).join("") + "</div>") : "") + (pinned.length ? '<div class="chat-list chat-pinned">' + pinned.map(row).join("") + "</div>" : "") +
       (direct.length ? panel(t("messages.group.direct"), "", '<div class="chat-list">' + direct.map(row).join("") + "</div>") : "") +
       groups.map(([k, f]) => { const mine = rest.filter(f).filter(r => r.joined), open = rest.filter(f).filter(r => !r.joined);
         return mine.length || open.length ? panel(t("messages.group." + k), "", '<div class="chat-list">' + mine.concat(open).map(row).join("") + "</div>") : ""; }).join("") +
@@ -3658,7 +3673,7 @@
         box.querySelectorAll("[data-nm]").forEach(b => b.addEventListener("click", async () => { try { const d = await api("/v1/chats/direct", { method: "POST", body: JSON.stringify({ user_id: b.dataset.nm }) }); dlg.close(); chatRoom = d.room_id; render("chat"); } catch (x) { dlg.close(); status(x.message, true); } })); } catch (x) { box.innerHTML = '<p class="auth-error">' + esc(x.message) + "</p>"; } };
       dlg.q("#nm-q").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(run, 250); }); run(); dlg.q("#nm-q").focus();
     });
-    bindStories(content, stories);
+    bindStories(content, stories); bindToday(content);
   }
   /** Opens (creating on first use) the private dialogue with the Friends team. */
   function bindSupport() {
@@ -4142,6 +4157,7 @@
   let cardEditing = false;
   async function myCard() {
     const d = await api("/v1/me/card");
+    let pitch = { pitch: "", active: false }; try { pitch = await api("/v1/me/pitch"); } catch { /* optional */ }
     const c = d.card || {}, so = c.socials || {};
     const n = v => v == null ? "" : String(v);
     const bizForm = b => {
@@ -4175,6 +4191,7 @@
         '<label class="check"><input type="checkbox" name="revenue_visible"' + (c.revenue_visible ? " checked" : "") + "> " + esc(t("card.revShow")) + "</label>" +
         area(t("card.about"), "about", n(c.about)) + area(t("card.seeking"), "seeking", n(c.seeking)) + area(t("card.offering"), "offering", n(c.offering)) +
         field(t("card.tags"), "tags", (c.tags || []).join(", "), "text", 'maxlength="250"') + achRows(d.achievements || []) + "</details></form>") +
+      panel(t("today.optTitle"), t("today.optText"), '<form class="app-form" id="pitch-form"><label class="check"><input type="checkbox" name="active"' + (pitch.active ? " checked" : "") + "> " + esc(t("today.optIn")) + "</label>" + area(t("today.pitch"), "pitch", pitch.pitch || "") + "</form>") +
       panel(t("card.businesses"), t("card.bizText"), (d.businesses || []).map(bizForm).join("") + '<button type="button" class="outline-button" id="biz-add">' + esc(t("card.bizAdd")) + "</button>") + "</div>" +
       '<div class="cv-savebar"' + (cardEditing ? "" : " hidden") + '><button type="button" class="primary-button" id="card-save">' + esc(t("card.save")) + '</button><button type="button" class="outline-button" id="card-cancel">' + esc(t("auth.cancel")) + "</button></div>";
     const resizeImage = async (file, max) => {
@@ -4239,7 +4256,8 @@
       const ach = [...document.querySelectorAll('.cv-rows[data-kind="ach"] .cv-row')].map(r => { const ti = r.querySelector('[name="at"]').value.trim(), y = r.querySelector('[name="ay"]').value; return ti ? { year: y ? Number(y) : null, title: ti } : null; }).filter(Boolean);
       try { await api("/v1/me/card", { method: "PUT", body: JSON.stringify(body) }); await api("/v1/me/card/achievements", { method: "PUT", body: JSON.stringify({ items: ach }) }); return true; } catch (x) { status(x.message, true); return false; }
     };
-    const saveAll = async () => { if (!(await saveLinks())) return; if (!(await saveCard())) return; cardEditing = false; status(t("card.saved")); await myCard(); };
+    const savePitch = async () => { const pf = document.querySelector("#pitch-form"); if (!pf) return true; const f = new FormData(pf); try { await api("/v1/me/pitch", { method: "PUT", body: JSON.stringify({ pitch: String(f.get("pitch") || "").trim(), active: f.get("active") === "on" }) }); return true; } catch (x) { status(x.message === "pitch_too_short" ? t("today.short") : x.message, true); return false; } };
+    const saveAll = async () => { if (!(await saveLinks())) return; if (!(await savePitch())) return; if (!(await saveCard())) return; cardEditing = false; status(t("card.saved")); await myCard(); };
     document.querySelector("#links-form")?.addEventListener("submit", e => { e.preventDefault(); saveAll(); });
     form.addEventListener("submit", e => { e.preventDefault(); saveAll(); });
     document.querySelector("#card-save")?.addEventListener("click", saveAll);

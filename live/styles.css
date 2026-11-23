@@ -871,3 +871,7 @@ html[data-theme="dark"] .msg-day span{background:rgba(255,255,255,.12)}
 .j-article{max-width:680px}.j-article h2{margin:8px 0 2px}.j-article p{line-height:1.65;font-size:16.5px}
 
 .city-card{display:grid;gap:2px;width:100%;text-align:left;padding:14px 16px;margin-bottom:14px;border-radius:18px;border:1px solid var(--fb-line);background:linear-gradient(135deg,var(--fb-blue-soft),var(--fb-card,#fff));color:inherit;font:inherit;cursor:pointer}.city-card b{font-size:16px}.city-card small{color:var(--fb-text-2)}
+.today{margin:12px 0}.today h3{margin:0 0 8px}.today-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.today-card{min-width:250px;max-width:280px;display:flex;gap:10px;padding:10px;border:1px solid var(--line,#ddd);border-radius:14px;background:var(--panel,#fff)}
+.today-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none}.today-ph{display:grid;place-items:center;background:#eee;font-weight:700}
+.today-body p{margin:6px 0;font-size:.92rem}.today-body small{display:block;opacity:.7}

@@ -19,6 +19,14 @@
   const LANGUAGE_SHORT = { ru: "РУС", kk: "ҚАЗ", en: "ENG" };
 
   const ru = {
+    "today.title": "Знакомимся сегодня",
+    "today.page": "Страница",
+    "today.write": "Написать",
+    "today.optTitle": "Представиться сообществу",
+    "today.optText": "Каждый день трое резидентов коротко рассказывают о себе всем. Хотите быть среди них?",
+    "today.optIn": "Хочу, чтобы меня показывали в «Знакомимся сегодня»",
+    "today.pitch": "Одной фразой: чем вы полезны (от 10 до 200 знаков)",
+    "today.short": "Напишите хотя бы одну фразу о себе (от 10 знаков).",
     "meta.title": "Friends — кабинет резидента",
     "meta.description": "Friends — цифровая платформа бизнес-сообщества предпринимателей.",
     "brand.home": "Friends — главная",
@@ -2680,6 +2688,14 @@
   };
 
   const kk = {
+    "today.title": "Бүгін танысамыз",
+    "today.page": "Парақша",
+    "today.write": "Жазу",
+    "today.optTitle": "Қауымдастыққа таныстыру",
+    "today.optText": "Күн сайын үш резидент өзі туралы қысқаша айтады. Солардың қатарында болғыңыз келе ме?",
+    "today.optIn": "«Бүгін танысамыз» бөлімінде көрсетілгім келеді",
+    "today.pitch": "Бір сөйлеммен: сіз немен пайдалысыз (10-нан 200 таңбаға дейін)",
+    "today.short": "Өзіңіз туралы кемінде бір сөйлем жазыңыз (10 таңбадан).",
     "meta.title": "Friends — қатысушы кабинеті",
     "meta.description": "Friends — кәсіпкерлер бизнес-қауымдастығының цифрлық платформасы.",
     "brand.home": "Friends — басты бет",
@@ -5341,6 +5357,14 @@
   };
 
   const en = {
+    "today.title": "Meet today",
+    "today.page": "Page",
+    "today.write": "Message",
+    "today.optTitle": "Introduce yourself to the community",
+    "today.optText": "Every day three residents briefly present themselves to everyone. Want to be one of them?",
+    "today.optIn": "Show me in “Meet today”",
+    "today.pitch": "One sentence: how you are useful (10–200 characters)",
+    "today.short": "Write at least one sentence about yourself (10+ characters).",
     "meta.title": "Friends — member portal",
     "meta.description": "Friends — the digital platform of the entrepreneurs' business community.",
     "brand.home": "Friends — home",

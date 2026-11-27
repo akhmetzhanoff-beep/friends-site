@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f8fa">
+  <meta name="description" content="Friends — бизнес-сообщество предпринимателей Казахстана: 500+ участников, 100+ встреч в год и приложение для сообщества. Первый месяц бесплатно.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Friends — окружение, которое растит бизнес">
+  <meta property="og:description" content="Более 500 предпринимателей, 100+ встреч в год и приложение Friends. Попробуйте первый месяц бесплатно.">
+  <link rel="canonical" href="https://friendscommunity.kz/chatgpt/">
+  <link rel="alternate" hreflang="ru" href="https://friendscommunity.kz/chatgpt/">
+  <link rel="alternate" hreflang="kk" href="https://friendscommunity.kz/chatgpt/?lang=kk">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+  <title>Friends — бизнес-сообщество предпринимателей Казахстана</title>
+  <style>
+    :root{--ink:#111827;--muted:#687386;--blue:#2563eb;--blue2:#1d4ed8;--line:#e4e8ef;--paper:#f7f8fa;--white:#fff;--soft:#edf3ff;--radius:22px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Onest,Arial,sans-serif;line-height:1.55}
+    a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 40px));margin:auto}
+    header{padding:20px 0}.nav{display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{font:700 24px Unbounded,sans-serif;letter-spacing:-1.4px}.brand span{color:var(--blue)}
+    .nav-right{display:flex;align-items:center;gap:10px}.lang{display:flex;padding:4px;border:1px solid var(--line);border-radius:999px;background:white}
+    .lang button{border:0;background:transparent;padding:7px 11px;border-radius:999px;font:600 12px Onest;cursor:pointer;color:var(--muted)}
+    .lang button.active{background:var(--ink);color:white}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 22px;border-radius:13px;background:var(--blue);color:white;font-weight:700;border:1px solid var(--blue);transition:.2s}
+    .btn:hover{background:var(--blue2);transform:translateY(-1px)}.btn.secondary{background:white;color:var(--ink);border-color:var(--line)}
+    .hero{padding:68px 0 56px;background:radial-gradient(ellipse at 80% 12%,#dce8ff 0,transparent 38%),linear-gradient(135deg,#fff 0%,#f2f6ff 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--blue);font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+    .eyebrow:before{content:"";width:22px;height:2px;background:var(--blue)}
+    h1{font:600 clamp(36px,6vw,66px)/1.12 Unbounded,sans-serif;letter-spacing:-2.5px;max-width:850px;margin:22px 0}
+    h1 em{font-style:normal;color:var(--blue)}.lead{font-size:19px;color:#4b5565;max-width:710px;margin:0 0 28px}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}.trust{display:flex;flex-wrap:wrap;gap:22px;margin-top:42px}
+    .metric{min-width:130px}.metric strong{display:block;font:600 28px Unbounded,sans-serif;letter-spacing:-1px}.metric span{color:var(--muted);font-size:13px}
+    section{padding:68px 0}.section-head{max-width:690px;margin-bottom:30px}.section-head h2{font:600 clamp(26px,4vw,40px)/1.2 Unbounded,sans-serif;letter-spacing:-1.2px;margin:12px 0}
+    .section-head p{color:var(--muted);font-size:16px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .card{padding:25px;border:1px solid var(--line);border-radius:var(--radius);background:white;min-height:185px}
+    .number{font:600 13px Unbounded;color:var(--blue)}.card h3{font-size:18px;margin:18px 0 8px}.card p{margin:0;color:var(--muted);font-size:14px}
+    .app-panel{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;background:#111827;color:white;border-radius:28px;padding:clamp(28px,5vw,56px)}
+    .app-panel h2{font:600 clamp(26px,4vw,40px)/1.2 Unbounded;letter-spacing:-1px;margin:14px 0}.app-panel p{color:#c3cad6}
+    .app-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0}.app-list div{padding:13px;border:1px solid #344054;border-radius:13px;color:#e8edf5;font-size:14px}
+    .phone{padding:18px;border-radius:28px;background:linear-gradient(145deg,#dbeafe,#f8fafc);color:var(--ink);max-width:310px;margin:auto;box-shadow:0 22px 55px #0003}
+    .phone-top{font:700 17px Unbounded;margin-bottom:16px}.phone-row{padding:15px;background:white;border:1px solid #e6eaf0;border-radius:13px;margin:9px 0;font-size:13px}.phone-row b{display:block;color:var(--blue);font-size:10px;letter-spacing:1px;margin-bottom:4px}
+    .price{display:grid;grid-template-columns:1fr auto;gap:25px;align-items:center;padding:30px;background:white;border:1px solid var(--line);border-radius:var(--radius)}
+    .price strong{font:600 clamp(28px,4vw,42px) Unbounded;letter-spacing:-1px}.price p{color:var(--muted);margin:8px 0 0}
+    .faq{max-width:820px}.faq details{padding:19px 0;border-bottom:1px solid var(--line)}.faq summary{font-weight:700;cursor:pointer}.faq details p{color:var(--muted);margin:10px 0 0}
+    footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+    @media(max-width:760px){.wrap{width:min(100% - 28px,1120px)}.hero{padding:48px 0}.grid{grid-template-columns:1fr}.app-panel{grid-template-columns:1fr}.phone{display:none}.price{grid-template-columns:1fr}.nav .nav-cta{display:none}.trust{gap:18px}.metric{min-width:calc(50% - 10px)}section{padding:52px 0}.lead{font-size:17px}}
+  </style>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="/">friends<span>.</span></a><div class="nav-right"><div class="lang" aria-label="Тіл / Язык"><button type="button" data-lang="ru" class="active">RU</button><button type="button" data-lang="kk">KZ</button></div><a class="btn secondary nav-cta" data-app-link href="https://app.friendscommunity.kz/">Войти в приложение</a></div></div></header>
+<main>
+  <section class="hero"><div class="wrap">
+    <span class="eyebrow" data-ru="Бизнес-сообщество предпринимателей Казахстана" data-kk="Қазақстан кәсіпкерлерінің бизнес-қауымдастығы">Бизнес-сообщество предпринимателей Казахстана</span>
+    <h1 data-ru="Окружение, которое <em>растит</em> ваш бизнес" data-kk="Бизнесіңізді <em>дамытатын</em> орта">Окружение, которое <em>растит</em> ваш бизнес</h1>
+    <p class="lead" data-ru="Знакомьтесь с предпринимателями, находите партнёров, обменивайтесь опытом и участвуйте в мероприятиях Friends. Более 500 участников и 100+ встреч в год." data-kk="Кәсіпкерлермен танысыңыз, серіктестер табыңыз, тәжірибе алмасыңыз және Friends іс-шараларына қатысыңыз. 500-ден астам қатысушы және жылына 100+ кездесу.">Знакомьтесь с предпринимателями, находите партнёров, обменивайтесь опытом и участвуйте в мероприятиях Friends. Более 500 участников и 100+ встреч в год.</p>
+    <div class="actions"><a class="btn" data-app-link href="https://app.friendscommunity.kz/" data-ru="Попробовать месяц бесплатно" data-kk="Бір ай тегін пайдаланып көру">Попробовать месяц бесплатно</a><a class="btn secondary" href="#membership" data-ru="Условия участия" data-kk="Қатысу шарттары">Условия участия</a></div>
+    <div class="trust"><div class="metric"><strong>500+</strong><span data-ru="предпринимателей" data-kk="кәсіпкер">предпринимателей</span></div><div class="metric"><strong>100+</strong><span data-ru="встреч в год" data-kk="жылына кездесу">встреч в год</span></div><div class="metric"><strong>1 месяц</strong><span data-ru="пробный доступ" data-kk="сынақ мерзімі">пробный доступ</span></div></div>
+  </div></section>
+  <section><div class="wrap"><div class="section-head"><span class="eyebrow" data-ru="Ценность сообщества" data-kk="Қауымдастық мүмкіндіктері">Ценность сообщества</span><h2 data-ru="Не просто мероприятия. Люди и возможности." data-kk="Бұл жай ғана іс-шаралар емес. Бұл — адамдар мен мүмкіндіктер.">Не просто мероприятия. Люди и возможности.</h2><p data-ru="Friends объединяет предпринимателей, которым важно развивать бизнес в сильном окружении." data-kk="Friends бизнесті мықты ортада дамытқысы келетін кәсіпкерлерді біріктіреді.">Friends объединяет предпринимателей, которым важно развивать бизнес в сильном окружении.</p></div>
+    <div class="grid">
+      <article class="card"><span class="number">01</span><h3 data-ru="Деловые знакомства" data-kk="Іскерлік таныстықтар">Деловые знакомства</h3><p data-ru="Знакомьтесь с владельцами бизнеса, потенциальными клиентами и партнёрами." data-kk="Бизнес иелерімен, әлеуетті клиенттермен және серіктестермен танысыңыз.">Знакомьтесь с владельцами бизнеса, потенциальными клиентами и партнёрами.</p></article>
+      <article class="card"><span class="number">02</span><h3 data-ru="Разборы и мастермайнды" data-kk="Бизнес-талдау және мастермайндтар">Разборы и мастермайнды</h3><p data-ru="Обсуждайте реальные задачи бизнеса и получайте обратную связь от предпринимателей." data-kk="Бизнесіңіздің нақты мәселелерін талқылап, кәсіпкерлерден кері байланыс алыңыз.">Обсуждайте реальные задачи бизнеса и получайте обратную связь от предпринимателей.</p></article>
+      <article class="card"><span class="number">03</span><h3 data-ru="Мероприятия" data-kk="Іс-шаралар">Мероприятия</h3><p data-ru="Бизнес-завтраки, встречи, мастер-классы, экскурсии и другие форматы." data-kk="Бизнес-таңғы ас, кездесулер, мастер-кластар, экскурсиялар және басқа форматтар.">Бизнес-завтраки, встречи, мастер-классы, экскурсии и другие форматы.</p></article>
+    </div>
+  </div></section>
+  <section style="padding-top:0"><div class="wrap"><div class="app-panel"><div><span class="eyebrow" style="color:#93b8ff" data-ru="Приложение Friends" data-kk="Friends қосымшасы">Приложение Friends</span><h2 data-ru="Сообщество всегда под рукой" data-kk="Қауымдастық әрдайым қолыңызда">Сообщество всегда под рукой</h2><p data-ru="Используйте приложение Friends для доступа к возможностям сообщества, информации об участниках и мероприятиям." data-kk="Friends қосымшасы арқылы қауымдастық мүмкіндіктеріне, қатысушылар туралы ақпаратқа және іс-шараларға қол жеткізіңіз.">Используйте приложение Friends для доступа к возможностям сообщества, информации об участниках и мероприятиям.</p><div class="app-list"><div data-ru="Каталог участников" data-kk="Қатысушылар каталогы">Каталог участников</div><div data-ru="Календарь мероприятий" data-kk="Іс-шаралар күнтізбесі">Календарь мероприятий</div><div data-ru="Профили компаний" data-kk="Компания профильдері">Профили компаний</div><div data-ru="Уведомления" data-kk="Хабарландырулар">Уведомления</div></div><a class="btn" data-app-link href="https://app.friendscommunity.kz/" data-ru="Открыть Friends" data-kk="Friends қосымшасын ашу">Открыть Friends</a></div><div class="phone"><div class="phone-top">friends<span style="color:#2563eb">.</span></div><div class="phone-row"><b>COMMUNITY</b><span data-ru="Предприниматели и деловые связи" data-kk="Кәсіпкерлер және іскерлік байланыстар">Предприниматели и деловые связи</span></div><div class="phone-row"><b>EVENTS</b><span data-ru="Ближайшие встречи Friends" data-kk="Friends алдағы кездесулері">Ближайшие встречи Friends</span></div><div class="phone-row"><b>PROFILE</b><span data-ru="Ваш бизнес-профиль" data-kk="Сіздің бизнес-профиліңіз">Ваш бизнес-профиль</span></div></div></div></div></section>
+  <section id="membership"><div class="wrap"><div class="price"><div><span class="eyebrow" data-ru="Годовое участие" data-kk="Жылдық мүшелік">Годовое участие</span><div style="margin-top:12px"><strong>200 000 ₸</strong></div><p data-ru="Первый месяц — бесплатно. После ознакомления можно оформить годовое участие." data-kk="Бірінші ай — тегін. Танысып шыққаннан кейін жылдық мүшелікті рәсімдеуге болады.">Первый месяц — бесплатно. После ознакомления можно оформить годовое участие.</p></div><a class="btn" data-app-link href="https://app.friendscommunity.kz/" data-ru="Начать бесплатно" data-kk="Тегін бастаңыз">Начать бесплатно</a></div></div></section>
+  <section><div class="wrap faq"><div class="section-head"><span class="eyebrow" data-ru="Частые вопросы" data-kk="Жиі қойылатын сұрақтар">Частые вопросы</span><h2 data-ru="Перед тем как присоединиться" data-kk="Қосылмас бұрын">Перед тем как присоединиться</h2></div>
+    <details><summary data-ru="Где проходят мероприятия?" data-kk="Іс-шаралар қайда өтеді?">Где проходят мероприятия?</summary><p data-ru="Основные офлайн-встречи проходят в Астане. Для участников из других городов доступны онлайн-возможности сообщества и приложение." data-kk="Негізгі офлайн кездесулер Астанада өтеді. Басқа қалалардағы қатысушыларға қауымдастықтың онлайн мүмкіндіктері мен қосымшасы қолжетімді.">Основные офлайн-встречи проходят в Астане. Для участников из других городов доступны онлайн-возможности сообщества и приложение.</p></details>
+    <details><summary data-ru="Сколько стоит участие?" data-kk="Мүшелік құны қанша?">Сколько стоит участие?</summary><p data-ru="Годовое участие стоит 200 000 ₸. Первый месяц можно попробовать бесплатно." data-kk="Жылдық мүшелік құны — 200 000 ₸. Бірінші айды тегін пайдаланып көруге болады.">Годовое участие стоит 200 000 ₸. Первый месяц можно попробовать бесплатно.</p></details>
+    <details><summary data-ru="Как начать?" data-kk="Қалай бастауға болады?">Как начать?</summary><p data-ru="Перейдите в приложение Friends, зарегистрируйтесь и ознакомьтесь с возможностями сообщества." data-kk="Friends қосымшасына өтіп, тіркеліңіз және қауымдастық мүмкіндіктерімен танысыңыз.">Перейдите в приложение Friends, зарегистрируйтесь и ознакомьтесь с возможностями сообщества.</p></details>
+  </div></section>
+</main>
+<footer><div class="wrap">Friends · Бизнес-сообщество предпринимателей Казахстана · <a href="https://friendscommunity.kz/">friendscommunity.kz</a></div></footer>
+<script>
+(function(){
+  var app='https://app.friendscommunity.kz/';
+  var keys=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid','ttclid','msclkid','opref','click_id','ref'];
+  var incoming=new URLSearchParams(location.search);
+  if(!incoming.has('utm_source'))incoming.set('utm_source','chatgpt');
+  if(!incoming.has('utm_medium'))incoming.set('utm_medium','paid');
+  if(!incoming.has('utm_campaign'))incoming.set('utm_campaign','friends_kz_2026');
+  var lang=incoming.get('lang')==='kk'?'kk':(incoming.get('lang')==='ru'?'ru':(navigator.language.toLowerCase().startsWith('kk')?'kk':'ru'));
+  function appHref(){var p=new URLSearchParams();keys.forEach(function(k){var v=incoming.get(k);if(v)p.set(k,v)});p.set('lang',lang);p.set('landing_page','chatgpt');return app+p.toString()}
+  function setLang(next){lang=next;document.documentElement.lang=next;document.querySelectorAll('[data-lang]').forEach(function(b){b.classList.toggle('active',b.dataset.lang===next)});document.querySelectorAll('[data-'+next+']').forEach(function(el){el.innerHTML=el.getAttribute('data-'+next)});document.querySelectorAll('[data-app-link]').forEach(function(a){a.href=appHref()});document.title=next==='kk'?'Friends — Қазақстан кәсіпкерлерінің бизнес-қауымдастығы':'Friends — бизнес-сообщество предпринимателей Казахстана'}
+  document.querySelectorAll('[data-lang]').forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.lang)})});
+  setLang(lang);
+})();
+</script>
+</body>
+</html>

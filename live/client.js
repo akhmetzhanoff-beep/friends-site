@@ -353,7 +353,7 @@
     await claimTrial();
     await claimRefInvite();
     let needProfile = false;
-    try { const pr = await api("/v1/me/profile"); needProfile = !pr.city_id; } catch (e) { if (e.status === 404) needProfile = true; }
+    try { const pr = await api("/v1/me/profile"); needProfile = !pr.city_id || !pr.social_url || !pr.headline || String(pr.display_name || "").trim().split(/\s+/).length < 2; } catch (e) { if (e.status === 404) needProfile = true; }
     if (onboard && needProfile && APP !== "admin") { active = "profile"; try { sessionStorage.setItem("friends.welcome", "1"); } catch { /* none */ } }
     await render(active);
     applyWatermark();
@@ -543,9 +543,9 @@
   // Which bottom-bar block a screen belongs to, and the sub-sections shown as tabs inside a block.
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
   const BLOCK_OF = { events: "overview", journal: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
-    "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "business", deals: "business", partner: "card", discounts: "card",
+    "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "discounts", deals: "discounts", partner: "discounts", card: "discounts",
     notifications: "messages", together: "messages", support: "messages", chat: "messages", "my-card": "account", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements", "journal"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business", "deals"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], card: ["card", "partner", "discounts"], messages: ["messages", "together", "notifications", "support"] };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements", "journal"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], discounts: ["discounts", "deals", "partner", "card"], messages: ["messages", "together", "notifications", "support"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -728,6 +728,29 @@
       '</p><div class="login-actions"><button class="primary-button" id="login-main">' + esc(t("login.sms")) + '</button>' +
       '</div>' + (ownAuth ? "" : '<div class="demo-note">' + esc(t("login.note")) + "</div>") + "</div>" + installCard();
     document.querySelector("#login-main").addEventListener("click", login);
+    showcase();
+  }
+  // «Лица Friends»: members who agreed to be shown, visible to guests before sign-in.
+  function socialHref(v) {
+    const s = String(v || "").trim();
+    if (/^@?[A-Za-z0-9._]{2,30}$/.test(s)) return "https://instagram.com/" + s.replace(/^@/, "");
+    return /^https:\/\//i.test(s) ? s : "";
+  }
+  async function showcase() {
+    let items = [];
+    try { const r = await fetch(apiBase + "/v1/public/showcase"); if (r.ok) items = (await r.json()).items || []; } catch { return; }
+    const panel = document.querySelector(".login-panel");
+    if (!items.length || !panel || token()) return;
+    const box = document.createElement("section");
+    box.className = "showcase";
+    box.innerHTML = "<h3>" + esc(t("showcase.title")) + '</h3><p class="muted">' + esc(t("showcase.text")) + '</p><div class="showcase-grid">' +
+      items.map((m) => {
+        const href = socialHref(m.social_url);
+        const ava = m.avatar_url && /^https:\/\//.test(m.avatar_url) ? '<img src="' + esc(m.avatar_url) + '" alt="" loading="lazy">' : '<span class="showcase-ini" aria-hidden="true">' + esc(String(m.name || "?").charAt(0)) + "</span>";
+        const inner = ava + "<b>" + esc(m.name || "") + "</b>" + (m.headline ? "<small>" + esc(m.headline) + "</small>" : "");
+        return href ? '<a class="showcase-card" href="' + esc(href) + '" target="_blank" rel="noopener">' + inner + "</a>" : '<div class="showcase-card">' + inner + "</div>";
+      }).join("") + "</div>";
+    panel.after(box);
   }
 
   const field = (label, name, value = "", type = "text", attrs = "") =>
@@ -843,8 +866,11 @@
     const cityName = c => (I18N.getLocale() === "kk" && c.name_kk) || (I18N.getLocale() === "en" && c.name_en) || c.name;
     content.innerHTML = panel(t("profile.section"), t("profile.sectionText"),
       '<form id="profile-form" class="app-form">' +
-      field(t("profile.name"), "display_name", p.display_name, "text", 'required maxlength="120" autocomplete="name"') +
-      field(t("profile.headline"), "headline", p.headline || "", "text", 'maxlength="180"') +
+      field(t("profile.firstName"), "first_name", String(p.display_name || "").trim().split(/\s+/)[0] || "", "text", 'required maxlength="60" autocomplete="given-name"') +
+      field(t("profile.lastName"), "last_name", String(p.display_name || "").trim().split(/\s+/).slice(1).join(" "), "text", 'required maxlength="60" autocomplete="family-name"') +
+      field(t("profile.headline"), "headline", p.headline || "", "text", 'required maxlength="180"') +
+      field(t("profile.social"), "social_url", p.social_url || "", "text", 'required maxlength="300" placeholder="@instagram"') +
+      '<label class="consent-field"><input type="checkbox" name="showcase_ok" value="yes"' + (p.showcase_ok ? " checked" : "") + "> <span>" + esc(t("profile.showcase")) + "</span></label>" +
       area(t("profile.bio"), "bio", p.bio || "") +
       field(t("profile.avatar"), "avatar_url", p.avatar_url || "", "url") +
       '<label class="field"><span>' + esc(t("profile.visibility")) + '</span><select name="visibility">' +
@@ -868,7 +894,7 @@
     document.querySelector("#delete-account").addEventListener("click", deleteAccount);
     const offerBtn = document.querySelector("#offer-open");
     if (offerBtn) offerBtn.addEventListener("click", async () => { if (await readOffer()) { offerAgreed = true; document.querySelector("#offer-state").textContent = t("offer.accepted"); offerBtn.hidden = true; } });
-    whatsappBox().catch(() => { /* optional section */ });
+    // WhatsApp number is not asked in the profile: members talk inside the app (owner decision 27.11)
     nudgeBox().catch(() => { /* optional section */ });
     document.querySelector("#profile-form").addEventListener("submit", async e => {
       e.preventDefault();
@@ -879,7 +905,9 @@
         profile = await api("/v1/me/profile", {
           method: "PUT",
           body: JSON.stringify({
-            display_name: String(f.get("display_name")).trim(),
+            display_name: (String(f.get("first_name") || "").trim() + " " + String(f.get("last_name") || "").trim()).trim(),
+            social_url: String(f.get("social_url") || "").trim() || null,
+            showcase_ok: f.get("showcase_ok") === "yes",
             headline: String(f.get("headline") || "").trim() || null,
             bio: String(f.get("bio") || "").trim() || null,
             avatar_url: String(f.get("avatar_url") || "").trim() || null,

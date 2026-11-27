@@ -15,7 +15,7 @@
   // "pilot" (owner-only artifact build) shows both menus without a role check.
   const APP = ["admin", "pilot"].includes(document.body.dataset.app) ? document.body.dataset.app : "resident";
   const ADMIN_VIEWS = ["events-admin", "admin", "admin-experts", "admin-learn", "admin-announcements", "admin-discounts", "admin-stats", "admin-feedback", "admin-referrals", "admin-staff", "admin-loans", "admin-pulse", "admin-polls", "admin-learning-orders", "admin-chats", "admin-trust", "admin-deals", "admin-partners", "admin-proposals", "admin-signups", "admin-bans", "admin-activity", "admin-subscriptions"];
-  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "together", "journal", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
+  const RESIDENT_ONLY = ["books", "blogger", "overview", "membership", "companies", "notifications", "profile", "my-card", "experts", "learn", "course", "lesson", "team", "announcements", "discounts", "card", "partner", "feedback", "business", "certificate", "checkin", "polls", "services", "me", "messages", "support", "together", "journal", "thanks", "chat", "tests", "test", "settings", "member", "trust", "deals", "deal", "host", "recordings", "templates", "professions", "partner-apply"];
   // Own phone sign-in (SMS code against our API) replaces Supabase when authMode is "phone".
   const ownAuth = cfg.authMode === "phone" && !!apiBase;
   let supabaseClient = null;
@@ -48,7 +48,7 @@
   const title = document.querySelector("#page-title");
   const subtitle = document.querySelector("#page-subtitle");
   const VIEW_KEYS = {
-    overview: "overview", support: "messages", together: "together", journal: "journal", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
+    overview: "overview", support: "messages", together: "together", journal: "journal", thanks: "thanks", events: "events", "events-admin": "eventsAdmin", members: "members", companies: "companies",
     membership: "membership", notifications: "notifications", profile: "profile", admin: "admin",
     experts: "experts", "admin-experts": "adminExperts", learn: "learn", course: "learn", lesson: "learn", team: "team", "admin-learn": "adminLearn",
     announcements: "announcements", "admin-announcements": "adminAnnouncements",
@@ -542,10 +542,10 @@
   }
   // Which bottom-bar block a screen belongs to, and the sub-sections shown as tabs inside a block.
   const BLOCK_ICONS = { events: ic("calendar"), learn: ic("learn"), business: ic("business"), experts: ic("star"), discounts: ic("percent") };
-  const BLOCK_OF = { events: "overview", journal: "overview", experts: "overview", members: "overview", member: "overview", announcements: "overview", polls: "overview",
+  const BLOCK_OF = { events: "overview", journal: "overview", thanks: "overview", experts: "overview", members: "overview", member: "overview", announcements: "discounts", polls: "overview",
     "my-card": "me", course: "learn", lesson: "learn", certificate: "learn", tests: "learn", test: "learn", deal: "discounts", deals: "discounts", partner: "discounts", card: "discounts",
     notifications: "messages", together: "messages", support: "messages", chat: "messages", "my-card": "account", host: "overview", blogger: "me", "partner-apply": "me", books: "learn", professions: "learn", templates: "learn", recordings: "learn", profile: "account", settings: "me", trust: "account", membership: "account", team: "account", companies: "account", checkin: "me", services: "me" };
-  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "announcements", "journal"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], discounts: ["discounts", "deals", "partner", "card"], messages: ["messages", "together", "notifications", "support"] };
+  const BLOCK_TABS = { overview: ["overview", "events", "experts", "members", "journal", "thanks"], learn: ["learn", "professions", "books", "templates", "tests", "recordings"], business: ["business"], account: ["my-card", "profile", "companies", "trust", "membership", "team"], discounts: ["discounts", "announcements", "deals", "partner", "card"], messages: ["messages", "together", "notifications", "support"] };
   const isPrimary = v => !!document.querySelector('.sidebar nav [data-primary][data-view="' + v + '"]');
   // Bottom-bar button that lights up for a screen: its block, or "Сервисы" for everything else.
   const navBlock = v => { const b = BLOCK_OF[v] || v; return isPrimary(b) ? b : isPrimary("me") ? "me" : isPrimary("services") ? "services" : b; };
@@ -737,10 +737,16 @@
     return /^https:\/\//i.test(s) ? s : "";
   }
   async function showcase() {
-    let items = [];
-    try { const r = await fetch(apiBase + "/v1/public/showcase"); if (r.ok) items = (await r.json()).items || []; } catch { return; }
+    let items = [], counts = null;
+    try { const r = await fetch(apiBase + "/v1/public/showcase"); if (r.ok) { const j = await r.json(); items = j.items || []; counts = j.counts || null; } } catch { return; }
     const panel = document.querySelector(".login-panel");
-    if (!items.length || !panel || token()) return;
+    if (!panel || token()) return;
+    if (counts && counts.residents > 1) {
+      const c = document.createElement("p"); c.className = "login-counts";
+      c.textContent = t("showcase.counts", { n: counts.residents, ads: counts.ads });
+      panel.querySelector(".login-actions")?.before(c);
+    }
+    if (!items.length) return;
     const box = document.createElement("section");
     box.className = "showcase";
     box.innerHTML = "<h3>" + esc(t("showcase.title")) + '</h3><p class="muted">' + esc(t("showcase.text")) + '</p><div class="showcase-grid">' +
@@ -946,6 +952,19 @@
               ((m.reviews_count || (m.badges || []).length) ? '<span class="member-trust">' + (m.reviews_count ? stars(m.rating) + " (" + m.reviews_count + ")" : "") + (m.badges || []).map(b => ' <span class="mini-badge" title="' + esc(t("trust.badge." + b)) + '">' + ({ tax_clear: ic("receipt", "ic-inline"), credit_history: ic("bank", "ic-inline"), company: ic("building", "ic-inline") }[b] || "✓") + '<span class="sr-only">' + esc(t("trust.badge." + b)) + "</span></span>").join("") + "</span>" : "") + "</div></button>").join("")
           : '<p class="muted">' + esc(t("members.empty")) + "</p>";
         target.querySelectorAll("[data-member]").forEach(b => b.addEventListener("click", () => { memberId = b.dataset.member; render("member"); }));
+        // People from the community chat who have not joined the app yet.
+        const dr = await api("/v1/resident-drafts?limit=60" + (q ? "&q=" + encodeURIComponent(q) : "")).catch(() => null);
+        if (dr && dr.items.length && !memberCity) {
+          const box = document.createElement("section");
+          box.className = "drafts";
+          box.innerHTML = "<h3>" + esc(t("drafts.title", { n: dr.total })) + '</h3><p class="muted">' + esc(t("drafts.text")) + "</p>" +
+            dr.items.map(m => '<div class="member-result draft-row"><div class="member-avatar" aria-hidden="true">' + esc(String(m.name || "?").slice(0, 1)) + '</div><div class="member-copy"><strong>' + esc(m.name) + "</strong><span>" + esc(m.niche || t("drafts.noNiche")) + '</span></div><button type="button" class="outline-button" data-invite="' + esc(m.name) + '">' + esc(t("drafts.invite")) + "</button></div>").join("");
+          target.appendChild(box);
+          box.querySelectorAll("[data-invite]").forEach(b => b.addEventListener("click", async () => {
+            const text = t("drafts.inviteText", { name: b.dataset.invite.split(" ")[0] }) + " https://friendscommunity.kz/live";
+            try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); status(t("drafts.copied")); } } catch { /* cancelled */ }
+          }));
+        }
       } catch (e) {
         target.textContent = e.message;
       }
@@ -1943,7 +1962,7 @@
   function annCard(a, mode) {
     const kindLabel = I18N.label("annKind", a.kind);
     return '<article class="invoice-card ann-card' + (a.pinned ? " pinned" : "") + '"><div class="invoice-top"><div><span class="pill">' + esc(kindLabel) + '</span> <span class="pill">' + esc(I18N.label("annCategory", a.category)) + "</span><h3>" + (a.pinned ? ic("pin", "ic-inline") + " " : "") + esc(a.title) +
-      "</h3><small>" + esc(a.author_name || t("announcements.community")) + (mode === "admin" && a.author_email ? " · " + esc(a.author_email) : "") + " · " + esc(date(a.created_at)) + "</small></div></div><p class=\"ann-body\">" + esc(a.body) + "</p>" +
+      "</h3><small>" + esc(a.author_name || t("announcements.community")) + (a.source === "whatsapp" ? " · " + esc(t("announcements.fromChat")) : "") + (mode === "admin" && a.author_email ? " · " + esc(a.author_email) : "") + " · " + esc(date(a.created_at)) + "</small></div></div><p class=\"ann-body\">" + esc(a.body) + "</p>" +
       (a.price_info ? '<p class="muted">' + esc(t("announcements.price")) + ": " + esc(a.price_info) + "</p>" : "") + (a.contact ? '<p class="muted">' + esc(t("announcements.contact")) + ": " + esc(a.contact) + "</p>" : "") +
       (mode === "mine" ? '<p class="expert-status ' + esc(a.status) + '">' + esc(I18N.label("annStatus", a.status)) + (a.review_note ? " — " + esc(a.review_note) : "") + '</p><div class="receipt-actions"><button class="outline-button" data-ann-archive="' + esc(a.id) + '">' + esc(t("announcements.remove")) + "</button></div>" : "") +
       (mode === "admin" ? '<div class="receipt-actions">' + (a.status === "pending" ? '<button class="primary-button" data-ann-act="approve" data-id="' + esc(a.id) + '">' + esc(t("adminExperts.approve")) + '</button><button class="outline-button" data-ann-act="reject" data-id="' + esc(a.id) + '">' + esc(t("adminExperts.reject")) + "</button>" :
@@ -1951,12 +1970,15 @@
       "</article>";
   }
 
+  let annQ = "", annLimit = 50;
   async function announcements() {
-    const qs = annKind ? "?kind=" + annKind + "&limit=50" : "?limit=50";
+    const qs = "?limit=" + annLimit + (annKind ? "&kind=" + annKind : "") + (annQ ? "&q=" + encodeURIComponent(annQ) : "");
     const [feed, mine] = await Promise.all([api("/v1/announcements" + qs), api("/v1/me/announcements").catch(() => ({ items: [] }))]);
     const tabs = ["", "news", "offer", "request"].map(k => '<button type="button" class="chip-tab' + (annKind === k ? " active" : "") + '" data-ann-kind="' + k + '" aria-pressed="' + (annKind === k) + '">' + esc(k ? I18N.label("annKind", k) : t("announcements.allTab")) + "</button>").join("");
     content.innerHTML = panel(t("announcements.section"), t("announcements.sectionText"),
-      '<div class="chip-tabs" role="group" aria-label="' + esc(t("announcements.filter")) + '">' + tabs + '</div><div class="data-list">' + (feed.items.length ? feed.items.map(a => annCard(a, "feed")).join("") : '<p class="muted">' + esc(t("announcements.empty")) + "</p>") + "</div>") +
+      '<form id="ann-search" class="search-form" role="search"><input name="q" maxlength="100" value="' + esc(annQ) + '" placeholder="' + esc(t("announcements.searchPh")) + '" aria-label="' + esc(t("announcements.searchPh")) + '"><button class="primary-button">' + esc(t("members.search")) + "</button></form>" +
+      '<div class="chip-tabs" role="group" aria-label="' + esc(t("announcements.filter")) + '">' + tabs + '</div><div class="data-list">' + (feed.items.length ? feed.items.map(a => annCard(a, "feed")).join("") : '<p class="muted">' + esc(t("announcements.empty")) + "</p>") + "</div>" +
+      (feed.items.length >= annLimit && annLimit < 100 ? '<button type="button" class="outline-button" id="ann-more">' + esc(t("announcements.more")) + "</button>" : "")) +
       panel(t("announcements.create"), t("announcements.createText"),
         '<form id="ann-form" class="app-form"><label class="field"><span>' + esc(t("announcements.kind")) + '</span><select name="kind">' + option("offer", I18N.label("annKind", "offer"), true) + option("request", I18N.label("annKind", "request"), false) + "</select></label>" +
         '<label class="field"><span>' + esc(t("announcements.category")) + '</span><select name="category">' + ANN_CATS.map(c => option(c, I18N.label("annCategory", c), c === "services")).join("") + "</select></label>" +
@@ -1965,6 +1987,8 @@
         '<p class="muted">' + esc(t("announcements.moderationNote")) + '</p><button class="primary-button">' + esc(t("announcements.submit")) + "</button></form>") +
       (mine.items.length ? panel(t("announcements.mine"), "", mine.items.map(a => annCard(a, "mine")).join("")) : "");
     content.querySelectorAll("[data-ann-kind]").forEach(b => b.addEventListener("click", () => { annKind = b.dataset.annKind; announcements(); }));
+    document.querySelector("#ann-search").addEventListener("submit", e => { e.preventDefault(); annQ = String(new FormData(e.currentTarget).get("q") || "").trim(); annLimit = 50; announcements(); });
+    document.querySelector("#ann-more")?.addEventListener("click", () => { annLimit = 100; announcements(); });
     document.querySelector("#ann-form textarea[name=body]").required = true;
     document.querySelector("#ann-form").addEventListener("submit", async e => {
       e.preventDefault();
@@ -2350,6 +2374,9 @@
       '<div class="table-scroll"><table class="data-table"><thead><tr><th>' + esc(t("signups.name")) + "</th><th>" + esc(t("subs.status")) + "</th><th>" + esc(t("subs.until")) + '</th><th class="num">' + esc(t("subs.paid")) + "</th><th>" + esc(t("subs.lastPaid")) + "</th><th>" + esc(t("signups.source")) + "</th></tr></thead><tbody>" + (rows || '<tr><td colspan="6">' + esc(t("act.empty")) + "</td></tr>") + "</tbody></table></div>") +
       panel(t("subs.facesTitle"), t("subs.facesText"), '<ul class="plain-list">' + (faceList || "<li class=\"muted\">" + esc(t("act.empty")) + "</li>") + "</ul>" +
         '<form id="face-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+7 701 123 45 67"') + field(t("signups.name"), "name", "", "text", 'maxlength="120"') + '<button class="primary-button">' + esc(t("subs.faceAdd")) + "</button></form>") +
+      panel(t("chatImport.title"), t("chatImport.text"), '<form id="ci-form" class="app-form"><label class="field"><span>' + esc(t("chatImport.file")) + '</span><input type="file" name="file" accept=".zip,.txt,text/plain,application/zip" required></label>' +
+        '<label class="consent-field"><input type="checkbox" name="residents" checked> <span>' + esc(t("chatImport.residents")) + '</span></label><label class="consent-field"><input type="checkbox" name="ads" checked> <span>' + esc(t("chatImport.ads")) + '</span></label><label class="consent-field"><input type="checkbox" name="thanks" checked> <span>' + esc(t("chatImport.thanks")) + "</span></label>" +
+        field(t("chatImport.self"), "self", "DA", "text", 'maxlength="80"') + '<div class="receipt-actions"><button class="outline-button" value="check">' + esc(t("chatImport.check")) + '</button><button class="primary-button" value="run" id="ci-run" disabled>' + esc(t("chatImport.run")) + '</button></div></form><div id="ci-out" class="demo-note" hidden></div>') +
       panel(t("subs.codeTitle"), t("subs.codeText"), '<form id="code-form" class="app-form">' + field(t("signups.phone"), "phone", "", "tel", 'required inputmode="tel" placeholder="+375 29 123 45 67"') + '<button class="primary-button">' + esc(t("subs.codeGo")) + '</button></form><div id="code-out" class="demo-note" hidden></div><div class="receipt-actions"><button type="button" class="outline-button" id="sms-check">' + esc(t("subs.smsCheck")) + '</button></div><div id="sms-out" class="demo-note" hidden></div>') +
       panel(t("subs.waTitle"), t("subs.waText"), '<p class="muted" id="wa-state">' + esc(t("subs.waChecking")) + '</p><form id="wa-form" class="app-form"><label class="field"><span>' + esc(t("subs.waKey")) + '</span><input name="key" type="password" autocomplete="off" required maxlength="300" placeholder="bk_us1_..."></label><button class="primary-button">' + esc(t("subs.waSave")) + "</button></form>");
     document.querySelector("#ft-toggle")?.addEventListener("click", async () => { try { await api("/v1/admin/flags/free-tier", { method: "PUT", body: JSON.stringify({ on: !ft }) }); status(t("card.saved")); await adminSubscriptions(); } catch (x) { status(x.message, true); } });
@@ -2378,6 +2405,19 @@
         out.hidden = false; out.style.whiteSpace = "pre-line"; out.textContent = bal + "\n" + t("subs.smsLast") + "\n" + fails;
       } catch (x) { status(x.message, true); }
     });
+    content.querySelector("#ci-form").addEventListener("submit", async e => {
+      e.preventDefault(); const form = e.currentTarget; const f = new FormData(form); const out = content.querySelector("#ci-out");
+      const run = e.submitter && e.submitter.value === "run";
+      try {
+        const text = await readChatExport(f.get("file"));
+        if (!text) { status(t("chatImport.bad"), true); return; }
+        const parts = ["residents", "ads", "thanks"].filter(k => f.get(k));
+        const self = String(f.get("self") || "").trim();
+        const r = await api("/v1/admin/chat-import", { method: "POST", body: JSON.stringify({ text, parts, self_names: self ? [self] : [], dry_run: !run }) });
+        out.hidden = false; out.textContent = t(run ? "chatImport.done" : "chatImport.found", r);
+        content.querySelector("#ci-run").disabled = run;
+      } catch (x) { status(x.message, true); }
+    });
     content.querySelector("#code-form").addEventListener("submit", async e => {
       e.preventDefault(); const f = new FormData(e.currentTarget); const out = content.querySelector("#code-out");
       try {
@@ -2390,6 +2430,30 @@
       try { const r = await api("/v1/admin/friend-faces", { method: "POST", body: JSON.stringify({ phone: String(f.get("phone")).replace(/[\s()-]/g, ""), name: String(f.get("name") || "").trim() || undefined }) }); status(t(r.granted ? "subs.faceGranted" : "subs.faceQueued")); await adminSubscriptions(); } catch (x) { status(x.message, true); }
     });
     content.querySelectorAll("[data-face-del]").forEach(b => b.addEventListener("click", async () => { if (!confirm(t("subs.faceConfirm"))) return; try { await api("/v1/admin/friend-faces/" + encodeURIComponent(b.dataset.faceDel), { method: "DELETE" }); await adminSubscriptions(); } catch (x) { status(x.message, true); } }));
+  }
+
+  // Reads _chat.txt from a WhatsApp export: a plain .txt or a .zip (stored or deflated entry).
+  async function readChatExport(file) {
+    if (!file || !file.size) return "";
+    const buf = new Uint8Array(await file.arrayBuffer());
+    if (!(buf[0] === 0x50 && buf[1] === 0x4b)) return new TextDecoder().decode(buf);
+    const dv = new DataView(buf.buffer);
+    let eocd = -1; for (let i = buf.length - 22; i >= Math.max(0, buf.length - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    if (eocd < 0) return "";
+    let p = dv.getUint32(eocd + 16, true); const n = dv.getUint16(eocd + 10, true);
+    for (let k = 0; k < n; k++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) break;
+      const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+      const name = new TextDecoder().decode(buf.subarray(p + 46, p + 46 + nl));
+      p += 46 + nl + xl + cl;
+      if (!/\.txt$/i.test(name)) continue;
+      const start = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true);
+      const data = buf.subarray(start, start + csize);
+      if (method === 0) return new TextDecoder().decode(data);
+      if (method === 8 && window.DecompressionStream) return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+      return "";
+    }
+    return "";
   }
 
   async function adminSignups() {
@@ -3609,28 +3673,62 @@
     root.querySelectorAll("[data-story]").forEach(b => b.addEventListener("click", () => openStories(d, Number(b.dataset.story))));
     root.querySelector("[data-story-add]")?.addEventListener("change", e => { const f = e.target.files && e.target.files[0]; if (f) pickStory(f); });
   }
+  async function shrinkPhoto(f) {
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type) || !window.createImageBitmap) return f;
+    try { const bmp = await createImageBitmap(f); const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)); const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.85)); return blob ? new File([blob], "photo.jpg", { type: "image/jpeg" }) : f; } catch { return f; }
+  }
+  async function uploadJournalPhotos(id, files) {
+    for (const f of files) { const small = await shrinkPhoto(f); const fd = new FormData(); fd.append("file", small, small.name); await api("/v1/journal/" + encodeURIComponent(id) + "/photos", { method: "POST", body: fd }); }
+  }
+  // ---- Thanks: words of gratitude to the community, its events and people ----
+  let thanksLimit = 30;
+  async function thanks() {
+    const d = await api("/v1/thanks?limit=" + thanksLimit);
+    content.innerHTML = panel(t("thanks.title"), t("thanks.text", { n: d.total }),
+      '<button type="button" class="primary-button mt-new" id="th-new">+ ' + esc(t("thanks.write")) + "</button>" +
+      (d.items.length ? '<div class="thanks-list">' + d.items.map(x => '<article class="thanks-card"><p>' + esc(x.body).replace(/\n/g, "<br>") + '</p><small>' + esc(x.author_name || "") + " \u00b7 " + esc(date(x.created_at)) + (x.source === "whatsapp" ? " \u00b7 " + esc(t("announcements.fromChat")) : "") + "</small>" +
+        (x.mine ? ' <button type="button" class="text-button" data-th-del="' + esc(x.id) + '">' + esc(t("stories.delete")) + "</button>" : "") + "</article>").join("") + "</div>" : '<p class="muted">' + esc(t("thanks.empty")) + "</p>") +
+      (d.items.length < d.total ? '<button type="button" class="outline-button" id="th-more">' + esc(t("announcements.more")) + "</button>" : ""));
+    document.querySelector("#th-more")?.addEventListener("click", () => { thanksLimit = Math.min(100, thanksLimit + 30); thanks(); });
+    content.querySelectorAll("[data-th-del]").forEach(b => b.addEventListener("click", async () => { try { await api("/v1/thanks/" + encodeURIComponent(b.dataset.thDel), { method: "DELETE" }); await thanks(); } catch (x) { status(x.message, true); } }));
+    document.querySelector("#th-new").addEventListener("click", () => {
+      const dlg = authDialog('<h3>' + esc(t("thanks.write")) + '</h3><form class="app-form" id="th-form">' + area(t("thanks.field"), "body") +
+        '<div class="auth-actions auth-actions-col"><button class="primary-button">' + esc(t("together.publish")) + '</button><button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div></form>");
+      dlg.q("[data-x]").addEventListener("click", dlg.close); dlg.q("textarea").required = true; dlg.q("textarea").setAttribute("minlength", "10"); dlg.q("textarea").setAttribute("maxlength", "2000"); dlg.q("textarea").rows = 5;
+      dlg.q("#th-form").addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget);
+        try { await api("/v1/thanks", { method: "POST", body: JSON.stringify({ body: String(f.get("body")).trim() }) }); dlg.close(); status(t("together.published")); await thanks(); } catch (x) { dlg.close(); status(x.message, true); } });
+    });
+  }
   // ---- Journal: articles by the team and experts ----
   let journalId = null;
   async function journal() {
     if (journalId) {
       const a = await api("/v1/journal/" + encodeURIComponent(journalId)).catch(() => null);
       if (!a) { journalId = null; return journal(); }
-      content.innerHTML = '<button type="button" class="text-button" id="j-back">\u2039 ' + esc(t("journal.back")) + '</button><article class="j-article"><h2>' + esc(a.title) + '</h2><p class="muted">' + esc(a.author) + " \u00b7 " + esc(date(a.created_at)) + "</p>" +
-        a.body.split(/\n{2,}/).map(par => "<p>" + esc(par).replace(/\n/g, "<br>") + "</p>").join("") + (a.mine ? '<button type="button" class="text-button" id="j-del">' + esc(t("stories.delete")) + "</button>" : "") + "</article>";
+      const ph = a.photo_urls || [];
+      content.innerHTML = '<button type="button" class="text-button" id="j-back">\u2039 ' + esc(t("journal.back")) + '</button><article class="j-article">' + (ph[0] ? '<img class="j-hero" alt="" src="' + esc(apiBase + ph[0]) + '">' : "") + '<h2>' + esc(a.title) + '</h2><p class="muted">' + esc(a.author) + " \u00b7 " + esc(date(a.created_at)) + "</p>" +
+        a.body.split(/\n{2,}/).map(par => "<p>" + esc(par).replace(/\n/g, "<br>") + "</p>").join("") +
+        (ph.length > 1 ? '<div class="j-gallery">' + ph.slice(1).map(u => '<img alt="" loading="lazy" src="' + esc(apiBase + u) + '">').join("") + "</div>" : "") +
+        (a.mine && ph.length < 6 ? '<label class="outline-button j-add-photo">' + esc(t("journal.addPhoto")) + '<input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden id="j-photo"></label>' : "") + (a.mine ? '<button type="button" class="text-button" id="j-del">' + esc(t("stories.delete")) + "</button>" : "") + "</article>";
       document.querySelector("#j-back").addEventListener("click", () => { journalId = null; journal(); });
+      document.querySelector("#j-photo")?.addEventListener("change", async e => { const files = [...(e.target.files || [])].slice(0, 6 - ph.length); if (!files.length) return; try { await uploadJournalPhotos(a.id, files); await journal(); } catch (x) { status(x.message, true); } });
       document.querySelector("#j-del")?.addEventListener("click", async () => { if (!confirm(t("journal.deleteAsk"))) return; try { await api("/v1/journal/" + a.id, { method: "DELETE" }); journalId = null; await journal(); } catch (x) { status(x.message, true); } });
       return;
     }
     const d = await api("/v1/journal");
     content.innerHTML = (d.can_write ? '<button type="button" class="primary-button mt-new" id="j-new">+ ' + esc(t("journal.write")) + "</button>" : "") +
-      (d.items.length ? '<div class="mt-list">' + d.items.map(x => '<button type="button" class="mt-card j-card" data-j="' + esc(x.id) + '"><h3>' + esc(x.title) + '</h3><p class="muted">' + esc(x.excerpt) + "\u2026</p><small>" + esc(x.author) + " \u00b7 " + esc(date(x.created_at)) + "</small></button>").join("") + "</div>" : '<p class="muted">' + esc(t("journal.empty")) + "</p>");
+      (d.items.length ? '<div class="mt-list">' + d.items.map(x => '<button type="button" class="mt-card j-card" data-j="' + esc(x.id) + '">' + (x.cover_url ? '<img class="j-cover" alt="" loading="lazy" src="' + esc(apiBase + x.cover_url) + '">' : "") + '<h3>' + esc(x.title) + '</h3><p class="muted">' + esc(x.excerpt) + "\u2026</p><small>" + esc(x.author) + " \u00b7 " + esc(date(x.created_at)) + "</small></button>").join("") + "</div>" : '<p class="muted">' + esc(t("journal.empty")) + "</p>");
     content.querySelectorAll("[data-j]").forEach(b => b.addEventListener("click", () => { journalId = b.dataset.j; journal(); }));
     document.querySelector("#j-new")?.addEventListener("click", () => {
       const dlg = authDialog('<h3>' + esc(t("journal.write")) + '</h3><form class="app-form" id="j-form">' + field(t("journal.title"), "title", "", "text", 'required minlength="3" maxlength="140"') + area(t("journal.body"), "body") +
+        '<label class="field"><span>' + esc(t("journal.photos")) + '</span><input type="file" name="photos" accept="image/jpeg,image/png,image/webp" multiple></label>' +
         '<div class="auth-actions auth-actions-col"><button class="primary-button">' + esc(t("together.publish")) + '</button><button type="button" class="text-button" data-x>' + esc(t("auth.cancel")) + "</button></div></form>");
       dlg.q("[data-x]").addEventListener("click", dlg.close); dlg.q("textarea").setAttribute("minlength", "20"); dlg.q("textarea").setAttribute("maxlength", "8000"); dlg.q("textarea").required = true; dlg.q("textarea").rows = 8;
       dlg.q("#j-form").addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget);
-        try { await api("/v1/journal", { method: "POST", body: JSON.stringify({ title: String(f.get("title")).trim(), body: String(f.get("body")).trim() }) }); dlg.close(); status(t("together.published")); await journal(); } catch (x) { dlg.close(); status(x.message, true); } });
+        const files = f.getAll("photos").filter(x => x && x.size).slice(0, 6);
+        try { const r = await api("/v1/journal", { method: "POST", body: JSON.stringify({ title: String(f.get("title")).trim(), body: String(f.get("body")).trim() }) });
+          dlg.close(); if (files.length) await uploadJournalPhotos(r.id, files).catch(x => status(x.message, true)); status(t("together.published")); await journal(); } catch (x) { dlg.close(); status(x.message, true); } });
     });
   }
   // ---- Together: coffee, sport, a concert, a trip: propose, join, a chat opens ----
@@ -4513,7 +4611,7 @@
     content.querySelectorAll("[data-deal]").forEach(b => b.addEventListener("click", () => { dealId = b.dataset.deal; render("deal"); }));
   }
 
-  const RENDERERS = { journal, together, support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
+  const RENDERERS = { journal, thanks, together, support: async () => { const r = await api("/v1/chats/support", { method: "POST", body: "{}" }); chatRoom = r.room_id; return chat(); }, "my-card": myCard, "admin-bans": adminBans, "admin-activity": adminActivity, "admin-subscriptions": adminSubscriptions, blogger, overview, profile: profileView, members, companies, events, "events-admin": eventsAdmin, notifications, admin, experts, "admin-experts": adminExperts, learn: () => { switchCatalog("courses"); return learn(); }, books: () => { switchCatalog("books"); return learn(); }, course, lesson, team, "admin-learn": adminLearn, announcements, "admin-announcements": adminAnnouncements, discounts, card, partner, "admin-discounts": adminDiscounts, membership: membershipWithInvite, feedback, "admin-stats": adminStats, "admin-feedback": adminFeedback, "admin-referrals": adminReferrals, "admin-staff": adminStaff, business, "admin-loans": adminLoans, certificate, checkin, polls, "admin-pulse": adminPulse, "admin-polls": adminPolls, "admin-learning-orders": adminLearningOrders, services: me, me, messages, chat, "admin-chats": adminChats, tests, test, settings, member, trust, "admin-trust": adminTrust, deals, deal, "admin-deals": adminDeals, "admin-partners": () => adminPartners(), "admin-proposals": adminProposals, "partner-apply": partnerApply, host, recordings, templates, professions };
 
   function allowed(view) {
     if (!RENDERERS[view]) return false;

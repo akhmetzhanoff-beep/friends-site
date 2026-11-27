@@ -12,7 +12,7 @@ The page is published as `/chatgpt/` when this directory is deployed to the Frie
 - CTA links to `https://app.friendscommunity.kz/`.
 - Allowlisted UTM and click parameters are passed through to the app URL:
   `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`,
-  `gclid`, `fbclid`, `ttclid`, `msclkid`, `opref`, `click_id`, `ref`.
+  `gclid`, `fbclid`, `ttclid`, `msclkid`, `oppref`, `click_id`, `ref`.
 - Defaults `utm_source=chatgpt`, `utm_medium=paid`, `utm_campaign=friends_kz_2026` when absent.
 
 ## Important measurement boundary
